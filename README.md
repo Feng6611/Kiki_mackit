@@ -7,17 +7,16 @@ Reusable macOS menu bar app components for small Kiki apps.
 - `KikiSettings`: settings window helpers, navigation model, and common settings UI rows.
 - `KikiMenuBar`: `NSStatusItem` lifecycle and menu item model/controller.
 - `KikiPaywall`: lightweight paywall models and SwiftUI presentation components.
-- `RevenueCatCommerceKit`: RevenueCat-backed commerce client and entitlement models.
 
 ## Repository Shape
 
-Keep these products in one Swift package repository for now. They share the same platform floor, release cadence, and current validation app. Splitting into separate repositories would add versioning and dependency overhead before the APIs have been proven in a second app.
+Keep this package focused on reusable menu bar, settings, and paywall UI. Purchase transport, entitlement refresh, trial policy, and app access state belong outside this package.
 
-Use separate products instead of separate repositories:
+Use separate products for the UI surfaces:
 
 - Apps can import only the modules they need.
 - Xcode and SwiftPM can still resolve one remote package URL.
-- The modules can be split into separate repositories later without renaming public types.
+- Commerce can evolve independently in `RevenueCatCommerceKit`.
 
 ## Remote Usage
 
@@ -32,8 +31,7 @@ Then add only the required products to the app target:
 ```swift
 .product(name: "KikiSettings", package: "Kiki_mackit"),
 .product(name: "KikiMenuBar", package: "Kiki_mackit"),
-.product(name: "KikiPaywall", package: "Kiki_mackit"),
-.product(name: "RevenueCatCommerceKit", package: "Kiki_mackit")
+.product(name: "KikiPaywall", package: "Kiki_mackit")
 ```
 
 For local development, keep using the path dependency:
@@ -44,6 +42,12 @@ For local development, keep using the path dependency:
 
 ## Starter Follow-Up
 
-Create a separate starter repository after this package stabilizes. The starter should depend on `Kiki_mackit` and own app-specific flow glue such as first launch, onboarding, entitlement store, settings tabs, menu labels, app links, and paywall plan configuration.
+The starter should depend on `Kiki_mackit` and own app-specific flow glue such as first launch, onboarding, entitlement store, settings tabs, menu labels, app links, and paywall plan configuration.
 
-Keep product-specific RevenueCat configuration, trial policy, app access state, and product-specific analytics out of this package.
+Apps that need RevenueCat should also depend on `RevenueCatCommerceKit`:
+
+```swift
+    .package(url: "https://github.com/Feng6611/RevenueCatCommerceKit.git", exact: "0.1.0")
+```
+
+Keep product-specific RevenueCat configuration, trial policy, app access state, and product-specific analytics in the host app or starter.

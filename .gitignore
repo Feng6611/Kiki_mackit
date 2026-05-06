@@ -3,3 +3,6 @@
 DerivedData/
 .DS_Store
 
+# Claude/Codex local overrides
+.claude/settings.local.json
+settings.local.json
