@@ -1,6 +1,33 @@
 import AppKit
 import SwiftUI
 
+public enum KikiSettingsDefaults {
+    public static let windowWidth: CGFloat = 540
+    public static let windowHeight: CGFloat = 560
+    public static let minimumWindowWidth: CGFloat = 540
+    public static let minimumWindowHeight: CGFloat = 560
+}
+
+private enum KikiSettingsSpacing {
+    static let sm: CGFloat = 8
+    static let md: CGFloat = 12
+    static let xl: CGFloat = 20
+}
+
+public struct KikiSettingsTabSpec<Tab: Hashable>: Identifiable {
+    public let tab: Tab
+    public let title: String
+    public let systemImage: String
+
+    public var id: Tab { tab }
+
+    public init(_ tab: Tab, title: String, systemImage: String) {
+        self.tab = tab
+        self.title = title
+        self.systemImage = systemImage
+    }
+}
+
 @MainActor
 public final class KikiSettingsNavigationModel<Tab: Hashable>: ObservableObject {
     @Published public var selectedTab: Tab
@@ -10,6 +37,484 @@ public final class KikiSettingsNavigationModel<Tab: Hashable>: ObservableObject 
     }
 }
 
+public struct KikiSettingsShell<Tab: Hashable, Content: View>: View {
+    @Binding private var selection: Tab
+    private let tabs: [KikiSettingsTabSpec<Tab>]
+    private let width: CGFloat
+    private let height: CGFloat
+    private let content: (Tab) -> Content
+
+    public init(
+        selection: Binding<Tab>,
+        tabs: [KikiSettingsTabSpec<Tab>],
+        width: CGFloat = KikiSettingsDefaults.windowWidth,
+        height: CGFloat = KikiSettingsDefaults.windowHeight,
+        @ViewBuilder content: @escaping (Tab) -> Content
+    ) {
+        self._selection = selection
+        self.tabs = tabs
+        self.width = width
+        self.height = height
+        self.content = content
+    }
+
+    public var body: some View {
+        TabView(selection: $selection) {
+            ForEach(tabs) { tabSpec in
+                Group {
+                    if selection == tabSpec.tab {
+                        content(tabSpec.tab)
+                    } else {
+                        Color.clear
+                    }
+                }
+                .tabItem {
+                    Label(tabSpec.title, systemImage: tabSpec.systemImage)
+                }
+                .tag(tabSpec.tab)
+            }
+        }
+        .frame(width: width, height: height)
+    }
+}
+
+public struct KikiSettingsPane<Content: View>: View {
+    private let content: Content
+
+    public init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    public var body: some View {
+        Form {
+            content
+        }
+        .kikiSettingsPaneChrome()
+    }
+}
+
+public struct KikiSettingsHelperText: View {
+    private let text: String
+
+    public init(_ text: String) {
+        self.text = text
+    }
+
+    public var body: some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+public struct KikiSettingsStatusRow: View {
+    private let title: String
+    private let value: String
+    private let systemImage: String
+    private let valueColor: Color
+    private let trailingSystemImage: String?
+    private let action: (() -> Void)?
+
+    public init(
+        title: String,
+        value: String,
+        systemImage: String,
+        valueColor: Color = .secondary,
+        trailingSystemImage: String? = nil,
+        action: (() -> Void)? = nil
+    ) {
+        self.title = title
+        self.value = value
+        self.systemImage = systemImage
+        self.valueColor = valueColor
+        self.trailingSystemImage = trailingSystemImage
+        self.action = action
+    }
+
+    public var body: some View {
+        Group {
+            if let action {
+                Button(action: action) {
+                    rowContent
+                }
+                .buttonStyle(.plain)
+            } else {
+                rowContent
+            }
+        }
+    }
+
+    private var rowContent: some View {
+        HStack(spacing: KikiSettingsSpacing.sm) {
+            KikiSettingsRowTitle(title: title, systemImage: systemImage)
+            Spacer(minLength: KikiSettingsSpacing.md)
+            Text(value)
+                .foregroundStyle(valueColor)
+                .lineLimit(1)
+            if let trailingSystemImage {
+                Image(systemName: trailingSystemImage)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+    }
+}
+
+public struct KikiSettingsLinkRow: View {
+    private let title: String
+    private let value: String
+    private let urlString: String
+    private let systemImage: String
+    private let trailingSystemImage: String
+
+    public init(
+        title: String,
+        value: String,
+        urlString: String,
+        systemImage: String,
+        trailingSystemImage: String = "arrow.up.right"
+    ) {
+        self.title = title
+        self.value = value
+        self.urlString = urlString
+        self.systemImage = systemImage
+        self.trailingSystemImage = trailingSystemImage
+    }
+
+    public var body: some View {
+        Button {
+            KikiSettingsActions.openURL(urlString)
+        } label: {
+            KikiSettingsRowContent(
+                title: title,
+                value: value,
+                systemImage: systemImage,
+                trailingSystemImage: trailingSystemImage
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+public struct KikiSettingsCopyRow: View {
+    private let title: String
+    private let value: String
+    private let systemImage: String
+    private let trailingSystemImage: String
+
+    public init(
+        title: String,
+        value: String,
+        systemImage: String,
+        trailingSystemImage: String = "doc.on.doc"
+    ) {
+        self.title = title
+        self.value = value
+        self.systemImage = systemImage
+        self.trailingSystemImage = trailingSystemImage
+    }
+
+    public var body: some View {
+        Button {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(value, forType: .string)
+        } label: {
+            KikiSettingsRowContent(
+                title: title,
+                value: value,
+                systemImage: systemImage,
+                trailingSystemImage: trailingSystemImage
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+public struct KikiAppIdentityView: View {
+    private let appName: String
+    private let versionText: String
+    private let icon: NSImage
+    private let iconSize: CGFloat
+
+    public init(
+        appName: String,
+        versionText: String,
+        icon: NSImage = NSApp.applicationIconImage,
+        iconSize: CGFloat = 76
+    ) {
+        self.appName = appName
+        self.versionText = versionText
+        self.icon = icon
+        self.iconSize = iconSize
+    }
+
+    public var body: some View {
+        VStack(spacing: KikiSettingsSpacing.sm) {
+            Image(nsImage: icon)
+                .resizable()
+                .frame(width: iconSize, height: iconSize)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .shadow(color: .black.opacity(0.10), radius: 8, y: 4)
+
+            Text(appName)
+                .font(.system(size: 20, weight: .semibold))
+
+            Text(versionText)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+public struct KikiAboutPane<StatusContent: View, LinksContent: View>: View {
+    private let appName: String
+    private let versionText: String
+    private let icon: NSImage
+    private let iconSize: CGFloat
+    private let statusContent: StatusContent
+    private let linksContent: LinksContent
+
+    public init(
+        appName: String,
+        versionText: String,
+        icon: NSImage = NSApp.applicationIconImage,
+        iconSize: CGFloat = 76,
+        @ViewBuilder status: () -> StatusContent,
+        @ViewBuilder links: () -> LinksContent
+    ) {
+        self.appName = appName
+        self.versionText = versionText
+        self.icon = icon
+        self.iconSize = iconSize
+        self.statusContent = status()
+        self.linksContent = links()
+    }
+
+    public var body: some View {
+        Form {
+            Section {
+                KikiAppIdentityView(
+                    appName: appName,
+                    versionText: versionText,
+                    icon: icon,
+                    iconSize: iconSize
+                )
+                .padding(.vertical, KikiSettingsSpacing.xl)
+                .listRowBackground(KikiSettingsColors.background)
+            }
+
+            Section {
+                statusContent
+            }
+            .listRowBackground(KikiSettingsColors.sectionBackground)
+
+            Section {
+                linksContent
+            }
+            .listRowBackground(KikiSettingsColors.sectionBackground)
+        }
+        .kikiSettingsPaneChrome()
+    }
+}
+
+public struct KikiSettingsApplicationRow: View {
+    private let bundleID: String
+    private let removeAction: (String) -> Void
+
+    public init(bundleID: String, removeAction: @escaping (String) -> Void) {
+        self.bundleID = bundleID
+        self.removeAction = removeAction
+    }
+
+    private var applicationURL: URL? {
+        NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID)
+    }
+
+    private var displayName: String {
+        guard let applicationURL else {
+            return bundleID
+        }
+
+        return FileManager.default.displayName(atPath: applicationURL.path)
+    }
+
+    public var body: some View {
+        HStack(spacing: KikiSettingsSpacing.sm) {
+            icon
+
+            Text(displayName)
+                .font(.caption)
+                .lineLimit(1)
+                .help(bundleID)
+
+            Spacer(minLength: 0)
+
+            Button {
+                removeAction(bundleID)
+            } label: {
+                Image(systemName: "trash")
+            }
+            .buttonStyle(.borderless)
+            .help("Remove \(displayName)")
+            .accessibilityLabel("Remove \(displayName)")
+        }
+    }
+
+    @ViewBuilder
+    private var icon: some View {
+        if let applicationURL {
+            Image(nsImage: NSWorkspace.shared.icon(forFile: applicationURL.path))
+                .resizable()
+                .frame(width: 16, height: 16)
+        } else {
+            Image(systemName: "app")
+                .frame(width: 16, height: 16)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
+public struct KikiSettingsApplicationPicker<Applications: RandomAccessCollection>: View where Applications.Element == NSRunningApplication {
+    private let applications: Applications
+    @Binding private var selection: String?
+    private let isDisabled: Bool
+    private let addAction: (String) -> Void
+
+    public init(
+        applications: Applications,
+        selection: Binding<String?>,
+        isDisabled: Bool,
+        addAction: @escaping (String) -> Void
+    ) {
+        self.applications = applications
+        self._selection = selection
+        self.isDisabled = isDisabled
+        self.addAction = addAction
+    }
+
+    public var body: some View {
+        HStack {
+            Picker(selection: $selection) {
+                Text("Select an app...").tag(String?.none)
+                ForEach(pickerApplications) { application in
+                    Text(application.displayName)
+                        .tag(Optional(application.bundleID))
+                }
+            } label: {
+                EmptyView()
+            }
+            .labelsHidden()
+            .disabled(isDisabled)
+
+            Button("Add") {
+                guard let selection else {
+                    return
+                }
+
+                addAction(selection)
+                self.selection = nil
+            }
+            .disabled(selection == nil || isDisabled)
+        }
+    }
+
+    private var pickerApplications: [KikiApplicationPickerItem] {
+        var seenBundleIDs = Set<String>()
+        return applications.compactMap { application -> KikiApplicationPickerItem? in
+            guard let bundleID = application.bundleIdentifier else {
+                return nil
+            }
+
+            guard seenBundleIDs.insert(bundleID).inserted else {
+                return nil
+            }
+
+            return KikiApplicationPickerItem(
+                bundleID: bundleID,
+                displayName: application.localizedName ?? bundleID
+            )
+        }
+    }
+}
+
+public enum KikiSettingsActions {
+    public static func openURL(_ urlString: String) {
+        guard let url = URL(string: urlString) else {
+            return
+        }
+
+        NSWorkspace.shared.open(url)
+    }
+}
+
+private struct KikiSettingsRowContent: View {
+    let title: String
+    let value: String
+    let systemImage: String
+    let trailingSystemImage: String
+
+    var body: some View {
+        HStack(spacing: KikiSettingsSpacing.sm) {
+            KikiSettingsRowTitle(title: title, systemImage: systemImage)
+            Spacer(minLength: KikiSettingsSpacing.md)
+            Text(value)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Image(systemName: trailingSystemImage)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+    }
+}
+
+private struct KikiSettingsRowTitle: View {
+    let title: String
+    let systemImage: String
+
+    var body: some View {
+        HStack(spacing: KikiSettingsSpacing.sm) {
+            Image(systemName: systemImage)
+                .font(.body)
+                .frame(width: 22, alignment: .leading)
+            Text(title)
+        }
+    }
+}
+
+private enum KikiSettingsColors {
+    static var sectionBackground: Color {
+        Color(nsColor: .controlBackgroundColor)
+    }
+
+    static var background: Color {
+        Color(nsColor: .windowBackgroundColor)
+    }
+}
+
+private extension View {
+    func kikiSettingsPaneChrome() -> some View {
+        formStyle(.grouped)
+            .scrollContentBackground(.hidden)
+            .background(KikiSettingsColors.background)
+            .scenePadding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+}
+
+public extension View {
+    func kikiSettingDescription() -> some View {
+        font(.caption)
+            .foregroundStyle(.secondary)
+    }
+}
+
+@available(*, deprecated, message: "Use KikiSettingsShell, KikiSettingsPane, and the KikiSettings row components instead.")
 public enum KikiSettingsUI {
     public struct FormPane<Content: View>: View {
         private let content: Content
@@ -39,7 +544,7 @@ public enum KikiSettingsUI {
 
         public var body: some View {
             Button {
-                KikiSettingsUI.openURL(urlString)
+                KikiSettingsActions.openURL(urlString)
             } label: {
                 if let systemImage {
                     Label(title, systemImage: systemImage)
@@ -67,7 +572,7 @@ public enum KikiSettingsUI {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(value, forType: .string)
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: KikiSettingsSpacing.sm) {
                     if let systemImage {
                         Label(title, systemImage: systemImage)
                     } else {
@@ -86,176 +591,12 @@ public enum KikiSettingsUI {
         }
     }
 
-    public struct AppIdentityView: View {
-        private let appName: String
-        private let versionText: String
-        private let icon: NSImage
-        private let iconSize: CGFloat
-
-        public init(
-            appName: String,
-            versionText: String,
-            icon: NSImage = NSApp.applicationIconImage,
-            iconSize: CGFloat = 76
-        ) {
-            self.appName = appName
-            self.versionText = versionText
-            self.icon = icon
-            self.iconSize = iconSize
-        }
-
-        public var body: some View {
-            VStack(spacing: 8) {
-                Image(nsImage: icon)
-                    .resizable()
-                    .frame(width: iconSize, height: iconSize)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .shadow(color: .black.opacity(0.10), radius: 8, y: 4)
-
-                Text(appName)
-                    .font(.system(size: 20, weight: .semibold))
-
-                Text(versionText)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity)
-        }
-    }
-
-    public struct ApplicationRow: View {
-        private let bundleID: String
-        private let removeAction: (String) -> Void
-
-        public init(bundleID: String, removeAction: @escaping (String) -> Void) {
-            self.bundleID = bundleID
-            self.removeAction = removeAction
-        }
-
-        private var applicationURL: URL? {
-            NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID)
-        }
-
-        private var displayName: String {
-            guard let applicationURL else {
-                return bundleID
-            }
-
-            return FileManager.default.displayName(atPath: applicationURL.path)
-        }
-
-        public var body: some View {
-            HStack(spacing: 8) {
-                icon
-
-                Text(displayName)
-                    .font(.caption)
-                    .lineLimit(1)
-                    .help(bundleID)
-
-                Spacer(minLength: 0)
-
-                Button {
-                    removeAction(bundleID)
-                } label: {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(.borderless)
-                .help("Remove \(displayName)")
-                .accessibilityLabel("Remove \(displayName)")
-            }
-        }
-
-        @ViewBuilder
-        private var icon: some View {
-            if let applicationURL {
-                Image(nsImage: NSWorkspace.shared.icon(forFile: applicationURL.path))
-                    .resizable()
-                    .frame(width: 16, height: 16)
-            } else {
-                Image(systemName: "app")
-                    .frame(width: 16, height: 16)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    public struct ApplicationPicker<Applications: RandomAccessCollection>: View where Applications.Element == NSRunningApplication {
-        private let applications: Applications
-        @Binding private var selection: String?
-        private let isDisabled: Bool
-        private let addAction: (String) -> Void
-
-        public init(
-            applications: Applications,
-            selection: Binding<String?>,
-            isDisabled: Bool,
-            addAction: @escaping (String) -> Void
-        ) {
-            self.applications = applications
-            self._selection = selection
-            self.isDisabled = isDisabled
-            self.addAction = addAction
-        }
-
-        public var body: some View {
-            HStack {
-                Picker(selection: $selection) {
-                    Text("Select an app...").tag(String?.none)
-                    ForEach(pickerApplications) { application in
-                        Text(application.displayName)
-                            .tag(Optional(application.bundleID))
-                    }
-                } label: {
-                    EmptyView()
-                }
-                .labelsHidden()
-                .disabled(isDisabled)
-
-                Button("Add") {
-                    guard let selection else {
-                        return
-                    }
-
-                    addAction(selection)
-                    self.selection = nil
-                }
-                .disabled(selection == nil || isDisabled)
-            }
-        }
-
-        private var pickerApplications: [KikiApplicationPickerItem] {
-            var seenBundleIDs = Set<String>()
-            return applications.compactMap { application -> KikiApplicationPickerItem? in
-                guard let bundleID = application.bundleIdentifier else {
-                    return nil
-                }
-
-                guard seenBundleIDs.insert(bundleID).inserted else {
-                    return nil
-                }
-
-                return KikiApplicationPickerItem(
-                    bundleID: bundleID,
-                    displayName: application.localizedName ?? bundleID
-                )
-            }
-        }
-    }
+    public typealias AppIdentityView = KikiAppIdentityView
+    public typealias ApplicationRow = KikiSettingsApplicationRow
+    public typealias ApplicationPicker = KikiSettingsApplicationPicker
 
     public static func openURL(_ urlString: String) {
-        guard let url = URL(string: urlString) else {
-            return
-        }
-
-        NSWorkspace.shared.open(url)
-    }
-}
-
-public extension View {
-    func kikiSettingDescription() -> some View {
-        font(.caption)
-            .foregroundStyle(.secondary)
+        KikiSettingsActions.openURL(urlString)
     }
 }
 
@@ -267,7 +608,10 @@ public final class KikiSettingsWindowController {
 
     public init(
         frameAutosaveName: String,
-        minimumContentSize: CGSize,
+        minimumContentSize: CGSize = CGSize(
+            width: KikiSettingsDefaults.minimumWindowWidth,
+            height: KikiSettingsDefaults.minimumWindowHeight
+        ),
         windowTitle: String = "Settings"
     ) {
         self.frameAutosaveName = NSWindow.FrameAutosaveName(frameAutosaveName)

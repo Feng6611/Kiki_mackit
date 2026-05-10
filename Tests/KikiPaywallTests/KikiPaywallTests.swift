@@ -1,4 +1,5 @@
 import KikiPaywall
+import SwiftUI
 import Testing
 
 struct KikiPaywallTests {
@@ -18,5 +19,28 @@ struct KikiPaywallTests {
         #expect(plan.badge == "Best Value")
         #expect(plan.originalPrice == "$14.99")
         #expect(plan.isAvailable)
+    }
+
+    @MainActor
+    @Test("Paywall shell and header are constructible")
+    func paywallShellAndHeaderAreConstructible() {
+        let shell = KikiPaywallShell {
+            KikiPaywallHeader(
+                title: "Choose your plan",
+                subtitle: "Unlock the full app."
+            )
+        } content: {
+            KikiPaywallFeatureRow(icon: "checkmark.circle", text: "Reusable shell")
+        } actions: {
+            KikiPaywallActionLabel(
+                title: "Unlock",
+                isLoading: false,
+                isProminent: true
+            )
+        } footer: {
+            Text("Terms")
+        }
+
+        _ = shell.body
     }
 }
