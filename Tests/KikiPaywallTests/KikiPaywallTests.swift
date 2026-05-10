@@ -43,4 +43,21 @@ struct KikiPaywallTests {
 
         _ = shell.body
     }
+
+    @MainActor
+    @Test("Paywall window controller is constructible")
+    func paywallWindowControllerIsConstructible() {
+        let controller = KikiPaywallWindowController(title: "Upgrade") {
+            KikiPaywallShell {
+                KikiPaywallHeader(
+                    title: "Choose your plan",
+                    subtitle: "Unlock the full app."
+                )
+            } content: {
+                KikiPaywallFeatureRow(icon: "checkmark.circle", text: "Standalone window")
+            }
+        }
+
+        #expect(!controller.isVisible)
+    }
 }

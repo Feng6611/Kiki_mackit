@@ -1,3 +1,6 @@
+import AppKit
+import KikiDesign
+import KikiWindow
 import SwiftUI
 
 public enum KikiPaywallDefaults {
@@ -5,7 +8,49 @@ public enum KikiPaywallDefaults {
     public static let sheetHeight: CGFloat = 520
     public static let onboardingSheetWidth: CGFloat = 560
     public static let onboardingSheetHeight: CGFloat = 620
+    public static let windowWidth: CGFloat = 520
+    public static let windowHeight: CGFloat = 620
     public static let sheetPadding: CGFloat = 28
+}
+
+@MainActor
+public final class KikiPaywallWindowController<Content: View> {
+    private let windowController: KikiSingleWindowController<Content>
+
+    public init(
+        title: String = "Upgrade",
+        size: CGSize = CGSize(
+            width: KikiPaywallDefaults.windowWidth,
+            height: KikiPaywallDefaults.windowHeight
+        ),
+        minimumSize: CGSize? = nil,
+        frameAutosaveName: String? = nil,
+        onClose: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.windowController = KikiSingleWindowController(
+            configuration: .utility(
+                title: title,
+                size: size,
+                minimumSize: minimumSize,
+                frameAutosaveName: frameAutosaveName
+            ),
+            onClose: onClose,
+            content: content
+        )
+    }
+
+    public var isVisible: Bool {
+        windowController.isVisible
+    }
+
+    public func show() {
+        windowController.show()
+    }
+
+    public func close() {
+        windowController.close()
+    }
 }
 
 public struct KikiPaywallPlan: Equatable, Identifiable {
@@ -110,7 +155,7 @@ public struct KikiPaywallShell<Header: View, Content: View, Actions: View, Foote
         .frame(width: width, height: height)
         .background {
             ZStack {
-                Color(nsColor: .windowBackgroundColor)
+                KikiMaterialSurface(in: Rectangle(), material: .regularMaterial, tint: tint, tintOpacity: 0.025)
                 RadialGradient(
                     colors: [tint.opacity(0.05), .clear],
                     center: .top,
@@ -151,28 +196,30 @@ public extension KikiPaywallShell where Actions == EmptyView, Footer == EmptyVie
 public struct KikiPaywallHeader: View {
     private let title: String
     private let subtitle: String
-    private let icon: NSImage
+    private let icon: NSImage?
     private let iconSize: CGFloat
 
     public init(
         title: String,
         subtitle: String,
-        icon: NSImage = NSApp.applicationIconImage,
+        icon: NSImage? = nil,
         iconSize: CGFloat = 80
     ) {
         self.title = title
         self.subtitle = subtitle
-        self.icon = icon
+        self.icon = icon ?? NSApplication.shared.applicationIconImage
         self.iconSize = iconSize
     }
 
     public var body: some View {
         VStack(spacing: 12) {
-            Image(nsImage: icon)
-                .resizable()
-                .frame(width: iconSize, height: iconSize)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .shadow(color: .black.opacity(0.10), radius: 10, y: 5)
+            if let icon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .frame(width: iconSize, height: iconSize)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .shadow(color: .black.opacity(0.10), radius: 10, y: 5)
+            }
 
             Text(title)
                 .font(.system(size: 28, weight: .bold, design: .rounded))

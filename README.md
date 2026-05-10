@@ -7,6 +7,8 @@ Reusable macOS menu bar app components for small Kiki apps.
 - `KikiSettings`: settings window helpers, navigation model, and common settings UI rows.
 - `KikiMenuBar`: `NSStatusItem` lifecycle and menu item model/controller.
 - `KikiPaywall`: lightweight paywall models and SwiftUI presentation components.
+- `KikiDesign`: adaptive glass/material surface primitives shared across app surfaces.
+- `KikiWindow`: AppKit window presenters and SwiftUI hosting utilities.
 
 ## Repository Shape
 
@@ -31,7 +33,9 @@ Then add only the required products to the app target:
 ```swift
 .product(name: "KikiSettings", package: "Kiki_mackit"),
 .product(name: "KikiMenuBar", package: "Kiki_mackit"),
-.product(name: "KikiPaywall", package: "Kiki_mackit")
+.product(name: "KikiPaywall", package: "Kiki_mackit"),
+.product(name: "KikiDesign", package: "Kiki_mackit"),
+.product(name: "KikiWindow", package: "Kiki_mackit")
 ```
 
 For local development, keep using the path dependency:

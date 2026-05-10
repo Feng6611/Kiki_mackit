@@ -13,6 +13,9 @@
 - The app supplies menu items or popover content through closures so product-specific state stays outside the package.
 - Menu item actions are closures, not selectors, to keep app adapters small.
 - `KikiMenuBarPopoverController` owns only the AppKit bridge: status item, popover, hosting controller, sizing, and show/close behavior. Product popover UI stays in app code.
+- Popovers are not standalone windows in Kiki's API model. Use `KikiWindow`
+  only for independent utility/help/onboarding/paywall windows.
+- Popover visuals can reuse `KikiDesign` surfaces while lifecycle stays here.
 
 ## TODO & Checklist
 

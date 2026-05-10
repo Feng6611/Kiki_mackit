@@ -20,6 +20,8 @@
 - Apps own tab definitions, business state, bindings, actions, and product-specific copy.
 - Window dimensions have Command Reopen-inspired defaults (`540 x 560`) but remain app-overridable through `KikiSettingsShell(width:height:)` and `KikiSettingsWindowController(minimumContentSize:)`.
 - AppKit remains responsible for window activation and autosaved frames.
+- Settings visuals may reuse `KikiDesign`, but Settings lifecycle stays tied to
+  native `Settings {}` unless an app explicitly chooses a custom window scene.
 - Window preparation and Settings scene opening stay separate so app adapters can inject business state before showing UI.
 - Launch at Login lives in `KikiSettings` because it is a settings-screen concern for simple menu bar apps.
 - `KikiSettingsUI` is kept only as a deprecated compatibility layer. New apps should use the shell and row components directly.

@@ -14,9 +14,41 @@ Do not add product-specific business logic:
 - Commerce belongs in the standalone `RevenueCatCommerceKit` repository.
 - Do not add app-specific copy, paywall policy, entitlement state, clipboard/history logic, analytics, networking, persistence, or distribution branching.
 
-Prefer small, package-local changes that preserve and clarify the public surfaces of `KikiMenuBar`, `KikiSettings`, and `KikiPaywall`.
+Prefer small, package-local changes that preserve and clarify the public surfaces of `KikiDesign`, `KikiWindow`, `KikiMenuBar`, `KikiSettings`, and `KikiPaywall`.
 
 ## Component Roles
+
+### KikiDesign
+
+`KikiDesign` owns reusable visual surface primitives.
+
+It should provide:
+
+- Adaptive Liquid Glass/material fallback helpers.
+- Material plus tint surface treatments.
+- Foreground treatment for glass action labels.
+- Small visual defaults that can be shared by Settings, MenuBar popovers, Paywall, sheets, and standalone windows.
+
+It should not provide:
+
+- Product-specific colors, copy, layout, state, menu content, settings tabs, window lifecycle, or purchase logic.
+
+### KikiWindow
+
+`KikiWindow` owns AppKit window presentation infrastructure.
+
+It should provide:
+
+- Single-instance `NSWindow` presentation for SwiftUI content.
+- Window configuration for size, minimum size, titlebar behavior, traffic-light visibility, frame autosave, and activation.
+- Transparent window background bridging inspired by Binky/Dinky.
+
+It should not provide:
+
+- Menu bar popovers.
+- Settings tab/content policy.
+- Paywall purchase policy.
+- Onboarding state machines or product-specific window flows.
 
 ### KikiSettings
 
@@ -75,7 +107,8 @@ For SwiftUI popovers, Kiki owns only the AppKit bridge. The app owns the SwiftUI
 
 It should provide:
 
-- Shell-level paywall chrome inspired by Command Reopen's sheet layout.
+- Sheet/content-level paywall chrome inspired by Command Reopen's sheet layout.
+- Optional standalone paywall window presentation via `KikiPaywallWindowController`.
 - Plan display models and lightweight reusable paywall UI.
 - Feature rows, CTA layout, badges, and presentation structure that can be fed by app state.
 
@@ -136,6 +169,7 @@ Compatibility:
 Primary API:
 
 - `KikiPaywallDefaults`
+- `KikiPaywallWindowController`
 - `KikiPaywallShell`
 - `KikiPaywallHeader`
 - `KikiPaywallPlan`
@@ -147,11 +181,36 @@ Primary API:
 
 Keep this target display-oriented. If an API needs network, receipt, entitlement, customer info, or product-fetching behavior, it belongs outside Kiki_mackit.
 
+### `Sources/KikiDesign`
+
+Primary API:
+
+- `KikiSurfaceDefaults`
+- `KikiMaterialSurface`
+- `View.kikiAdaptiveGlass(in:)`
+- `View.kikiMaterialSurface(in:material:tint:tintOpacity:)`
+- `View.kikiWindowMaterialBackground(material:tint:tintOpacity:)`
+- `View.kikiGlassActionForeground()`
+
+### `Sources/KikiWindow`
+
+Primary API:
+
+- `KikiWindowConfiguration`
+- `KikiWindowButtonVisibility`
+- `KikiTransparentWindowBackground`
+- `View.kikiTransparentWindowBackground(...)`
+- `KikiSingleWindowController`
+
 ## Directory Map
 
+- `Sources/KikiDesign`: Shared visual material/glass primitives.
+- `Sources/KikiWindow`: AppKit window presenters and transparent window bridge.
 - `Sources/KikiSettings`: Settings shell, rows, launch-at-login, settings window opening helpers.
 - `Sources/KikiMenuBar`: Menu bar status item, native menu item model, SwiftUI popover controller.
 - `Sources/KikiPaywall`: Paywall display components and display models.
+- `Tests/KikiDesignTests`: Design API construction tests.
+- `Tests/KikiWindowTests`: Window configuration and presenter construction tests.
 - `Tests/KikiSettingsTests`: Settings API construction and state tests.
 - `Tests/KikiMenuBarTests`: Menu item, shortcut, controller, and popover construction tests.
 - `Tests/KikiPaywallTests`: Paywall display model tests.

@@ -3,17 +3,21 @@
 ## Feature List
 
 - Lightweight paywall plan model.
-- Reusable paywall sheet shell and header.
+- Reusable paywall sheet/content shell and header.
+- Optional standalone paywall window controller.
 - Reusable plan card, feature row, stat item, and action label views.
 - Loading, disabled, selected, and unavailable visual states.
 
 ## Technical Decisions
 
-- SwiftUI-only because this module is presentation-focused.
+- SwiftUI-first because this module is presentation-focused.
 - No RevenueCat dependency; purchasing and entitlement policy belong to app code.
 - `KikiPaywallShell` extracts the stable sheet structure from Command Reopen:
   scrollable header/content, fixed action/footer area, optional close button,
-  default sheet sizes, and subtle native background.
+  default sheet sizes, and subtle native material background.
+- `KikiPaywallWindowController` is only a presentation adapter. It uses
+  `KikiWindow` to host app-provided paywall content in a standalone `NSWindow`
+  when a sheet is not the right product surface.
 - The shell is not a full purchase flow. The host app supplies content, action
   buttons, footer links, loading state, close behavior, and all side effects.
 - Dismissal policy belongs to the host app. `KikiPaywall` components may render
@@ -49,14 +53,15 @@ state, onboarding persistence, RevenueCat calls, or post-onboarding routing into
 
 ## API Shape
 
-- `KikiPaywallShell`: sheet-level chrome for paywall surfaces.
+- `KikiPaywallShell`: sheet/content-level chrome for paywall surfaces.
+- `KikiPaywallWindowController`: optional standalone window presenter.
 - `KikiPaywallHeader`: icon, title, and subtitle block.
 - `KikiPaywallPlan`: display-only plan model.
 - `KikiPaywallPlanCard`: selectable plan card.
 - `KikiPaywallFeatureRow`: reusable benefit row.
 - `KikiPaywallStatItem`: compact stat display.
 - `KikiPaywallActionLabel`: primary/secondary action label with loading state.
-- `KikiPaywallDefaults`: default sheet sizes and padding.
+- `KikiPaywallDefaults`: default sheet/window sizes and padding.
 
 ## TODO & Checklist
 
