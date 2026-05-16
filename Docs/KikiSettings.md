@@ -26,6 +26,18 @@
 - Launch at Login lives in `KikiSettings` because it is a settings-screen concern for simple menu bar apps.
 - `KikiSettingsUI` is kept only as a deprecated compatibility layer. New apps should use the shell and row components directly.
 
+## Source Layout
+
+- `KikiSettingsShell.swift`: defaults, tab specs, navigation model, and top-level shell.
+- `KikiSettingsPane.swift`: pane chrome, helper text, spacing, and shared colors.
+- `KikiSettingsRows.swift`: status, link, copy, and row label/content views.
+- `KikiAboutPane.swift`: app identity and About pane layout.
+- `KikiSettingsApplications.swift`: application row and running application picker.
+- `KikiSettingsActions.swift`: public action wrapper for shared AppKit helpers.
+- `KikiSettingsCompatibility.swift`: deprecated `KikiSettingsUI` shim.
+- `KikiSettingsWindow.swift`: Settings scene window preparation and opening helpers.
+- `LaunchAtLogin.swift`: login item state and toggle support.
+
 ## TODO & Checklist
 
 - Keep Command Reopen-specific settings tabs in the app target.

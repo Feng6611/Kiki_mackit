@@ -82,6 +82,11 @@ struct KikiSettingsTests {
             application.mainMenu = originalMainMenu
         }
 
+        var disabledPerformCount = 0
+        let disabledTarget = SettingsMenuTarget {
+            disabledPerformCount += 1
+        }
+
         var performCount = 0
         let target = SettingsMenuTarget {
             performCount += 1
@@ -94,14 +99,23 @@ struct KikiSettingsTests {
         let appMenu = NSMenu(title: "App")
         appMenu.autoenablesItems = false
 
+        let disabledSettingsItem = NSMenuItem(
+            title: "Settings...",
+            action: #selector(SettingsMenuTarget.performSettingsAction),
+            keyEquivalent: ","
+        )
+        disabledSettingsItem.target = disabledTarget
+        disabledSettingsItem.isEnabled = false
+
         let settingsItem = NSMenuItem(
             title: "Preferences...",
             action: #selector(SettingsMenuTarget.performSettingsAction),
-            keyEquivalent: ","
+            keyEquivalent: ""
         )
         settingsItem.target = target
         settingsItem.isEnabled = true
 
+        appMenu.addItem(disabledSettingsItem)
         appMenu.addItem(settingsItem)
         appMenuItem.submenu = appMenu
         mainMenu.addItem(appMenuItem)
@@ -109,6 +123,7 @@ struct KikiSettingsTests {
 
         KikiSettingsOpener().open(preparesWindow: false)
 
+        #expect(disabledPerformCount == 0)
         #expect(performCount == 1)
     }
 }
