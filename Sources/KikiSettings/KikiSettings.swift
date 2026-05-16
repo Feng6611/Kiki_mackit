@@ -1,4 +1,5 @@
 import AppKit
+import KikiCore
 import SwiftUI
 
 public enum KikiSettingsDefaults {
@@ -443,11 +444,7 @@ public struct KikiSettingsApplicationPicker<Applications: RandomAccessCollection
 
 public enum KikiSettingsActions {
     public static func openURL(_ urlString: String) {
-        guard let url = URL(string: urlString) else {
-            return
-        }
-
-        NSWorkspace.shared.open(url)
+        KikiURLActions.open(urlString)
     }
 }
 
@@ -631,13 +628,7 @@ public final class KikiSettingsWindowController {
     }
 
     private func activateApp() {
-        NSRunningApplication.current.activate(options: [.activateIgnoringOtherApps])
-
-        if #available(macOS 14.0, *) {
-            NSApplication.shared.activate()
-        } else {
-            NSApplication.shared.activate(ignoringOtherApps: true)
-        }
+        KikiAppActivation.activate()
     }
 
     private var visibleSettingsWindows: [NSWindow] {
@@ -696,6 +687,9 @@ public final class KikiSettingsOpener {
             return
         }
 
+        // SwiftUI's Settings scene does not expose a public imperative opener,
+        // so this mirrors the selector AppKit installs for the standard menu
+        // item after the explicit menu search above has failed.
         NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
     }
 

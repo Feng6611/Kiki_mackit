@@ -33,6 +33,22 @@ It should not provide:
 
 - Product-specific colors, copy, layout, state, menu content, settings tabs, window lifecycle, or purchase logic.
 
+### KikiCore
+
+`KikiCore` is an internal SwiftPM target for package-shared AppKit edge
+helpers. It is not a public library product and should not grow into a general
+utility layer.
+
+It should provide:
+
+- Package-private wrappers for repeated system actions used by multiple Kiki
+  targets, such as opening URLs and activating the current app.
+
+It should not provide:
+
+- Public app-facing API, UI primitives, business logic, persistence, networking,
+  analytics, or product-specific state.
+
 ### KikiWindow
 
 `KikiWindow` owns AppKit window presentation infrastructure.
@@ -204,6 +220,7 @@ Primary API:
 
 ## Directory Map
 
+- `Sources/KikiCore`: package-private AppKit helpers shared by library targets.
 - `Sources/KikiDesign`: Shared visual material/glass primitives.
 - `Sources/KikiWindow`: AppKit window presenters and transparent window bridge.
 - `Sources/KikiSettings`: Settings shell, rows, launch-at-login, settings window opening helpers.

@@ -1,3 +1,4 @@
+import AppKit
 import KikiSettings
 import SwiftUI
 import Testing
@@ -70,5 +71,57 @@ struct KikiSettingsTests {
                 }
             }
         }
+    }
+
+    @MainActor
+    @Test("Settings opener performs standard settings item from the main menu")
+    func settingsOpenerPerformsStandardSettingsItemFromMainMenu() {
+        let application = NSApplication.shared
+        let originalMainMenu = application.mainMenu
+        defer {
+            application.mainMenu = originalMainMenu
+        }
+
+        var performCount = 0
+        let target = SettingsMenuTarget {
+            performCount += 1
+        }
+
+        let mainMenu = NSMenu(title: "Main")
+        mainMenu.autoenablesItems = false
+
+        let appMenuItem = NSMenuItem()
+        let appMenu = NSMenu(title: "App")
+        appMenu.autoenablesItems = false
+
+        let settingsItem = NSMenuItem(
+            title: "Preferences...",
+            action: #selector(SettingsMenuTarget.performSettingsAction),
+            keyEquivalent: ","
+        )
+        settingsItem.target = target
+        settingsItem.isEnabled = true
+
+        appMenu.addItem(settingsItem)
+        appMenuItem.submenu = appMenu
+        mainMenu.addItem(appMenuItem)
+        application.mainMenu = mainMenu
+
+        KikiSettingsOpener().open(preparesWindow: false)
+
+        #expect(performCount == 1)
+    }
+}
+
+@MainActor
+private final class SettingsMenuTarget: NSObject {
+    private let action: () -> Void
+
+    init(action: @escaping () -> Void) {
+        self.action = action
+    }
+
+    @objc func performSettingsAction() {
+        action()
     }
 }

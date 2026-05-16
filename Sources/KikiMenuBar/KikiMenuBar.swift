@@ -1,4 +1,5 @@
 import AppKit
+import KikiCore
 import SwiftUI
 
 public struct KikiMenuShortcut: Equatable {
@@ -363,11 +364,7 @@ public final class KikiMenuBarPopoverController<Content: View>: NSObject {
 
 public enum KikiMenuActions {
     public static func openURL(_ urlString: String) {
-        guard let url = URL(string: urlString) else {
-            return
-        }
-
-        NSWorkspace.shared.open(url)
+        KikiURLActions.open(urlString)
     }
 }
 

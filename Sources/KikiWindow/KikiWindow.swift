@@ -1,4 +1,5 @@
 import AppKit
+import KikiCore
 import SwiftUI
 
 public struct KikiWindowButtonVisibility: OptionSet, Sendable {
@@ -242,8 +243,7 @@ public final class KikiSingleWindowController<Content: View>: NSObject, NSWindow
         window.makeKeyAndOrderFront(nil)
 
         if configuration.activatesAppOnShow {
-            NSRunningApplication.current.activate(options: [.activateIgnoringOtherApps])
-            NSApp.activate(ignoringOtherApps: true)
+            KikiAppActivation.activate()
         }
     }
 

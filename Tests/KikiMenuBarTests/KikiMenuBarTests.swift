@@ -67,6 +67,26 @@ struct KikiMenuBarTests {
     }
 
     @MainActor
+    @Test("Toggle items map state and enabled flags into NSMenuItems")
+    func toggleItemsMapStateAndEnabledFlagsIntoMenuItems() throws {
+        let controller = KikiMenuBarController(title: "Kiki Test") {
+            [
+                .toggle(title: "Enabled Feature", isOn: true, isEnabled: true) {},
+                .toggle(title: "Disabled Feature", isOn: false, isEnabled: false) {}
+            ]
+        }
+
+        let menu = controller.makeMenu()
+        let enabled = try #require(menu.item(at: 0))
+        let disabled = try #require(menu.item(at: 1))
+
+        #expect(enabled.state == .on)
+        #expect(enabled.isEnabled)
+        #expect(disabled.state == .off)
+        #expect(!disabled.isEnabled)
+    }
+
+    @MainActor
     @Test("Built menu retains action targets after rebuilding")
     func builtMenuRetainsActionTargetsAfterRebuilding() throws {
         var performCount = 0

@@ -20,6 +20,10 @@ Use separate products for the UI surfaces:
 - Xcode and SwiftPM can still resolve one remote package URL.
 - Commerce can evolve independently in `RevenueCatCommerceKit`.
 
+The package also contains an internal `KikiCore` target for small AppKit system
+helpers shared by those products. It is intentionally not exposed as a library
+product.
+
 ## Remote Usage
 
 After pushing this package to a remote repository, consume it from another app with SwiftPM:

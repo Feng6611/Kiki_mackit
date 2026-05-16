@@ -15,10 +15,11 @@ let package = Package(
         .library(name: "KikiPaywall", targets: ["KikiPaywall"])
     ],
     targets: [
+        .target(name: "KikiCore"),
         .target(name: "KikiDesign"),
-        .target(name: "KikiWindow"),
-        .target(name: "KikiSettings"),
-        .target(name: "KikiMenuBar"),
+        .target(name: "KikiWindow", dependencies: ["KikiCore"]),
+        .target(name: "KikiSettings", dependencies: ["KikiCore"]),
+        .target(name: "KikiMenuBar", dependencies: ["KikiCore"]),
         .target(name: "KikiPaywall", dependencies: ["KikiDesign", "KikiWindow"]),
         .testTarget(name: "KikiDesignTests", dependencies: ["KikiDesign"]),
         .testTarget(name: "KikiWindowTests", dependencies: ["KikiWindow"]),
