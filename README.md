@@ -29,7 +29,7 @@ product.
 After pushing this package to a remote repository, consume it from another app with SwiftPM:
 
 ```swift
-.package(url: "https://github.com/Feng6611/Kiki_mackit.git", from: "0.2.0")
+.package(url: "https://github.com/Feng6611/Kiki_mackit.git", from: "0.4.0")
 ```
 
 Then add only the required products to the app target:
