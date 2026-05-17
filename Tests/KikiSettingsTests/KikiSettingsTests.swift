@@ -43,8 +43,29 @@ struct KikiSettingsTests {
                     Section("Status") {
                         KikiSettingsStatusRow(
                             title: "Summary",
-                            value: "Ready",
-                            systemImage: "checkmark.circle"
+                            value: "Ready"
+                        )
+                        KikiSettingsToggleRow("Enabled", isOn: .constant(true))
+                        KikiSettingsSegmentedPickerRow(
+                            "Mode",
+                            selection: .constant(2),
+                            options: [1, 2, 3],
+                            leadingCaption: "Low",
+                            trailingCaption: "High",
+                            optionTitle: { "\($0)" }
+                        )
+                        KikiSettingsStepperRow(
+                            "Limit",
+                            value: .constant(10),
+                            in: 1...60,
+                            valueText: { "\($0) min" }
+                        )
+                        KikiSettingsSliderRow(
+                            "Intensity",
+                            value: .constant(0.65),
+                            in: 0...1,
+                            step: 0.05,
+                            valueText: { "\(Int(($0 * 100).rounded()))%" }
                         )
                         KikiSettingsHelperText("Helper copy.")
                     }

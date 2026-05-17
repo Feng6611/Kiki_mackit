@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Refined `KikiOverlay` toasts into a more compact Raycast-like material
+  treatment with smaller accent icons and success palette support.
+
+### Added
+
+- Added the `KikiTriggerCorner` product for reusable trigger-corner geometry,
+  dwell/cooldown state, and AppKit pointer-location monitoring.
+
 ## 0.4.0 - 2026-05-16
 
 ### Added

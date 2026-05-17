@@ -6,7 +6,10 @@
 - `KikiSettingsTabSpec`: app-owned tab metadata (`tab`, `title`, `systemImage`) consumed by the shell.
 - `KikiSettingsPane`: grouped `Form` pane chrome with standard scene padding and top alignment.
 - `KikiAboutPane`: reusable app identity, status, and links layout based on Command Reopen's About settings.
-- `KikiSettingsStatusRow`, `KikiSettingsLinkRow`, `KikiSettingsCopyRow`, and `KikiSettingsHelperText` for common settings rows.
+- `KikiSettingsValueRow`, `KikiSettingsStatusRow`, `KikiSettingsToggleRow`,
+  `KikiSettingsSegmentedPickerRow`, `KikiSettingsStepperRow`,
+  `KikiSettingsSliderRow`, `KikiSettingsLinkRow`, `KikiSettingsCopyRow`, and
+  `KikiSettingsHelperText` for common settings rows.
 - Settings window activation, sizing, and frame autosave helpers.
 - Settings opener that can either prepare the window itself or only trigger the Settings scene after app state is prepared.
 - Generic settings navigation model.
@@ -30,7 +33,8 @@
 
 - `KikiSettingsShell.swift`: defaults, tab specs, navigation model, and top-level shell.
 - `KikiSettingsPane.swift`: pane chrome, helper text, spacing, and shared colors.
-- `KikiSettingsRows.swift`: status, link, copy, and row label/content views.
+- `KikiSettingsRows.swift`: value, status, control, link, copy, and row
+  label/content views.
 - `KikiAboutPane.swift`: app identity and About pane layout.
 - `KikiSettingsApplications.swift`: application row and running application picker.
 - `KikiSettingsActions.swift`: public action wrapper for shared AppKit helpers.

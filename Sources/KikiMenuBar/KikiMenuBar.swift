@@ -135,6 +135,21 @@ public final class KikiMenuBarController: NSObject {
         button.image = image
     }
 
+    public func updateButtonState(isActive: Bool) {
+        guard let button = statusItem.button else {
+            return
+        }
+        button.state = isActive ? .on : .off
+    }
+
+    public func updateButtonTint(_ tintColor: NSColor?) {
+        statusItem.button?.contentTintColor = tintColor
+    }
+
+    public func updateButtonTooltip(_ tooltip: String) {
+        statusItem.button?.toolTip = tooltip
+    }
+
     private func configureStatusItem(
         autosaveName: String?,
         systemImageName: String?,

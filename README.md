@@ -9,6 +9,9 @@ Reusable macOS menu bar app components for small Kiki apps.
 - `KikiPaywall`: lightweight paywall models and SwiftUI presentation components.
 - `KikiDesign`: adaptive glass/material surface primitives shared across app surfaces.
 - `KikiWindow`: AppKit window presenters and SwiftUI hosting utilities.
+- `KikiOverlay`: non-interactive screen overlay feedback and Kiki material toasts.
+- `KikiTriggerCorner`: reusable trigger-corner geometry, dwell state, and AppKit
+  monitor for host-owned actions.
 
 ## Repository Shape
 
@@ -39,7 +42,9 @@ Then add only the required products to the app target:
 .product(name: "KikiMenuBar", package: "Kiki_mackit"),
 .product(name: "KikiPaywall", package: "Kiki_mackit"),
 .product(name: "KikiDesign", package: "Kiki_mackit"),
-.product(name: "KikiWindow", package: "Kiki_mackit")
+.product(name: "KikiWindow", package: "Kiki_mackit"),
+.product(name: "KikiOverlay", package: "Kiki_mackit"),
+.product(name: "KikiTriggerCorner", package: "Kiki_mackit")
 ```
 
 For local development, keep using the path dependency:
@@ -50,7 +55,7 @@ For local development, keep using the path dependency:
 
 ## Starter Follow-Up
 
-The starter should depend on `Kiki_mackit` and own app-specific flow glue such as first launch, onboarding, entitlement store, settings tabs, menu labels, app links, and paywall plan configuration.
+The starter should depend on `Kiki_mackit` and own app-specific flow glue such as first launch, onboarding, entitlement store, settings tabs, menu labels, app links, trigger-corner actions, and paywall plan configuration.
 
 Apps that need RevenueCat should also depend on `RevenueCatCommerceKit`:
 

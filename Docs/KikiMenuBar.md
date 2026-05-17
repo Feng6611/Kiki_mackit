@@ -3,7 +3,8 @@
 ## Feature List
 
 - Owns `NSStatusItem` lifecycle for menu bar apps.
-- Supports system symbol image, tooltip, autosave name, and dynamic menu generation.
+- Supports system symbol image, active/inactive status item state, optional
+  template tint, tooltip, autosave name, and dynamic menu generation.
 - Supports action items, toggle items, link items, status items, standard settings/about/quit items, separators, disabled state, and keyboard shortcuts.
 - Supports SwiftUI popover menu bar apps through `KikiMenuBarPopoverController`.
 
@@ -12,6 +13,9 @@
 - AppKit-first because menu bar behavior is based on `NSStatusItem` and `NSMenu`.
 - The app supplies menu items or popover content through closures so product-specific state stays outside the package.
 - Menu item actions are closures, not selectors, to keep app adapters small.
+- Lock/unlock-style modes should prefer one stable status symbol plus
+  `updateButtonState(isActive:)` and, when the active state is too subtle,
+  `updateButtonTint(_:)` over swapping unrelated symbols.
 - `KikiMenuBarPopoverController` owns only the AppKit bridge: status item, popover, hosting controller, sizing, and show/close behavior. Product popover UI stays in app code.
 - Popovers are not standalone windows in Kiki's API model. Use `KikiWindow`
   only for independent utility/help/onboarding/paywall windows.

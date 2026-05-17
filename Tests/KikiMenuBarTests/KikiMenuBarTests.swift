@@ -87,6 +87,23 @@ struct KikiMenuBarTests {
     }
 
     @MainActor
+    @Test("Status button active state is updateable")
+    func statusButtonActiveStateIsUpdateable() {
+        let controller = KikiMenuBarController(
+            title: "Kiki Test",
+            systemImageName: "keyboard"
+        ) {
+            [.status(title: "Ready")]
+        }
+
+        controller.updateButtonState(isActive: true)
+        controller.updateButtonTint(.systemOrange)
+        controller.updateButtonState(isActive: false)
+        controller.updateButtonTint(nil)
+        controller.updateButtonTooltip("Kiki Test: ready")
+    }
+
+    @MainActor
     @Test("Built menu retains action targets after rebuilding")
     func builtMenuRetainsActionTargetsAfterRebuilding() throws {
         var performCount = 0

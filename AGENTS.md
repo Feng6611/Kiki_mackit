@@ -1,6 +1,7 @@
 # Kiki_mackit Agent Notes
 
-This repository is a Swift package for reusable macOS UI building blocks.
+This repository is a Swift package for reusable macOS app shell, UI, and small
+platform building blocks.
 
 ## Package Boundary
 
@@ -14,7 +15,36 @@ Do not add product-specific business logic:
 - Commerce belongs in the standalone `RevenueCatCommerceKit` repository.
 - Do not add app-specific copy, paywall policy, entitlement state, clipboard/history logic, analytics, networking, persistence, or distribution branching.
 
-Prefer small, package-local changes that preserve and clarify the public surfaces of `KikiDesign`, `KikiWindow`, `KikiMenuBar`, `KikiSettings`, and `KikiPaywall`.
+Prefer small, package-local changes that preserve and clarify the public surfaces of `KikiDesign`, `KikiWindow`, `KikiMenuBar`, `KikiSettings`, `KikiPaywall`, `KikiOverlay`, and `KikiTriggerCorner`.
+
+## Naming and API Design
+
+Name modules and types by their design role, not by a loose product analogy.
+Prefer precise component semantics over familiar but overloaded names.
+
+- Use `Overlay` for non-interactive surfaces layered over the current screen or
+  app content.
+- Use `HUD` only for instrument-like heads-up displays that primarily present
+  dense status or controls.
+- Use `Toast` only for a compact temporary message surface.
+- Use `Window` only when the component owns normal AppKit window presentation.
+- Use `Surface` for reusable material/glass/chrome treatment without lifecycle.
+
+Public Kiki APIs should expose design intent first and implementation detail
+second. Prefer names such as `KikiScreenEdgeOverlayController` over generic
+names such as `KikiHUDController` when the component is specifically a
+screen-edge overlay.
+
+When adding a component:
+
+- Keep product copy, business state, colors with product meaning, and policy in
+  the host app.
+- Put reusable visual language, platform bridge behavior, defaults, and
+  presentation types in Kiki.
+- Provide semantic presets for common behavior, plus configuration for apps that
+  need to tune copy, color, timing, and intensity.
+- Avoid adding a new module if an existing module already owns the exact design
+  role; add one when the role is distinct enough that the name clarifies the API.
 
 ## Component Roles
 
@@ -32,6 +62,47 @@ It should provide:
 It should not provide:
 
 - Product-specific colors, copy, layout, state, menu content, settings tabs, window lifecycle, or purchase logic.
+
+### KikiOverlay
+
+`KikiOverlay` owns reusable non-interactive overlay presentation.
+
+It should provide:
+
+- Global screen-edge overlay feedback for transient or persistent app modes.
+- Kiki material toast presentation paired with edge feedback.
+- AppKit `NSPanel` lifecycle needed for all-Spaces, full-screen-compatible,
+  non-activating overlays.
+- Semantic presets for common mode transitions such as lock started, lock ended,
+  and warning.
+- Tunable style values for timing, intensity, material shape, glow depth, and
+  panel level.
+
+It should not provide:
+
+- Product-specific status names, keyboard shortcuts, entitlement policy, or
+  input-lock behavior.
+- Interactive controls, normal windows, menu bar popovers, settings panes,
+  analytics, networking, or persistence.
+
+### KikiTriggerCorner
+
+`KikiTriggerCorner` owns reusable macOS trigger-corner detection.
+
+It should provide:
+
+- User-facing corner choices.
+- Multi-display corner geometry.
+- Dwell, cooldown, and re-arm behavior.
+- AppKit polling for `NSEvent.mouseLocation` and `NSScreen` frames.
+- Test seams for pointer location, screen frames, and time.
+
+It should not provide:
+
+- Product-specific actions, access gating, analytics, persistence, onboarding,
+  or entitlement policy.
+- Input suppression, `CGEventTap` installation, hotkey registration, overlays,
+  toast copy, or settings UI.
 
 ### KikiCore
 
@@ -76,7 +147,8 @@ It should provide:
 - Top tab shell via `KikiSettingsShell`.
 - Standard settings pane chrome via `KikiSettingsPane`.
 - About pane structure via `KikiAboutPane`.
-- Common rows such as status, link, copy, helper text, app identity, app picker rows.
+- Common rows such as status, link, copy, helper text, app identity, app picker
+  rows.
 - Default Settings window dimensions and AppKit open/restore helpers.
 - Launch-at-login UI helpers for simple menu bar apps.
 
@@ -103,6 +175,8 @@ It should provide:
 
 - `NSStatusItem` lifecycle management.
 - Status item icon, tooltip, autosave name, and accessibility description.
+- Status item active/inactive state and optional tint when an app needs one
+  symbol to express two modes.
 - Native menu item declaration for common menu semantics: action, toggle, link, status, settings, about, quit, separator.
 - Standard shortcut expression via `KikiMenuShortcut`.
 - SwiftUI popover hosting through `NSPopover` and `NSHostingController`.
@@ -197,6 +271,36 @@ Primary API:
 
 Keep this target display-oriented. If an API needs network, receipt, entitlement, customer info, or product-fetching behavior, it belongs outside Kiki_mackit.
 
+### `Sources/KikiOverlay`
+
+Primary API:
+
+- `KikiScreenEdgeOverlayBehavior`
+- `KikiScreenEdgeOverlayMotion`
+- `KikiScreenEdgeOverlayStyle`
+- `KikiScreenEdgeOverlayPresentation`
+- `KikiScreenEdgeOverlayPalette`
+- `KikiScreenEdgeOverlayController`
+
+Keep this target focused on non-interactive visual feedback overlays. If an API
+needs app state, input policy, shortcut copy, or product-specific status
+semantics, it belongs in the host app.
+
+### `Sources/KikiTriggerCorner`
+
+Primary API:
+
+- `KikiTriggerCorner`
+- `KikiTriggerCornerConfiguration`
+- `KikiTriggerCornerMonitor`
+- `KikiTriggerCornerGeometry`
+- `KikiTriggerCornerActivationState`
+
+Keep this target focused on detecting a dwell in a screen corner and invoking a
+host-owned callback. If an API needs business policy, settings persistence,
+input suppression, or visual feedback, it belongs in the host app or another
+focused Kiki target.
+
 ### `Sources/KikiDesign`
 
 Primary API:
@@ -226,11 +330,15 @@ Primary API:
 - `Sources/KikiSettings`: Settings shell, rows, launch-at-login, settings window opening helpers.
 - `Sources/KikiMenuBar`: Menu bar status item, native menu item model, SwiftUI popover controller.
 - `Sources/KikiPaywall`: Paywall display components and display models.
+- `Sources/KikiOverlay`: Non-interactive screen overlay presenters and display models.
+- `Sources/KikiTriggerCorner`: Trigger-corner geometry, dwell state, and monitor.
 - `Tests/KikiDesignTests`: Design API construction tests.
 - `Tests/KikiWindowTests`: Window configuration and presenter construction tests.
 - `Tests/KikiSettingsTests`: Settings API construction and state tests.
 - `Tests/KikiMenuBarTests`: Menu item, shortcut, controller, and popover construction tests.
 - `Tests/KikiPaywallTests`: Paywall display model tests.
+- `Tests/KikiOverlayTests`: Overlay presentation and controller construction tests.
+- `Tests/KikiTriggerCornerTests`: Trigger-corner geometry, activation, and monitor tests.
 - `Docs`: Human-readable component notes. Update docs when public API or component boundaries change.
 
 ## Working Rules
