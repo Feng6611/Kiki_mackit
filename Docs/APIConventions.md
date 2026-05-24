@@ -14,6 +14,7 @@ Kiki provides APIs for repeated Mac app mechanics:
 - paywall presentation primitives
 - non-interactive overlay presentation
 - trigger-corner detection
+- privacy permission status and System Settings authorization helpers
 - shared visual surface primitives
 
 Business apps provide product meaning:
@@ -98,6 +99,12 @@ and when it appears.
 Provides trigger-corner geometry, dwell, cooldown, and re-arm mechanics. Apps
 own what action is triggered.
 
+### KikiAuthorization
+
+Provides privacy-permission status checks, System Settings routing, and a
+draggable app helper overlay. Apps own why permission is needed, when to ask,
+what failure means, and how recovery is routed.
+
 ### KikiDesign
 
 Provides reusable visual surface primitives. Apps own product color meaning and
@@ -118,4 +125,3 @@ Before adding or changing public Kiki API:
 - Is the public name based on the API role?
 - Is the behavior covered by package tests?
 - Does the README or module doc need an API note?
-

@@ -12,6 +12,8 @@ Reusable macOS menu bar app components for small Kiki apps.
 - `KikiOverlay`: non-interactive screen overlay feedback and Kiki material toasts.
 - `KikiTriggerCorner`: reusable trigger-corner geometry, dwell state, and AppKit
   monitor for host-owned actions.
+- `KikiAuthorization`: privacy-permission status helpers, System Settings
+  routing, and a draggable app helper overlay for manual authorization.
 
 ## Repository Shape
 
@@ -47,8 +49,15 @@ Then add only the required products to the app target:
 .product(name: "KikiDesign", package: "Kiki_mackit"),
 .product(name: "KikiWindow", package: "Kiki_mackit"),
 .product(name: "KikiOverlay", package: "Kiki_mackit"),
-.product(name: "KikiTriggerCorner", package: "Kiki_mackit")
+.product(name: "KikiTriggerCorner", package: "Kiki_mackit"),
+.product(name: "KikiAuthorization", package: "Kiki_mackit")
 ```
 
 Local path development and product app dependency policy are workspace concerns;
 keep those rules outside this package.
+
+## References
+
+`KikiAuthorization` is independently implemented for Kiki and inspired by
+[zats/permiso](https://github.com/zats/permiso), which demonstrates a draggable
+app helper for macOS privacy permission setup.
