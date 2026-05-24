@@ -27,6 +27,9 @@ The package also contains an internal `KikiCore` target for small AppKit system
 helpers shared by those products. It is intentionally not exposed as a library
 product.
 
+See [Docs/APIConventions.md](Docs/APIConventions.md) for public API boundaries
+and extraction rules.
+
 ## Remote Usage
 
 After pushing this package to a remote repository, consume it from another app with SwiftPM:
@@ -47,20 +50,5 @@ Then add only the required products to the app target:
 .product(name: "KikiTriggerCorner", package: "Kiki_mackit")
 ```
 
-For local development, keep using the path dependency:
-
-```swift
-.package(path: "Packages/Kiki_mackit")
-```
-
-## Starter Follow-Up
-
-The starter should depend on `Kiki_mackit` and own app-specific flow glue such as first launch, onboarding, entitlement store, settings tabs, menu labels, app links, trigger-corner actions, and paywall plan configuration.
-
-Apps that need RevenueCat should also depend on `RevenueCatCommerceKit`:
-
-```swift
-    .package(url: "https://github.com/Feng6611/RevenueCatCommerceKit.git", exact: "0.1.0")
-```
-
-Keep product-specific RevenueCat configuration, trial policy, app access state, and product-specific analytics in the host app or starter.
+Local path development and product app dependency policy are workspace concerns;
+keep those rules outside this package.

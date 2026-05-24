@@ -17,6 +17,10 @@ Do not add product-specific business logic:
 
 Prefer small, package-local changes that preserve and clarify the public surfaces of `KikiDesign`, `KikiWindow`, `KikiMenuBar`, `KikiSettings`, `KikiPaywall`, `KikiOverlay`, and `KikiTriggerCorner`.
 
+Read `Docs/APIConventions.md` before changing public API. Kiki only exposes APIs
+for business apps to call; adoption workflow, product skeletons, and app-specific
+development practices belong in the workspace or starter, not in this package.
+
 ## Naming and API Design
 
 Name modules and types by their design role, not by a loose product analogy.
