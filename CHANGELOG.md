@@ -4,6 +4,9 @@
 
 ### Changed
 
+- Kept `KikiSettingsOpener.openForMenuBarApp()` in accessory mode when opening
+  SwiftUI Settings for menu bar apps, matching Command Reopen's approach and
+  avoiding temporary Dock icons.
 - Refined `KikiOverlay` toasts into a more compact Raycast-like material
   treatment with smaller accent icons and success palette support.
 

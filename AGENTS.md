@@ -153,7 +153,9 @@ It should provide:
 - About pane structure via `KikiAboutPane`.
 - Common rows such as status, link, copy, helper text, app identity, app picker
   rows.
-- Default Settings window dimensions and AppKit open/restore helpers.
+- Default Settings window dimensions and AppKit opening helpers.
+- Menu bar app Settings helper that opens the real SwiftUI Settings scene
+  without switching the app to Dock-visible regular mode.
 - Launch-at-login UI helpers for simple menu bar apps.
 
 It should not provide:

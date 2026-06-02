@@ -4,6 +4,12 @@ import AppKit
 package enum KikiAppActivation {
     package static func activate() {
         if #available(macOS 14.0, *) {
+            if let frontmostApplication = NSWorkspace.shared.frontmostApplication,
+               frontmostApplication.processIdentifier != ProcessInfo.processInfo.processIdentifier,
+               NSRunningApplication.current.activate(from: frontmostApplication) {
+                return
+            }
+
             NSApplication.shared.activate()
         } else {
             NSApplication.shared.activate(ignoringOtherApps: true)

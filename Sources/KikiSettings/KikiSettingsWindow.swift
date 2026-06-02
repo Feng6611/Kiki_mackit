@@ -5,7 +5,7 @@ import KikiCore
 public final class KikiSettingsWindowController {
     private let frameAutosaveName: NSWindow.FrameAutosaveName
     private let minimumContentSize: CGSize
-    private let windowTitle: String
+    fileprivate let windowTitle: String
 
     public init(
         frameAutosaveName: String,
@@ -21,7 +21,7 @@ public final class KikiSettingsWindowController {
     }
 
     public var isVisible: Bool {
-        visibleSettingsWindows.isEmpty == false
+        visibleSettingsWindows().isEmpty == false
     }
 
     public func prepareForSettingsScene() {
@@ -35,14 +35,38 @@ public final class KikiSettingsWindowController {
         KikiAppActivation.activate()
     }
 
-    private var visibleSettingsWindows: [NSWindow] {
-        NSApp.windows.filter { window in
-            window.isVisible && window.title == windowTitle
+    fileprivate func visibleSettingsWindows(excluding excludedWindowNumbers: Set<Int> = []) -> [NSWindow] {
+        let visibleWindows = NSApp.windows.filter { window in
+            window.isVisible
+                && window.isMiniaturized == false
+                && window.level == .normal
+                && excludedWindowNumbers.contains(window.windowNumber) == false
         }
+
+        let titleMatches = visibleWindows.filter { window in
+            window.title == windowTitle
+                || window.title.localizedCaseInsensitiveContains(windowTitle)
+        }
+
+        if titleMatches.isEmpty == false {
+            return titleMatches
+        }
+
+        if let keyWindow = NSApp.keyWindow,
+           visibleWindows.contains(keyWindow) {
+            return [keyWindow]
+        }
+
+        if let mainWindow = NSApp.mainWindow,
+           visibleWindows.contains(mainWindow) {
+            return [mainWindow]
+        }
+
+        return visibleWindows
     }
 
     private func restoreSettingsWindowFrame() {
-        for window in visibleSettingsWindows {
+        for window in visibleSettingsWindows() {
             window.contentMinSize = minimumContentSize
             window.center()
             window.setFrameUsingName(frameAutosaveName)
@@ -95,6 +119,13 @@ public final class KikiSettingsOpener {
         // so this mirrors the selector AppKit installs for the standard menu
         // item after the explicit menu search above has failed.
         NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+    }
+
+    public func openForMenuBarApp(preparesWindow: Bool = true) {
+        open(preparesWindow: preparesWindow)
+        DispatchQueue.main.async { [weak windowController] in
+            windowController?.prepareForSettingsScene()
+        }
     }
 
     private func performMainMenuSettingsItem() -> Bool {

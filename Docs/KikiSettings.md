@@ -12,6 +12,7 @@
   `KikiSettingsHelperText` for common settings rows.
 - Settings window activation, sizing, and frame autosave helpers.
 - Settings opener that can either prepare the window itself or only trigger the Settings scene after app state is prepared.
+- Menu bar app Settings helper that keeps accessory mode and avoids a Dock icon.
 - Generic settings navigation model.
 - Launch at Login state and toggle support for settings screens.
 - App identity, application row, and running application picker components.
@@ -23,6 +24,9 @@
 - Apps own tab definitions, business state, bindings, actions, and product-specific copy.
 - Window dimensions have Command Reopen-inspired defaults (`540 x 560`) but remain app-overridable through `KikiSettingsShell(width:height:)` and `KikiSettingsWindowController(minimumContentSize:)`.
 - AppKit remains responsible for window activation and autosaved frames.
+- Menu bar apps should open Settings with `KikiSettingsOpener.openForMenuBarApp()`.
+  It must keep the current activation policy and should not switch to `.regular`
+  just to foreground Settings, because that creates a temporary Dock icon.
 - Settings visuals may reuse `KikiDesign`, but Settings lifecycle stays tied to
   native `Settings {}` unless an app explicitly chooses a custom window scene.
 - Window preparation and Settings scene opening stay separate so app adapters can inject business state before showing UI.
