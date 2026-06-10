@@ -1,11 +1,46 @@
 import AppKit
+import KikiDesign
 import SwiftUI
+
+public enum KikiSettingsStatusTone {
+    case neutral
+    case success
+    case warning
+    case accent
+
+    var foregroundStyle: Color {
+        switch self {
+        case .neutral:
+            return .secondary
+        case .success:
+            return .green
+        case .warning:
+            return .orange
+        case .accent:
+            return Color(red: 0.58, green: 0.20, blue: 0.62)
+        }
+    }
+
+    var backgroundStyle: Color {
+        foregroundStyle.opacity(0.12)
+    }
+
+    var usesBadge: Bool {
+        switch self {
+        case .warning, .accent:
+            return true
+        case .neutral, .success:
+            return false
+        }
+    }
+}
 
 public struct KikiSettingsStatusRow: View {
     private let title: String
     private let value: String
     private let systemImage: String?
-    private let valueColor: Color
+    private let tone: KikiSettingsStatusTone
+    private let valueColor: Color?
     private let trailingSystemImage: String?
     private let action: (() -> Void)?
 
@@ -13,13 +48,15 @@ public struct KikiSettingsStatusRow: View {
         title: String,
         value: String,
         systemImage: String? = nil,
-        valueColor: Color = .secondary,
+        tone: KikiSettingsStatusTone = .neutral,
+        valueColor: Color? = nil,
         trailingSystemImage: String? = nil,
         action: (() -> Void)? = nil
     ) {
         self.title = title
         self.value = value
         self.systemImage = systemImage
+        self.tone = tone
         self.valueColor = valueColor
         self.trailingSystemImage = trailingSystemImage
         self.action = action
@@ -32,6 +69,7 @@ public struct KikiSettingsStatusRow: View {
                     rowContent
                 }
                 .buttonStyle(.plain)
+                .focusable(false)
             } else {
                 rowContent
             }
@@ -40,15 +78,72 @@ public struct KikiSettingsStatusRow: View {
 
     private var rowContent: some View {
         KikiSettingsValueRow(title, systemImage: systemImage) {
-            Text(value)
-                .foregroundStyle(valueColor)
-                .lineLimit(1)
+            statusValue
             if let trailingSystemImage {
                 Image(systemName: trailingSystemImage)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(tone.foregroundStyle)
             }
         }
+    }
+
+    @ViewBuilder
+    private var statusValue: some View {
+        if tone.usesBadge {
+            Text(value)
+                .fontWeight(.medium)
+                .foregroundStyle(tone.foregroundStyle)
+                .lineLimit(1)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(
+                    Capsule().fill(tone.backgroundStyle)
+                )
+        } else {
+            Text(value)
+                .foregroundStyle(valueColor ?? tone.foregroundStyle)
+                .lineLimit(1)
+        }
+    }
+}
+
+public struct KikiAuthorizationStatusRow: View {
+    private let title: String
+    private let isAuthorized: Bool
+    private let authorizedValue: String
+    private let unauthorizedValue: String
+    private let systemImage: String
+    private let allowsAuthorizedAction: Bool
+    private let action: (() -> Void)?
+
+    public init(
+        title: String,
+        isAuthorized: Bool,
+        authorizedValue: String = "Allowed",
+        unauthorizedValue: String = "Needed",
+        systemImage: String = "accessibility",
+        allowsAuthorizedAction: Bool = false,
+        action: (() -> Void)? = nil
+    ) {
+        self.title = title
+        self.isAuthorized = isAuthorized
+        self.authorizedValue = authorizedValue
+        self.unauthorizedValue = unauthorizedValue
+        self.systemImage = systemImage
+        self.allowsAuthorizedAction = allowsAuthorizedAction
+        self.action = action
+    }
+
+    public var body: some View {
+        let rowAction = (!isAuthorized || allowsAuthorizedAction) ? action : nil
+        KikiSettingsStatusRow(
+            title: title,
+            value: isAuthorized ? authorizedValue : unauthorizedValue,
+            systemImage: systemImage,
+            tone: isAuthorized ? .success : .warning,
+            trailingSystemImage: rowAction == nil ? nil : "chevron.right",
+            action: rowAction
+        )
     }
 }
 
@@ -289,6 +384,7 @@ public struct KikiSettingsLinkRow: View {
             )
         }
         .buttonStyle(.plain)
+        .focusable(false)
     }
 }
 
@@ -323,6 +419,7 @@ public struct KikiSettingsCopyRow: View {
             )
         }
         .buttonStyle(.plain)
+        .focusable(false)
     }
 }
 

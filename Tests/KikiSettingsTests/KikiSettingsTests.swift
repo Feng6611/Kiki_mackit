@@ -45,6 +45,30 @@ struct KikiSettingsTests {
                             title: "Summary",
                             value: "Ready"
                         )
+                        KikiSettingsStatusRow(
+                            title: "Pro status",
+                            value: "Lifetime Pro",
+                            systemImage: "checkmark.seal",
+                            tone: .accent,
+                            trailingSystemImage: "chevron.right",
+                            action: {}
+                        )
+                        KikiAuthorizationStatusRow(
+                            title: "Accessibility",
+                            isAuthorized: false,
+                            unauthorizedValue: "Needs permission",
+                            action: {}
+                        )
+                        KikiAuthorizationStatusRow(
+                            title: "Accessibility",
+                            isAuthorized: true
+                        )
+                        KikiAuthorizationStatusRow(
+                            title: "Debug accessibility",
+                            isAuthorized: true,
+                            allowsAuthorizedAction: true,
+                            action: {}
+                        )
                         KikiSettingsToggleRow("Enabled", isOn: .constant(true))
                         KikiSettingsSegmentedPickerRow(
                             "Mode",

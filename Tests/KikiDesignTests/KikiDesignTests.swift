@@ -32,4 +32,13 @@ struct KikiDesignTests {
         #expect(KikiSurfaceDefaults.cornerRadius == 12)
         #expect(KikiSurfaceDefaults.tintOpacity == 0.06)
     }
+
+    @MainActor
+    @Test("Design color tokens are constructible")
+    func designColorTokensAreConstructible() {
+        _ = KikiDesignColor.brandAccent
+        _ = KikiDesignColor.systemAccent
+        _ = KikiDesignColor.brand_accent
+        _ = KikiDesignColor.system_accent
+    }
 }

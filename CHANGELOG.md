@@ -12,6 +12,8 @@
 
 ### Added
 
+- Added shared Settings status tones and an authorization status row for
+  reusable permission states in menu bar app Settings.
 - Added the `KikiTriggerCorner` product for reusable trigger-corner geometry,
   dwell/cooldown state, and AppKit pointer-location monitoring.
 

@@ -6,7 +6,8 @@
 - `KikiSettingsTabSpec`: app-owned tab metadata (`tab`, `title`, `systemImage`) consumed by the shell.
 - `KikiSettingsPane`: grouped `Form` pane chrome with standard scene padding and top alignment.
 - `KikiAboutPane`: reusable app identity, status, and links layout based on Command Reopen's About settings.
-- `KikiSettingsValueRow`, `KikiSettingsStatusRow`, `KikiSettingsToggleRow`,
+- `KikiSettingsValueRow`, `KikiSettingsStatusRow`,
+  `KikiAuthorizationStatusRow`, `KikiSettingsToggleRow`,
   `KikiSettingsSegmentedPickerRow`, `KikiSettingsStepperRow`,
   `KikiSettingsSliderRow`, `KikiSettingsLinkRow`, `KikiSettingsCopyRow`, and
   `KikiSettingsHelperText` for common settings rows.
@@ -22,6 +23,13 @@
 - SwiftUI owns settings content because macOS settings screens are naturally form-driven; v1 intentionally stays on the native `Settings {}` scene instead of custom settings windows.
 - The shell owns settings chrome, tab rendering, lazy pane creation, default dimensions, and common row language.
 - Apps own tab definitions, business state, bindings, actions, and product-specific copy.
+- Permission rows expose state and action only; apps own permission prompts,
+  assistant copy, and platform-specific routing. Authorized rows are status-only
+  by default; debug surfaces can pass `allowsAuthorizedAction: true` to make the
+  row clickable while already authorized.
+- Status rows use `KikiDesignColor` tokens for shared color language. Success
+  states such as `Allowed` use colored text only; warning/action states may use
+  a lightweight badge to make the row tappable and recoverable.
 - Window dimensions have Command Reopen-inspired defaults (`540 x 560`) but remain app-overridable through `KikiSettingsShell(width:height:)` and `KikiSettingsWindowController(minimumContentSize:)`.
 - AppKit remains responsible for window activation and autosaved frames.
 - Menu bar apps should open Settings with `KikiSettingsOpener.openForMenuBarApp()`.

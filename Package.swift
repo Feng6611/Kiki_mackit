@@ -21,7 +21,7 @@ let package = Package(
         .target(name: "KikiCore"),
         .target(name: "KikiDesign"),
         .target(name: "KikiWindow", dependencies: ["KikiCore"]),
-        .target(name: "KikiSettings", dependencies: ["KikiCore"]),
+        .target(name: "KikiSettings", dependencies: ["KikiCore", "KikiDesign"]),
         .target(name: "KikiMenuBar", dependencies: ["KikiCore"]),
         .target(name: "KikiPaywall", dependencies: ["KikiDesign", "KikiWindow"]),
         .target(name: "KikiOverlay", dependencies: ["KikiDesign"]),

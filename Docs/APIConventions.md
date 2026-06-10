@@ -107,8 +107,8 @@ what failure means, and how recovery is routed.
 
 ### KikiDesign
 
-Provides reusable visual surface primitives. Apps own product color meaning and
-brand-specific layout.
+Provides reusable visual surface primitives and shared color tokens. Apps own
+product color meaning and brand-specific layout.
 
 ### KikiCore
 

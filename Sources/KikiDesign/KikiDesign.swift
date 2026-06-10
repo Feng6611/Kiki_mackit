@@ -1,8 +1,21 @@
+import AppKit
 import SwiftUI
 
 public enum KikiSurfaceDefaults {
     public static let cornerRadius: CGFloat = 12
     public static let tintOpacity: Double = 0.06
+}
+
+public enum KikiDesignColor {
+    public static let brandAccent = Color(red: 0.58, green: 0.20, blue: 0.62)
+    public static var systemAccent: Color {
+        Color(nsColor: .controlAccentColor)
+    }
+
+    public static let brand_accent = brandAccent
+    public static var system_accent: Color {
+        systemAccent
+    }
 }
 
 public struct KikiMaterialSurface<S: Shape>: View {
