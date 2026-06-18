@@ -1,8 +1,8 @@
 # Kiki API Conventions
 
 `Kiki_mackit` is an API package for business apps. It exposes reusable macOS
-UI and AppKit bridge APIs. It does not own product workflow, business policy,
-or app architecture.
+UI, AppKit bridge APIs, and shared commerce workflow APIs. It does not own
+product-specific business policy or app architecture.
 
 ## Package Role
 
@@ -12,6 +12,7 @@ Kiki provides APIs for repeated Mac app mechanics:
 - Settings shell and common rows
 - single-window AppKit presentation for SwiftUI content
 - paywall presentation primitives
+- paid-access workflow on top of RevenueCatCommerceKit
 - non-interactive overlay presentation
 - trigger-corner detection
 - privacy permission status and System Settings authorization helpers
@@ -21,7 +22,7 @@ Business apps provide product meaning:
 
 - app name, bundle id, links, and copy
 - feature state and settings state
-- purchase, trial, restore, and entitlement policy
+- product IDs, product copy, and access gates
 - onboarding flow
 - menu ordering and product-specific labels
 - app-specific platform behavior
@@ -42,8 +43,8 @@ Good API shape:
 Bad API shape:
 
 - knows a product name;
-- assumes a purchase provider;
-- encodes trial or access policy;
+- assumes a product-specific purchase provider outside `KikiCommerce`;
+- encodes product-specific trial or access policy;
 - hardcodes onboarding behavior;
 - reaches into app-specific storage;
 - performs business routing after a button tap.
@@ -63,8 +64,8 @@ Do not extract when:
 
 - only one app uses it;
 - the behavior is tied to a product goal;
-- the code decides who has access;
-- the code owns purchase, restore, trial, or onboarding state;
+- the code decides what product feature needs access;
+- the code owns product-specific access gates or post-purchase routing;
 - the code depends on a product-specific platform trick.
 
 ## Module Boundaries
@@ -86,8 +87,17 @@ opens, what it contains, and what closing means.
 
 ### KikiPaywall
 
-Provides paywall UI primitives. Apps or commerce packages own product IDs,
-pricing, purchase, restore, trial, and entitlement decisions.
+Provides paywall UI primitives only. It has no RevenueCat dependency. Apps or
+commerce packages own product IDs, pricing, purchase, restore, trial, and
+entitlement decisions.
+
+### KikiCommerce
+
+Provides the shared paid-access state machine and high-level Pro paywall views
+on top of `RevenueCatCommerceKit` and `KikiPaywall`. Apps provide plans,
+storage keys, trial policy, product copy, links, and feature gating;
+`KikiCommerce` owns configure, refresh, offerings, purchase, restore, trial
+start, onboarding completion, and local debug override behavior.
 
 ### KikiOverlay
 
@@ -122,6 +132,8 @@ Before adding or changing public Kiki API:
 - Can a business app call this without product-specific assumptions?
 - Are all app-specific actions supplied by the caller?
 - Are product copy and policy outside Kiki?
+- If the API touches RevenueCat or entitlement state, does it belong in
+  `KikiCommerce` instead of `KikiPaywall`?
 - Is the public name based on the API role?
 - Is the behavior covered by package tests?
 - Does the README or module doc need an API note?

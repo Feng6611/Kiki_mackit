@@ -400,3 +400,386 @@ public struct KikiPaywallActionLabel: View {
         )
     }
 }
+
+public enum KikiPaywallPillTone {
+    case accent
+    case neutral
+    case warning
+    case success
+    case danger
+}
+
+public struct KikiPaywallIconBadge: View {
+    private let systemName: String
+    private let iconColor: Color
+    private let backgroundColor: Color
+    private let size: CGFloat
+    private let iconScale: CGFloat
+
+    public init(
+        systemName: String,
+        iconColor: Color = .accentColor,
+        backgroundColor: Color = .accentColor.opacity(0.14),
+        size: CGFloat = 46,
+        iconScale: CGFloat = 0.42
+    ) {
+        self.systemName = systemName
+        self.iconColor = iconColor
+        self.backgroundColor = backgroundColor
+        self.size = size
+        self.iconScale = iconScale
+    }
+
+    public var body: some View {
+        Image(systemName: systemName)
+            .font(.system(size: size * iconScale, weight: .semibold))
+            .symbolRenderingMode(.hierarchical)
+            .foregroundStyle(iconColor)
+            .frame(width: size, height: size)
+            .background(Circle().fill(backgroundColor))
+    }
+}
+
+public struct KikiPaywallPill: View {
+    private let text: String
+    private let tone: KikiPaywallPillTone
+    private let tint: Color
+
+    public init(
+        text: String,
+        tone: KikiPaywallPillTone = .accent,
+        tint: Color = .accentColor
+    ) {
+        self.text = text
+        self.tone = tone
+        self.tint = tint
+    }
+
+    public var body: some View {
+        Text(text)
+            .font(.caption2.weight(.bold))
+            .foregroundStyle(foregroundColor)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Capsule().fill(backgroundColor))
+    }
+
+    private var foregroundColor: Color {
+        switch tone {
+        case .accent:
+            return .white
+        case .neutral, .warning, .success, .danger:
+            return color
+        }
+    }
+
+    private var backgroundColor: Color {
+        switch tone {
+        case .accent:
+            return tint
+        case .neutral, .warning, .success, .danger:
+            return color.opacity(0.12)
+        }
+    }
+
+    private var color: Color {
+        switch tone {
+        case .accent:
+            return tint
+        case .neutral:
+            return .secondary
+        case .warning:
+            return .orange
+        case .success:
+            return Color(nsColor: .systemGreen)
+        case .danger:
+            return .red
+        }
+    }
+}
+
+public struct KikiPaywallDotSeparator: View {
+    private let color: Color
+    private let size: CGFloat
+
+    public init(
+        color: Color = .secondary.opacity(0.35),
+        size: CGFloat = 3
+    ) {
+        self.color = color
+        self.size = size
+    }
+
+    public var body: some View {
+        Circle()
+            .fill(color)
+            .frame(width: size, height: size)
+    }
+}
+
+public enum KikiPaywallMessageTone {
+    case neutral
+    case warning
+    case success
+    case danger
+}
+
+public struct KikiPaywallMessage: View {
+    private let text: String
+    private let tone: KikiPaywallMessageTone
+
+    public init(
+        _ text: String,
+        tone: KikiPaywallMessageTone = .neutral
+    ) {
+        self.text = text
+        self.tone = tone
+    }
+
+    public var body: some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(color)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .background(
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .fill(color.opacity(0.10))
+            )
+    }
+
+    private var color: Color {
+        switch tone {
+        case .neutral:
+            return .secondary
+        case .warning:
+            return .orange
+        case .success:
+            return Color(nsColor: .systemGreen)
+        case .danger:
+            return .red
+        }
+    }
+}
+
+public struct KikiPaywallMetadataRow: View {
+    private let title: String
+    private let value: String
+
+    public init(title: String, value: String) {
+        self.title = title
+        self.value = value
+    }
+
+    public var body: some View {
+        HStack {
+            Text(title)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 12)
+            Text(value)
+                .foregroundStyle(.primary)
+        }
+        .font(.callout)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 13)
+    }
+}
+
+public struct KikiPaywallStatusHeader<Accessory: View>: View {
+    private let title: String
+    private let subtitle: String
+    private let systemName: String
+    private let iconColor: Color
+    private let backgroundColor: Color
+    private let iconSize: CGFloat
+    private let accessory: Accessory
+
+    public init(
+        title: String,
+        subtitle: String,
+        systemName: String,
+        iconColor: Color = .accentColor,
+        backgroundColor: Color = .accentColor.opacity(0.14),
+        iconSize: CGFloat = 46,
+        @ViewBuilder accessory: () -> Accessory
+    ) {
+        self.title = title
+        self.subtitle = subtitle
+        self.systemName = systemName
+        self.iconColor = iconColor
+        self.backgroundColor = backgroundColor
+        self.iconSize = iconSize
+        self.accessory = accessory()
+    }
+
+    public var body: some View {
+        HStack(spacing: 14) {
+            KikiPaywallIconBadge(
+                systemName: systemName,
+                iconColor: iconColor,
+                backgroundColor: backgroundColor,
+                size: iconSize
+            )
+
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 8) {
+                    Text(title)
+                        .font(.title3.weight(.bold))
+
+                    accessory
+                }
+
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+    }
+}
+
+public extension KikiPaywallStatusHeader where Accessory == EmptyView {
+    init(
+        title: String,
+        subtitle: String,
+        systemName: String,
+        iconColor: Color = .accentColor,
+        backgroundColor: Color = .accentColor.opacity(0.14),
+        iconSize: CGFloat = 46
+    ) {
+        self.init(
+            title: title,
+            subtitle: subtitle,
+            systemName: systemName,
+            iconColor: iconColor,
+            backgroundColor: backgroundColor,
+            iconSize: iconSize,
+            accessory: { EmptyView() }
+        )
+    }
+}
+
+public struct KikiPaywallPlanRow: View {
+    private let plan: KikiPaywallPlan
+    private let isSelected: Bool
+    private let tint: Color
+    private let priceSuffix: String?
+    private let showsUnavailablePill: Bool
+    private let isDisabled: Bool
+    private let onSelect: () -> Void
+
+    public init(
+        plan: KikiPaywallPlan,
+        isSelected: Bool,
+        tint: Color = .accentColor,
+        priceSuffix: String? = nil,
+        showsUnavailablePill: Bool = true,
+        isDisabled: Bool = false,
+        onSelect: @escaping () -> Void
+    ) {
+        self.plan = plan
+        self.isSelected = isSelected
+        self.tint = tint
+        self.priceSuffix = priceSuffix
+        self.showsUnavailablePill = showsUnavailablePill
+        self.isDisabled = isDisabled
+        self.onSelect = onSelect
+    }
+
+    public var body: some View {
+        Button(action: onSelect) {
+            HStack(spacing: 12) {
+                selectionIndicator
+
+                HStack(spacing: 6) {
+                    Text(plan.title)
+                        .font(.callout.weight(.medium))
+
+                    if let badge = plan.badge {
+                        KikiPaywallPill(text: badge, tone: .accent, tint: tint)
+                    }
+
+                    if showsUnavailablePill, !plan.isAvailable {
+                        KikiPaywallPill(text: "Unavailable", tone: .neutral, tint: tint)
+                    }
+                }
+
+                Spacer(minLength: 0)
+
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    if let originalPrice = plan.originalPrice {
+                        Text(originalPrice)
+                            .font(.callout)
+                            .strikethrough()
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Text(plan.displayPrice)
+                        .font(.headline)
+                        .foregroundStyle(isSelected ? tint : .primary)
+
+                    if let priceSuffix {
+                        Text(priceSuffix)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(isSelected ? tint.opacity(0.06) : Color(nsColor: .controlBackgroundColor))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(
+                        isSelected ? tint.opacity(0.50) : Color(nsColor: .separatorColor).opacity(0.45),
+                        lineWidth: isSelected ? 1.25 : 0.75
+                    )
+            )
+            .opacity(plan.isAvailable ? 1 : 0.52)
+        }
+        .buttonStyle(.plain)
+        .disabled(!plan.isAvailable || isDisabled)
+    }
+
+    private var selectionIndicator: some View {
+        ZStack {
+            Circle()
+                .stroke(
+                    isSelected ? tint : Color(nsColor: .separatorColor),
+                    lineWidth: 1.5
+                )
+                .frame(width: 18, height: 18)
+
+            if isSelected {
+                Circle()
+                    .fill(tint)
+                    .frame(width: 8, height: 8)
+            }
+        }
+    }
+}
+
+public extension View {
+    func kikiPaywallCard(
+        cornerRadius: CGFloat = 14,
+        shadowColor: Color = .black.opacity(0.05),
+        shadowRadius: CGFloat = 18,
+        shadowY: CGFloat = 8
+    ) -> some View {
+        background(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(Color(nsColor: .controlBackgroundColor))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .strokeBorder(Color(nsColor: .separatorColor).opacity(0.35), lineWidth: 0.75)
+        )
+        .shadow(color: shadowColor, radius: shadowRadius, y: shadowY)
+    }
+}

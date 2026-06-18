@@ -7,6 +7,8 @@ Reusable macOS menu bar app components for small Kiki apps.
 - `KikiSettings`: settings window helpers, navigation model, and common settings UI rows.
 - `KikiMenuBar`: `NSStatusItem` lifecycle and menu item model/controller.
 - `KikiPaywall`: lightweight paywall models and SwiftUI presentation components.
+- `KikiCommerce`: shared Pro access state machine and high-level paywall UI on
+  top of `RevenueCatCommerceKit`.
 - `KikiDesign`: adaptive glass/material surface primitives shared across app surfaces.
 - `KikiWindow`: AppKit window presenters and SwiftUI hosting utilities.
 - `KikiOverlay`: non-interactive screen overlay feedback and Kiki material toasts.
@@ -17,13 +19,16 @@ Reusable macOS menu bar app components for small Kiki apps.
 
 ## Repository Shape
 
-Keep this package focused on reusable menu bar, settings, and paywall UI. Purchase transport, entitlement refresh, trial policy, and app access state belong outside this package.
+Keep this package focused on reusable menu bar, settings, paywall UI, and shared
+paid-access workflow. Pure paywall presentation belongs in `KikiPaywall`;
+RevenueCat-backed purchase, restore, trial, and onboarding state belongs in
+`KikiCommerce`; product-specific feature gates still belong in the app.
 
 Use separate products for the UI surfaces:
 
 - Apps can import only the modules they need.
 - Xcode and SwiftPM can still resolve one remote package URL.
-- Commerce can evolve independently in `RevenueCatCommerceKit`.
+- RevenueCat transport can evolve independently in `RevenueCatCommerceKit`.
 
 The package also contains an internal `KikiCore` target for small AppKit system
 helpers shared by those products. It is intentionally not exposed as a library
@@ -46,6 +51,7 @@ Then add only the required products to the app target:
 .product(name: "KikiSettings", package: "Kiki_mackit"),
 .product(name: "KikiMenuBar", package: "Kiki_mackit"),
 .product(name: "KikiPaywall", package: "Kiki_mackit"),
+.product(name: "KikiCommerce", package: "Kiki_mackit"),
 .product(name: "KikiDesign", package: "Kiki_mackit"),
 .product(name: "KikiWindow", package: "Kiki_mackit"),
 .product(name: "KikiOverlay", package: "Kiki_mackit"),

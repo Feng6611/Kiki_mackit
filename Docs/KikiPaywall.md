@@ -11,15 +11,17 @@
 ## Technical Decisions
 
 - SwiftUI-first because this module is presentation-focused.
-- No RevenueCat dependency; purchasing and entitlement policy belong to app code.
+- No RevenueCat dependency; purchasing and entitlement policy belong to the app
+  or the `KikiCommerce` workflow module.
 - `KikiPaywallShell` extracts the stable sheet structure from Command Reopen:
   scrollable header/content, fixed action/footer area, optional close button,
   default sheet sizes, and subtle native material background.
 - `KikiPaywallWindowController` is only a presentation adapter. It uses
   `KikiWindow` to host app-provided paywall content in a standalone `NSWindow`
   when a sheet is not the right product surface.
-- The shell is not a full purchase flow. The host app supplies content, action
-  buttons, footer links, loading state, close behavior, and all side effects.
+- The shell is not a full purchase flow. The host app or `KikiCommerce` supplies
+  content, action buttons, footer links, loading state, close behavior, and all
+  side effects.
 - Dismissal policy belongs to the host app. `KikiPaywall` components may render
   close affordances, but they should not decide whether closing means dismissing
   a settings sheet, completing onboarding, skipping a trial prompt, or opening a
@@ -47,9 +49,9 @@ success, restore success, close button, app quit/relaunch, already-entitled
 accounts, and error/cancel paths. Every intentional exit from onboarding should
 either complete the flow or deliberately keep it pending.
 
-Keep this orchestration in the app or starter template. Do not move entitlement
-state, onboarding persistence, RevenueCat calls, or post-onboarding routing into
-`KikiPaywall`.
+Keep this orchestration in the app, starter template, or `KikiCommerce`. Do not
+move entitlement state, onboarding persistence, RevenueCat calls, or
+post-onboarding routing into `KikiPaywall`.
 
 ## API Shape
 
@@ -65,6 +67,8 @@ state, onboarding persistence, RevenueCat calls, or post-onboarding routing into
 
 ## TODO & Checklist
 
-- Add a store protocol only after two apps need the same purchase flow shape.
-- Keep trial, grandfathering, product ids, and access gating outside this module.
+- Put shared RevenueCat, trial, restore, and entitlement state in
+  `KikiCommerce`, not `KikiPaywall`.
+- Keep grandfathering, product ids, and product-specific access gating outside
+  this module.
 - Validate visual parity in Command Reopen after replacing local private components.

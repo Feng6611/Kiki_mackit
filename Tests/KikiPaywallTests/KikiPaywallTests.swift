@@ -45,6 +45,41 @@ struct KikiPaywallTests {
     }
 
     @MainActor
+    @Test("Paywall status card primitives are constructible")
+    func paywallStatusCardPrimitivesAreConstructible() {
+        let plan = KikiPaywallPlan(
+            id: "supporter",
+            title: "Supporter Lifetime",
+            displayPrice: "$10.99",
+            billingDetail: "one-time purchase",
+            badge: "Recommended",
+            isAvailable: true
+        )
+
+        _ = VStack {
+            KikiPaywallStatusHeader(
+                title: "Pro",
+                subtitle: "All features are unlocked.",
+                systemName: "checkmark.seal.fill"
+            ) {
+                KikiPaywallPill(text: "Lifetime")
+            }
+
+            KikiPaywallPlanRow(
+                plan: plan,
+                isSelected: true,
+                priceSuffix: "once",
+                onSelect: {}
+            )
+
+            KikiPaywallMessage("Purchase restored.", tone: .success)
+            KikiPaywallMetadataRow(title: "Status", value: "Active")
+            KikiPaywallDotSeparator()
+        }
+        .kikiPaywallCard()
+    }
+
+    @MainActor
     @Test("Paywall window controller is constructible")
     func paywallWindowControllerIsConstructible() {
         let controller = KikiPaywallWindowController(title: "Upgrade") {
