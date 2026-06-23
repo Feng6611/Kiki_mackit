@@ -54,13 +54,7 @@ public struct KikiSettingsShell<Tab: Hashable, Content: View>: View {
     public var body: some View {
         TabView(selection: $selection) {
             ForEach(tabs) { tabSpec in
-                Group {
-                    if selection == tabSpec.tab {
-                        content(tabSpec.tab)
-                    } else {
-                        Color.clear
-                    }
-                }
+                content(tabSpec.tab)
                 .tabItem {
                     Label(tabSpec.title, systemImage: tabSpec.systemImage)
                 }

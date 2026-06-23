@@ -236,7 +236,8 @@ public final class KikiSingleWindowController<Content: View>: NSObject, NSWindow
     }
 
     private func present(_ window: NSWindow) {
-        if configuration.centersOnShow {
+        if configuration.centersOnShow,
+           configuration.frameAutosaveName == nil {
             window.center()
         }
 

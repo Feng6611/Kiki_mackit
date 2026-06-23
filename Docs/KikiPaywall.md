@@ -13,7 +13,7 @@
 - SwiftUI-first because this module is presentation-focused.
 - No RevenueCat dependency; purchasing and entitlement policy belong to the app
   or the `KikiCommerce` workflow module.
-- `KikiPaywallShell` extracts the stable sheet structure from Command Reopen:
+- `KikiPaywallShell` extracts a stable small-app paywall sheet structure:
   scrollable header/content, fixed action/footer area, optional close button,
   default sheet sizes, and subtle native material background.
 - `KikiPaywallWindowController` is only a presentation adapter. It uses
@@ -71,4 +71,4 @@ post-onboarding routing into `KikiPaywall`.
   `KikiCommerce`, not `KikiPaywall`.
 - Keep grandfathering, product ids, and product-specific access gating outside
   this module.
-- Validate visual parity in Command Reopen after replacing local private components.
+- Validate visual parity in host apps after replacing local private components.

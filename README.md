@@ -1,6 +1,8 @@
 # Kiki_mackit
 
-Reusable macOS menu bar app components for small Kiki apps.
+Reusable macOS app kit for small Kiki apps. It includes visual components,
+AppKit bridge helpers, permission helpers, and reusable paid-access workflow
+modules for apps that share the same product mechanics.
 
 ## Products
 
@@ -19,16 +21,26 @@ Reusable macOS menu bar app components for small Kiki apps.
 
 ## Repository Shape
 
-Keep this package focused on reusable menu bar, settings, paywall UI, and shared
-paid-access workflow. Pure paywall presentation belongs in `KikiPaywall`;
-RevenueCat-backed purchase, restore, trial, and onboarding state belongs in
-`KikiCommerce`; product-specific feature gates still belong in the app.
+Keep this package focused on reusable app infrastructure, not only reusable UI.
+`Kiki_mackit` is allowed to host two kinds of reusable modules:
+
+- reusable macOS presentation and AppKit bridge surfaces such as Settings,
+  menu bar, windows, overlays, and authorization helpers;
+- reusable app-facing workflows such as paid-access state, trial handling,
+  onboarding completion, and paywall composition, as long as the API stays
+  product-agnostic.
+
+Pure paywall presentation belongs in `KikiPaywall`. RevenueCat-backed purchase,
+restore, trial, onboarding completion, and shared Pro access state belong in
+`KikiCommerce`. Product-specific catalogs, grandfathering, unlock rules,
+feature gates, and campaign policy still belong in the app.
 
 Use separate products for the UI surfaces:
 
 - Apps can import only the modules they need.
 - Xcode and SwiftPM can still resolve one remote package URL.
-- RevenueCat transport can evolve independently in `RevenueCatCommerceKit`.
+- RevenueCat transport can evolve independently in `RevenueCatCommerceKit`,
+  while `KikiCommerce` stays focused on reusable app-facing workflow.
 
 The package also contains an internal `KikiCore` target for small AppKit system
 helpers shared by those products. It is intentionally not exposed as a library
@@ -42,7 +54,7 @@ and extraction rules.
 After pushing this package to a remote repository, consume it from another app with SwiftPM:
 
 ```swift
-.package(url: "https://github.com/Feng6611/Kiki_mackit.git", from: "0.4.0")
+.package(url: "https://github.com/Feng6611/Kiki_mackit.git", from: "0.5.0")
 ```
 
 Then add only the required products to the app target:

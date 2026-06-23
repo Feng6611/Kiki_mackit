@@ -19,6 +19,11 @@
 - `KikiCommerce` depends on `RevenueCatCommerceKit` and `KikiPaywall`.
 - `KikiPaywall` does not depend on `KikiCommerce`; pure UI users should not be
   forced to link RevenueCat.
+- `RevenueCatCommerceKit` stays provider-focused: SDK configuration,
+  offerings/products, purchase, restore, entitlement refresh, and error mapping.
+- `KikiCommerce` stays app-facing: reusable paid-access status, trial/onboarding
+  progression, paywall coordination, and debug override flow for small macOS
+  apps that share the same mechanics.
 - Apps provide product IDs, copy, links, tint, app icon, and storage-key prefix.
 - The manager owns configure, refresh, offering loading, explicit/auto trial,
   purchase, restore, onboarding completion, transaction refresh retry, and local
@@ -47,3 +52,20 @@ observable object, and move the paywall surface to `KikiProPaywallSheet`.
 
 After call sites have stabilized, the app can gradually adopt the public Kiki
 types directly.
+
+## Boundary Checklist
+
+Keep behavior in `KikiCommerce` when:
+
+- at least two apps can reuse the same paid-access state machine or paywall
+  coordination;
+- the API can stay product-free and accept app-owned plans, copy, and storage
+  keys;
+- the unlock model is still a generic Pro/trial/expired workflow.
+
+Keep behavior in the product app when:
+
+- feature unlocks differ by product feature or SKU;
+- grandfathering, migration, or campaign rules are product-specific;
+- copy, restore recovery, or post-purchase routing depend on one product;
+- the paid model is no longer a shared small-app pattern.

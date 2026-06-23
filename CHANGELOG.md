@@ -2,20 +2,49 @@
 
 ## Unreleased
 
+## 0.5.0 - 2026-06-23
+
+### Added
+
+- Promoted `KikiCommerce` to a first-class documented kit boundary for reusable
+  paid-access workflow, not just an implementation detail beside UI modules.
+- Added boundary documentation that clarifies the split between
+  `RevenueCatCommerceKit` provider transport and `KikiCommerce` app-facing
+  reusable monetization workflow.
+- Added shared Settings status tones and an authorization status row for
+  reusable permission states in menu bar app Settings.
+- Added the `KikiTriggerCorner` product for reusable trigger-corner geometry,
+  dwell/cooldown state, and AppKit pointer-location monitoring.
+
 ### Changed
 
+- Switched `Kiki_mackit` to a remote SwiftPM dependency on
+  `RevenueCatCommerceKit` so `KikiCommerce` can ship as a real consumable
+  package product instead of a local-only setup.
+- Updated README, API conventions, and agent guidance to define Kiki as a
+  reusable app kit that may contain reusable UI, platform, authorization, and
+  commerce workflow modules.
+- `KikiSettingsShell` now keeps tab content alive when switching tabs instead of
+  recreating non-selected panes.
 - Kept `KikiSettingsOpener.openForMenuBarApp()` in accessory mode when opening
   SwiftUI Settings for menu bar apps, matching Command Reopen's approach and
   avoiding temporary Dock icons.
 - Refined `KikiOverlay` toasts into a more compact Raycast-like material
   treatment with smaller accent icons and success palette support.
 
-### Added
+### Fixed
 
-- Added shared Settings status tones and an authorization status row for
-  reusable permission states in menu bar app Settings.
-- Added the `KikiTriggerCorner` product for reusable trigger-corner geometry,
-  dwell/cooldown state, and AppKit pointer-location monitoring.
+- `KikiSettingsWindowController` no longer falls back to mutating arbitrary
+  visible windows when preparing the Settings scene.
+- `KikiSingleWindowController` no longer recenters windows with autosaved
+  frames every time they reopen, preserving native macOS window placement
+  behavior.
+
+### Tests
+
+- Added focused tests for menu toggle state mapping, Settings opener menu
+  traversal, KikiDesign construction, KikiWindow construction, expanded paywall
+  display components, and the reusable KikiCommerce workflow.
 
 ## 0.4.0 - 2026-05-16
 
@@ -38,7 +67,3 @@
 
 - Documented the Settings opener fallback selector used after the explicit main-menu Settings item search fails.
 - Improved Settings opener behavior coverage for disabled menu items.
-
-### Tests
-
-- Added focused tests for menu toggle state mapping, Settings opener menu traversal, KikiDesign construction, KikiWindow construction, and expanded paywall display components.

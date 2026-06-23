@@ -43,26 +43,11 @@ public final class KikiSettingsWindowController {
                 && excludedWindowNumbers.contains(window.windowNumber) == false
         }
 
-        let titleMatches = visibleWindows.filter { window in
+        return visibleWindows.filter { window in
             window.title == windowTitle
                 || window.title.localizedCaseInsensitiveContains(windowTitle)
+                || window.frameAutosaveName == frameAutosaveName
         }
-
-        if titleMatches.isEmpty == false {
-            return titleMatches
-        }
-
-        if let keyWindow = NSApp.keyWindow,
-           visibleWindows.contains(keyWindow) {
-            return [keyWindow]
-        }
-
-        if let mainWindow = NSApp.mainWindow,
-           visibleWindows.contains(mainWindow) {
-            return [mainWindow]
-        }
-
-        return visibleWindows
     }
 
     private func restoreSettingsWindowFrame() {

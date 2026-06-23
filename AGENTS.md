@@ -1,21 +1,33 @@
 # Kiki_mackit Agent Notes
 
-This repository is a Swift package for reusable macOS app shell, UI, and small
-platform building blocks.
+This repository is a Swift package for reusable macOS app shell, UI, workflow,
+and platform building blocks.
 
 ## Package Boundary
 
-Keep this package focused on reusable macOS app shell and UI primitives. Kiki should make repeated AppKit/SwiftUI integration decisions stable, but product behavior stays in the app.
+Keep this package focused on reusable macOS app infrastructure. Kiki should
+make repeated AppKit/SwiftUI integration decisions and repeated small-app
+workflow decisions stable, but product-specific behavior stays in the app.
 
 Do not add product-specific business logic:
 
 - Do not add Direct distribution logic.
-- Do not add RevenueCat SDK wiring.
-- Do not reintroduce a `RevenueCatCommerceKit` target here.
-- Commerce belongs in the standalone `RevenueCatCommerceKit` repository.
-- Do not add app-specific copy, paywall policy, entitlement state, clipboard/history logic, analytics, networking, persistence, or distribution branching.
+- Do not add raw RevenueCat SDK transport outside the dedicated commerce
+  boundary.
+- Keep provider-specific purchase transport in the standalone
+  `RevenueCatCommerceKit` repository.
+- Do not add app-specific copy, paywall policy, entitlement mapping,
+  clipboard/history logic, analytics, networking, persistence, or distribution
+  branching.
 
-Prefer small, package-local changes that preserve and clarify the public surfaces of `KikiDesign`, `KikiWindow`, `KikiMenuBar`, `KikiSettings`, `KikiPaywall`, `KikiOverlay`, and `KikiTriggerCorner`.
+Kiki may include reusable workflow modules such as `KikiCommerce` when the API
+stays product-agnostic and can be reused by multiple apps with caller-supplied
+plans, copy, storage keys, and policy.
+
+Prefer small, package-local changes that preserve and clarify the public
+surfaces of `KikiDesign`, `KikiWindow`, `KikiMenuBar`, `KikiSettings`,
+`KikiPaywall`, `KikiCommerce`, `KikiAuthorization`, `KikiOverlay`, and
+`KikiTriggerCorner`.
 
 Read `Docs/APIConventions.md` before changing public API. Kiki only exposes APIs
 for business apps to call; adoption workflow, product skeletons, and app-specific

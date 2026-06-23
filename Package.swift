@@ -19,7 +19,10 @@ let package = Package(
         .library(name: "KikiAuthorization", targets: ["KikiAuthorization"])
     ],
     dependencies: [
-        .package(path: "../RevenueCatCommerceKit")
+        .package(
+            url: "https://github.com/Feng6611/RevenueCatCommerceKit.git",
+            exact: "0.1.0"
+        )
     ],
     targets: [
         .target(name: "KikiCore"),

@@ -5,7 +5,8 @@
 - `KikiSettingsShell`: top-tab SwiftUI settings shell for use inside a native `Settings {}` scene.
 - `KikiSettingsTabSpec`: app-owned tab metadata (`tab`, `title`, `systemImage`) consumed by the shell.
 - `KikiSettingsPane`: grouped `Form` pane chrome with standard scene padding and top alignment.
-- `KikiAboutPane`: reusable app identity, status, and links layout based on Command Reopen's About settings.
+- `KikiAboutPane`: reusable app identity, status, and links layout for small
+  macOS app About settings.
 - `KikiSettingsValueRow`, `KikiSettingsStatusRow`,
   `KikiAuthorizationStatusRow`, `KikiSettingsToggleRow`,
   `KikiSettingsSegmentedPickerRow`, `KikiSettingsStepperRow`,
@@ -21,7 +22,8 @@
 ## Technical Decisions
 
 - SwiftUI owns settings content because macOS settings screens are naturally form-driven; v1 intentionally stays on the native `Settings {}` scene instead of custom settings windows.
-- The shell owns settings chrome, tab rendering, lazy pane creation, default dimensions, and common row language.
+- The shell owns settings chrome, tab rendering, stable pane lifetime, default
+  dimensions, and common row language.
 - Apps own tab definitions, business state, bindings, actions, and product-specific copy.
 - Permission rows expose state and action only; apps own permission prompts,
   assistant copy, and platform-specific routing. Authorized rows are status-only
@@ -30,7 +32,10 @@
 - Status rows use `KikiDesignColor` tokens for shared color language. Success
   states such as `Allowed` use colored text only; warning/action states may use
   a lightweight badge to make the row tappable and recoverable.
-- Window dimensions have Command Reopen-inspired defaults (`540 x 560`) but remain app-overridable through `KikiSettingsShell(width:height:)` and `KikiSettingsWindowController(minimumContentSize:)`.
+- Window dimensions default to `540 x 560` for a compact small-app Settings
+  window, while remaining app-overridable through
+  `KikiSettingsShell(width:height:)` and
+  `KikiSettingsWindowController(minimumContentSize:)`.
 - AppKit remains responsible for window activation and autosaved frames.
 - Menu bar apps should open Settings with `KikiSettingsOpener.openForMenuBarApp()`.
   It must keep the current activation policy and should not switch to `.regular`
@@ -56,7 +61,7 @@
 
 ## TODO & Checklist
 
-- Keep Command Reopen-specific settings tabs in the app target.
+- Keep app-specific settings tabs in the app target.
 - Keep product-specific access, paywall, onboarding, and analytics logic out of `KikiSettings`.
 - Add more row types only after they appear in multiple apps or in the starter plus one real app.
 - Before extracting to a standalone repo, validate API names against at least one starter app.

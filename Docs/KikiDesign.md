@@ -6,7 +6,7 @@ popovers, Paywall, sheets, and standalone windows.
 ## Public API
 
 - `KikiDesignColor.brandAccent`: Kiki brand purple for product-owned brand
-  highlights, matching the Command Reopen accent direction.
+  highlights with a modern native macOS accent direction.
 - `KikiDesignColor.systemAccent`: the current macOS system accent color from
   `NSColor.controlAccentColor`.
 - `KikiSurfaceDefaults`: stable default corner radius and tint opacity.
