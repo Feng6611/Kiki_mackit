@@ -42,15 +42,16 @@ Host apps own:
 - `KikiScreenEdgeOverlayStyle`: tunable defaults. v1 of this module exposed
   ~25 init parameters; 0.6.0 narrows the public surface to four knobs:
   `glowIntensity`, `toastWidth`, `panelLevel`, and `toastDuration`. The rest
-  remain internal so hosts cannot accidentally diverge from the Kiki visual
-  rhythm. `KikiScreenEdgeOverlayStyle.screenEdge(glowIntensity:)` is the
-  recommended entry point.
+  are no longer publicly mutable so hosts cannot accidentally diverge from
+  the Kiki visual rhythm. `KikiScreenEdgeOverlayStyle.screenEdge(glowIntensity:)`
+  is the recommended entry point.
 - `KikiScreenEdgeOverlayBehavior`: `.persistent` or `.momentary(duration:)`.
 - `KikiScreenEdgeOverlayMotion`: `.breathing`, `.breathingWithEntryBurst`,
   `.blink`, or `.steady`.
 
-`KikiScreenEdgeOverlayPalette` is no longer public in 0.6.0; use
-`KikiOverlayTone` or pass colors explicitly via the presentation factories.
+`KikiScreenEdgeOverlayPalette` remains available as a deprecated compatibility
+surface for older hosts. New code should use `KikiOverlayTone` or pass colors
+explicitly via the presentation factories.
 
 ## Example
 

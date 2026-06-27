@@ -57,15 +57,20 @@ It listens for these signals:
 
 - `NSWorkspace.didActivateApplicationNotification` to detect when System
   Settings becomes frontmost or yields back to the host.
-- `kAXMovedNotification` and `kAXResizedNotification` on the System Settings
-  application AX element to update the overlay position when the user drags
-  or resizes the Settings window.
+- `NSWorkspace.didLaunchApplicationNotification` and
+  `NSWorkspace.didTerminateApplicationNotification` to install or tear down
+  AX observers when System Settings launches, quits, or relaunches.
+- `kAXMovedNotification`, `kAXResizedNotification`,
+  `kAXWindowMovedNotification`, and `kAXWindowResizedNotification` on the
+  System Settings application AX element to update the overlay position when
+  the user drags or resizes the Settings window.
 - `NSApplication.didChangeScreenParametersNotification` to re-anchor the
   overlay after display changes.
 
 If Accessibility is not granted (or AX observer creation fails), the
-assistant falls back to a one-shot positioning using the current frontmost
-System Settings window snapshot. No `Timer` is installed.
+assistant falls back to snapshot-based positioning using the current
+frontmost System Settings window plus the workspace/screen observers above.
+No `Timer` is installed.
 
 When `KikiAuthorizationAssistant.shared.dismiss()` is called, every observer
 and the AX observer are torn down on the main actor.

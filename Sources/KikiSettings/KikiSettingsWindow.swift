@@ -12,10 +12,12 @@ public final class KikiSettingsWindowController {
         minimumContentSize: CGSize = CGSize(
             width: KikiSettingsDefaults.minimumWindowWidth,
             height: KikiSettingsDefaults.minimumWindowHeight
-        )
+        ),
+        windowTitle: String = "Settings"
     ) {
         self.frameAutosaveName = NSWindow.FrameAutosaveName(frameAutosaveName)
         self.minimumContentSize = minimumContentSize
+        _ = windowTitle
     }
 
     public var isVisible: Bool {

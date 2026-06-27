@@ -8,13 +8,16 @@ public final class KikiAuthorizationAssistant {
 
     private var overlayController: KikiAuthorizationOverlayWindowController?
     private var activationObserver: NSObjectProtocol?
+    private var launchObserver: NSObjectProtocol?
+    private var terminateObserver: NSObjectProtocol?
     private var screenParametersObserver: NSObjectProtocol?
     private var axObserver: AXObserver?
     private var observedSettingsAppElement: AXUIElement?
+    private var observedSettingsProcessID: pid_t?
     private var pendingSourceFrameInScreen: CGRect?
     private var didPresentOverlay = false
 
-    public init() {}
+    private init() {}
 
     public func present(
         panel: KikiAuthorizationPanel,
@@ -66,17 +69,17 @@ public final class KikiAuthorizationAssistant {
             self.screenParametersObserver = nil
         }
 
-        if let axObserver,
-           let observedSettingsAppElement {
-            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXMovedNotification as CFString)
-            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXResizedNotification as CFString)
-            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXWindowMovedNotification as CFString)
-            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXWindowResizedNotification as CFString)
-            CFRunLoopRemoveSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(axObserver), .commonModes)
+        if let launchObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(launchObserver)
+            self.launchObserver = nil
         }
 
-        axObserver = nil
-        observedSettingsAppElement = nil
+        if let terminateObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(terminateObserver)
+            self.terminateObserver = nil
+        }
+
+        tearDownAXObserver()
         overlayController?.close()
         overlayController = nil
         pendingSourceFrameInScreen = nil
@@ -90,7 +93,28 @@ public final class KikiAuthorizationAssistant {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
+                self?.refreshAXObserverRegistrationIfNeeded()
                 self?.refreshOverlayPosition()
+            }
+        }
+
+        launchObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didLaunchApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            Task { @MainActor in
+                self?.handleApplicationLifecycle(notification: notification)
+            }
+        }
+
+        terminateObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didTerminateApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            Task { @MainActor in
+                self?.handleApplicationLifecycle(notification: notification)
             }
         }
 
@@ -106,6 +130,39 @@ public final class KikiAuthorizationAssistant {
 
         installAXObserverIfPossible()
         refreshOverlayPosition()
+    }
+
+    private func handleApplicationLifecycle(notification: Notification) {
+        guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+              application.bundleIdentifier == KikiAuthorizationSettingsWindowLocator.bundleIdentifier else {
+            return
+        }
+
+        if notification.name == NSWorkspace.didTerminateApplicationNotification {
+            if observedSettingsProcessID == application.processIdentifier {
+                tearDownAXObserver()
+            }
+            overlayController?.hide()
+            return
+        }
+
+        refreshAXObserverRegistrationIfNeeded()
+        refreshOverlayPosition()
+    }
+
+    private func refreshAXObserverRegistrationIfNeeded() {
+        guard let settingsApp = NSRunningApplication
+            .runningApplications(withBundleIdentifier: KikiAuthorizationSettingsWindowLocator.bundleIdentifier)
+            .first else {
+            return
+        }
+
+        if observedSettingsProcessID == settingsApp.processIdentifier, axObserver != nil {
+            return
+        }
+
+        tearDownAXObserver()
+        installAXObserverIfPossible()
     }
 
     private func installAXObserverIfPossible() {
@@ -163,6 +220,22 @@ public final class KikiAuthorizationAssistant {
         CFRunLoopAddSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(observer), .commonModes)
         axObserver = observer
         observedSettingsAppElement = appElement
+        observedSettingsProcessID = settingsApp.processIdentifier
+    }
+
+    private func tearDownAXObserver() {
+        if let axObserver,
+           let observedSettingsAppElement {
+            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXMovedNotification as CFString)
+            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXResizedNotification as CFString)
+            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXWindowMovedNotification as CFString)
+            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXWindowResizedNotification as CFString)
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(axObserver), .commonModes)
+        }
+
+        axObserver = nil
+        observedSettingsAppElement = nil
+        observedSettingsProcessID = nil
     }
 
     private func refreshOverlayPosition() {

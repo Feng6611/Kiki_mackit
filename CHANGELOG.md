@@ -6,10 +6,9 @@
 
 ### Added
 
-- `KikiSettingsScene` opener path that prefers
-  `EnvironmentValues.openSettings` on macOS 14+, falls back to the standard
-  `Settings...` main-menu item, and only uses the private
-  `showSettingsWindow:` selector as a tracked last resort.
+- tracked `KikiSettingsOpener` fallback logging when the standard
+  `Settings...` main-menu item cannot be performed and the package must fall
+  back to `showSettingsWindow:`.
 - `KikiSettingsMenuPickerRow` for three-or-more-option enumerated settings,
   per macOS HIG.
 - `KikiMenuBuilder.menu(from:title:)` pure function so hosts that own their
@@ -37,8 +36,8 @@
 - `KikiScreenEdgeOverlayStyle` public surface narrows to four host-tunable
   values (`glowIntensity`, `toastWidth`, `panelLevel`, `toastDuration`); the
   remaining timing/visual parameters move to internal defaults.
-- `KikiCommerce.KikiProPaywallSheet` composes `KikiPaywallSheet` so commerce
-  layouts stay in sync with the paywall preset.
+- documented the `KikiPaywallSheet` preset direction for future
+  `KikiCommerce.KikiProPaywallSheet` convergence.
 
 ### Removed
 
@@ -48,9 +47,8 @@
 - Deprecated
   `KikiMenuItem.action(title:keyEquivalent:modifierMask:isEnabled:action:)`
   static helper.
-- `KikiScreenEdgeOverlayPalette` as a public type; tone selection moves to
-  `KikiOverlayTone`. Hosts that want a custom color can still pass
-  `tint:` and `companionTint:` to the presentation factories.
+- public mutation of `KikiScreenEdgeOverlayStyle` internals; host tuning now
+  flows through the narrowed initializer and `screenEdge(glowIntensity:)`.
 
 ## 0.5.0 - 2026-06-23
 

@@ -18,31 +18,31 @@ public struct KikiScreenEdgeOverlayStyle {
     public static let defaultBreathingDuration: TimeInterval = 3.2
     public static let defaultGlowIntensity = 0.85
 
-    public var edgeLineWidth: CGFloat
-    public var glowDepth: CGFloat
-    public var sideGlowDepth: CGFloat
-    public var washOpacity: Double
-    public var cornerLengthRatio: CGFloat
-    public var maxCornerLength: CGFloat
-    public var cornerThickness: CGFloat
-    public var cornerShadowRadius: CGFloat
-    public var toastWidth: CGFloat
-    public var toastTopPadding: CGFloat
-    public var toastCornerRadius: CGFloat
-    public var toastIconCornerRadius: CGFloat
-    public var fadeInDuration: TimeInterval
-    public var fadeOutDuration: TimeInterval
-    public var toastFadeOutDuration: TimeInterval
-    public var entryBurstDuration: TimeInterval
-    public var entryBurstOpacityBoost: Double
-    public var entryBurstLineWidthBoost: CGFloat
-    public var breathingGlowScale: CGFloat
-    public var breathingLineWidthBoost: CGFloat
-    public var breathingDuration: TimeInterval
-    public var breathingMinOpacity: Double
-    public var breathingMaxOpacity: Double
-    public var blinkDuration: TimeInterval
-    public var panelLevel: NSWindow.Level
+    public private(set) var edgeLineWidth: CGFloat
+    public private(set) var glowDepth: CGFloat
+    public private(set) var sideGlowDepth: CGFloat
+    public private(set) var washOpacity: Double
+    public private(set) var cornerLengthRatio: CGFloat
+    public private(set) var maxCornerLength: CGFloat
+    public private(set) var cornerThickness: CGFloat
+    public private(set) var cornerShadowRadius: CGFloat
+    public private(set) var toastWidth: CGFloat
+    public private(set) var toastTopPadding: CGFloat
+    public private(set) var toastCornerRadius: CGFloat
+    public private(set) var toastIconCornerRadius: CGFloat
+    public private(set) var fadeInDuration: TimeInterval
+    public private(set) var fadeOutDuration: TimeInterval
+    public private(set) var toastFadeOutDuration: TimeInterval
+    public private(set) var entryBurstDuration: TimeInterval
+    public private(set) var entryBurstOpacityBoost: Double
+    public private(set) var entryBurstLineWidthBoost: CGFloat
+    public private(set) var breathingGlowScale: CGFloat
+    public private(set) var breathingLineWidthBoost: CGFloat
+    public private(set) var breathingDuration: TimeInterval
+    public private(set) var breathingMinOpacity: Double
+    public private(set) var breathingMaxOpacity: Double
+    public private(set) var blinkDuration: TimeInterval
+    public private(set) var panelLevel: NSWindow.Level
 
     init(
         edgeLineWidth: CGFloat = 3,
@@ -227,7 +227,7 @@ public struct KikiScreenEdgeOverlayPresentation {
         motion: KikiScreenEdgeOverlayMotion = .breathingWithEntryBurst,
         toastDuration: TimeInterval = 5
     ) -> KikiScreenEdgeOverlayPresentation {
-        let palette = palette(for: tone)
+        let palette = startPalette(for: tone)
         return KikiScreenEdgeOverlayPresentation(
             title: title,
             subtitle: subtitle,
@@ -242,7 +242,7 @@ public struct KikiScreenEdgeOverlayPresentation {
     }
 
     public static func lockEnded(
-        tone: KikiOverlayTone = .success,
+        tone: KikiOverlayTone = .alert,
         title: String = "Unlocked",
         subtitle: String = "",
         systemImage: String = "checkmark",
@@ -252,7 +252,7 @@ public struct KikiScreenEdgeOverlayPresentation {
         toastDuration: TimeInterval = 5,
         edgeDuration: TimeInterval = 1.5
     ) -> KikiScreenEdgeOverlayPresentation {
-        let palette = palette(for: tone)
+        let palette = endedPalette(for: tone)
         return KikiScreenEdgeOverlayPresentation(
             title: title,
             subtitle: subtitle,
@@ -277,7 +277,7 @@ public struct KikiScreenEdgeOverlayPresentation {
         toastDuration: TimeInterval = 5,
         edgeDuration: TimeInterval = 1.8
     ) -> KikiScreenEdgeOverlayPresentation {
-        let palette = palette(for: tone)
+        let palette = warningPalette(for: tone)
         return KikiScreenEdgeOverlayPresentation(
             title: title,
             subtitle: subtitle,
@@ -291,25 +291,57 @@ public struct KikiScreenEdgeOverlayPresentation {
         )
     }
 
-    private static func palette(for tone: KikiOverlayTone) -> (tint: Color, companionTint: Color) {
+    private static func startPalette(for tone: KikiOverlayTone) -> (tint: Color, companionTint: Color) {
         switch tone {
         case .alert:
-            return (KikiScreenEdgeOverlayPalette.orange, KikiScreenEdgeOverlayPalette.deepOrange)
+            return (KikiOverlayPaletteValues.orange, KikiOverlayPaletteValues.deepOrange)
         case .success:
-            return (KikiScreenEdgeOverlayPalette.success, KikiScreenEdgeOverlayPalette.deepSuccess)
+            return (KikiOverlayPaletteValues.success, KikiOverlayPaletteValues.deepSuccess)
         case .warning:
-            return (KikiScreenEdgeOverlayPalette.warning, KikiScreenEdgeOverlayPalette.orange)
+            return (KikiOverlayPaletteValues.warning, KikiOverlayPaletteValues.orange)
+        }
+    }
+
+    private static func endedPalette(for tone: KikiOverlayTone) -> (tint: Color, companionTint: Color) {
+        switch tone {
+        case .alert:
+            return (KikiOverlayPaletteValues.brightOrange, KikiOverlayPaletteValues.deepOrange)
+        case .success:
+            return (KikiOverlayPaletteValues.success, KikiOverlayPaletteValues.deepSuccess)
+        case .warning:
+            return (KikiOverlayPaletteValues.warning, KikiOverlayPaletteValues.orange)
+        }
+    }
+
+    private static func warningPalette(for tone: KikiOverlayTone) -> (tint: Color, companionTint: Color) {
+        switch tone {
+        case .alert:
+            return (KikiOverlayPaletteValues.orange, KikiOverlayPaletteValues.deepOrange)
+        case .success:
+            return (KikiOverlayPaletteValues.success, KikiOverlayPaletteValues.deepSuccess)
+        case .warning:
+            return (KikiOverlayPaletteValues.warning, KikiOverlayPaletteValues.orange)
         }
     }
 }
 
-enum KikiScreenEdgeOverlayPalette {
+private enum KikiOverlayPaletteValues {
     static let orange = Color(red: 1.0, green: 0.49, blue: 0.12)
     static let brightOrange = Color(red: 1.0, green: 0.68, blue: 0.28)
     static let deepOrange = Color(red: 0.86, green: 0.25, blue: 0.03)
     static let success = Color(red: 0.0, green: 0.62, blue: 0.34)
     static let deepSuccess = Color(red: 0.0, green: 0.42, blue: 0.26)
     static let warning = Color(red: 1.0, green: 0.34, blue: 0.12)
+}
+
+@available(*, deprecated, message: "Use KikiOverlayTone or explicit tint parameters instead.")
+public enum KikiScreenEdgeOverlayPalette {
+    public static let orange = KikiOverlayPaletteValues.orange
+    public static let brightOrange = KikiOverlayPaletteValues.brightOrange
+    public static let deepOrange = KikiOverlayPaletteValues.deepOrange
+    public static let success = KikiOverlayPaletteValues.success
+    public static let deepSuccess = KikiOverlayPaletteValues.deepSuccess
+    public static let warning = KikiOverlayPaletteValues.warning
 }
 
 @MainActor

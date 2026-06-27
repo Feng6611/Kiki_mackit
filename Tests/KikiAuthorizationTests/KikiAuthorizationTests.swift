@@ -40,8 +40,8 @@ struct KikiAuthorizationTests {
     }
 
     @MainActor
-    @Test("Authorization assistant is constructible")
-    func assistantIsConstructible() {
-        _ = KikiAuthorizationAssistant()
+    @Test("Authorization assistant shared instance is available")
+    func assistantSharedInstanceIsAvailable() {
+        _ = KikiAuthorizationAssistant.shared
     }
 }

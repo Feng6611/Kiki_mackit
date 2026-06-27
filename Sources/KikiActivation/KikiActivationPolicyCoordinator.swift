@@ -10,7 +10,7 @@ public final class KikiActivationPolicyCoordinator {
 
     public init(
         prewarmsThroughDockOnFirstActivation: Bool = false,
-        logger: KikiActivationLogger? = KikiDefaultActivationLogger()
+        logger: KikiActivationLogger? = nil
     ) {
         self.prewarmsThroughDockOnFirstActivation = prewarmsThroughDockOnFirstActivation
         self.logger = logger
@@ -53,7 +53,15 @@ public final class KikiActivationPolicyCoordinator {
             return
         }
 
-        _ = previousFrontmostApplication.activate(options: [])
+        if #available(macOS 14.0, *) {
+            NSApp.yieldActivation(to: previousFrontmostApplication)
+            _ = previousFrontmostApplication.activate(
+                from: NSRunningApplication.current,
+                options: []
+            )
+        } else {
+            _ = previousFrontmostApplication.activate(options: [])
+        }
         logger?.log("Restored previous frontmost app after promoted state")
     }
 
