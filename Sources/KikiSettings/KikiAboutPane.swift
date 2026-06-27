@@ -72,18 +72,18 @@ public struct KikiAboutPane<StatusContent: View, LinksContent: View>: View {
                     iconSize: iconSize
                 )
                 .padding(.vertical, KikiSettingsSpacing.xl)
-                .listRowBackground(KikiSettingsColors.background)
+                .listRowBackground(Color(nsColor: .windowBackgroundColor))
             }
 
             Section {
                 statusContent
             }
-            .listRowBackground(KikiSettingsColors.sectionBackground)
+            .listRowBackground(Color(nsColor: .controlBackgroundColor))
 
             Section {
                 linksContent
             }
-            .listRowBackground(KikiSettingsColors.sectionBackground)
+            .listRowBackground(Color(nsColor: .controlBackgroundColor))
         }
         .kikiSettingsPaneChrome()
     }

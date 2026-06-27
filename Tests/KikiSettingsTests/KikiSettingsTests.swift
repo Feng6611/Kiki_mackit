@@ -78,6 +78,12 @@ struct KikiSettingsTests {
                             trailingCaption: "High",
                             optionTitle: { "\($0)" }
                         )
+                        KikiSettingsMenuPickerRow(
+                            "Preset",
+                            selection: .constant(2),
+                            options: [1, 2, 3, 4],
+                            optionTitle: { "Preset \($0)" }
+                        )
                         KikiSettingsStepperRow(
                             "Limit",
                             value: .constant(10),

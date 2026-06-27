@@ -81,6 +81,210 @@ public struct KikiPaywallPlan: Equatable, Identifiable {
     }
 }
 
+public struct KikiPaywallHeaderConfig {
+    public let title: String
+    public let subtitle: String
+    public let icon: NSImage?
+
+    public init(
+        title: String,
+        subtitle: String,
+        icon: NSImage? = nil
+    ) {
+        self.title = title
+        self.subtitle = subtitle
+        self.icon = icon
+    }
+}
+
+public struct KikiPaywallStatConfig: Identifiable, Equatable {
+    public let id = UUID()
+    public let value: String
+    public let label: String
+
+    public init(value: String, label: String) {
+        self.value = value
+        self.label = label
+    }
+}
+
+public struct KikiPaywallActionConfig {
+    public let title: String
+    public let isLoading: Bool
+    public let isEnabled: Bool
+    public let action: @MainActor () -> Void
+
+    public init(
+        title: String,
+        isLoading: Bool = false,
+        isEnabled: Bool = true,
+        action: @escaping @MainActor () -> Void
+    ) {
+        self.title = title
+        self.isLoading = isLoading
+        self.isEnabled = isEnabled
+        self.action = action
+    }
+}
+
+public struct KikiPaywallSheet<Footer: View>: View {
+    private let header: KikiPaywallHeaderConfig
+    private let stats: [KikiPaywallStatConfig]
+    private let features: [String]
+    private let plans: [KikiPaywallPlan]
+    @Binding private var selectedPlanID: String
+    private let primary: KikiPaywallActionConfig
+    private let secondary: KikiPaywallActionConfig?
+    private let tint: Color
+    private let showsCloseButton: Bool
+    private let onClose: (() -> Void)?
+    private let footer: Footer
+
+    public init(
+        header: KikiPaywallHeaderConfig,
+        stats: [KikiPaywallStatConfig] = [],
+        features: [String] = [],
+        plans: [KikiPaywallPlan],
+        selectedPlanID: Binding<String>,
+        primary: KikiPaywallActionConfig,
+        secondary: KikiPaywallActionConfig? = nil,
+        tint: Color = .accentColor,
+        showsCloseButton: Bool = false,
+        onClose: (() -> Void)? = nil,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.header = header
+        self.stats = stats
+        self.features = features
+        self.plans = plans
+        self._selectedPlanID = selectedPlanID
+        self.primary = primary
+        self.secondary = secondary
+        self.tint = tint
+        self.showsCloseButton = showsCloseButton
+        self.onClose = onClose
+        self.footer = footer()
+    }
+
+    public var body: some View {
+        KikiPaywallShell(
+            tint: tint,
+            showsCloseButton: showsCloseButton,
+            onClose: onClose
+        ) {
+            KikiPaywallHeader(
+                title: header.title,
+                subtitle: header.subtitle,
+                icon: header.icon
+            )
+        } content: {
+            VStack(spacing: 14) {
+                if stats.isEmpty == false {
+                    HStack(spacing: 10) {
+                        ForEach(stats) { stat in
+                            KikiPaywallStatItem(
+                                value: stat.value,
+                                label: stat.label,
+                                tint: tint
+                            )
+                        }
+                    }
+                }
+
+                if features.isEmpty == false {
+                    VStack(alignment: .leading, spacing: 10) {
+                        ForEach(features, id: \.self) { feature in
+                            KikiPaywallFeatureRow(
+                                icon: "checkmark.circle.fill",
+                                text: feature,
+                                tint: tint
+                            )
+                        }
+                    }
+                }
+
+                if plans.isEmpty == false {
+                    VStack(spacing: 10) {
+                        ForEach(plans) { plan in
+                            KikiPaywallPlanRow(
+                                plan: plan,
+                                isSelected: selectedPlanID == plan.id,
+                                tint: tint,
+                                onSelect: {
+                                    selectedPlanID = plan.id
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        } actions: {
+            VStack(spacing: 8) {
+                Button {
+                    primary.action()
+                } label: {
+                    KikiPaywallActionLabel(
+                        title: primary.title,
+                        isLoading: primary.isLoading,
+                        isProminent: true,
+                        tint: tint
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(!primary.isEnabled)
+                .opacity(primary.isEnabled ? 1 : 0.45)
+
+                if let secondary {
+                    Button {
+                        secondary.action()
+                    } label: {
+                        KikiPaywallActionLabel(
+                            title: secondary.title,
+                            isLoading: secondary.isLoading,
+                            isProminent: false,
+                            tint: tint
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!secondary.isEnabled)
+                    .opacity(secondary.isEnabled ? 1 : 0.45)
+                }
+            }
+        } footer: {
+            footer
+        }
+    }
+}
+
+public extension KikiPaywallSheet where Footer == EmptyView {
+    init(
+        header: KikiPaywallHeaderConfig,
+        stats: [KikiPaywallStatConfig] = [],
+        features: [String] = [],
+        plans: [KikiPaywallPlan],
+        selectedPlanID: Binding<String>,
+        primary: KikiPaywallActionConfig,
+        secondary: KikiPaywallActionConfig? = nil,
+        tint: Color = .accentColor,
+        showsCloseButton: Bool = false,
+        onClose: (() -> Void)? = nil
+    ) {
+        self.init(
+            header: header,
+            stats: stats,
+            features: features,
+            plans: plans,
+            selectedPlanID: selectedPlanID,
+            primary: primary,
+            secondary: secondary,
+            tint: tint,
+            showsCloseButton: showsCloseButton,
+            onClose: onClose,
+            footer: { EmptyView() }
+        )
+    }
+}
+
 public struct KikiPaywallShell<Header: View, Content: View, Actions: View, Footer: View>: View {
     private let width: CGFloat
     private let height: CGFloat

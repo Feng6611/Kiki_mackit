@@ -5,6 +5,7 @@ struct KikiOverlayTests {
     @Test("Screen edge overlay presets expose expected metadata")
     func screenEdgeOverlayPresetsExposeExpectedMetadata() {
         let lockStarted = KikiScreenEdgeOverlayPresentation.lockStarted(
+            tone: .alert,
             title: "Keyboard locked",
             subtitle: "Hold shortcut to unlock"
         )
@@ -15,7 +16,10 @@ struct KikiOverlayTests {
         #expect(lockStarted.toastDuration == 5)
         #expect(lockStarted.edgeDuration == nil)
 
-        let lockEnded = KikiScreenEdgeOverlayPresentation.lockEnded(title: "Keyboard unlocked")
+        let lockEnded = KikiScreenEdgeOverlayPresentation.lockEnded(
+            tone: .success,
+            title: "Keyboard unlocked"
+        )
         #expect(lockEnded.title == "Keyboard unlocked")
         #expect(lockEnded.systemImage == "checkmark")
         #expect(lockEnded.behavior == .momentary(duration: 5.35))
@@ -23,7 +27,10 @@ struct KikiOverlayTests {
         #expect(lockEnded.toastDuration == 5)
         #expect(lockEnded.edgeDuration == 1.5)
 
-        let warning = KikiScreenEdgeOverlayPresentation.warning(title: "Lock stopped")
+        let warning = KikiScreenEdgeOverlayPresentation.warning(
+            tone: .warning,
+            title: "Lock stopped"
+        )
         #expect(warning.title == "Lock stopped")
         #expect(warning.systemImage == "exclamationmark.triangle.fill")
         #expect(warning.behavior == .momentary(duration: 5.35))

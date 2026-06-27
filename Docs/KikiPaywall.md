@@ -64,6 +64,38 @@ post-onboarding routing into `KikiPaywall`.
 - `KikiPaywallStatItem`: compact stat display.
 - `KikiPaywallActionLabel`: primary/secondary action label with loading state.
 - `KikiPaywallDefaults`: default sheet/window sizes and padding.
+- `KikiPaywallSheet`: one-call preset that arranges header, stats, features,
+  plan cards, primary CTA, and footer for the most common host shape.
+
+## Default Shape With KikiPaywallSheet
+
+The shell + atoms approach stays available, but most apps only need the
+preset. `KikiPaywallSheet` accepts data and closures:
+
+```swift
+KikiPaywallSheet(
+    header: .init(title: "My App", subtitle: "Unlock the full app"),
+    stats: [.init(value: "3", label: "Reusable kits")],
+    features: ["Menu bar shell", "Settings shell", "Paywall preset"],
+    plans: planProducts,
+    selectedPlanID: $selectedPlanID,
+    primary: .init(
+        title: isPro ? "Already Pro" : "Mock Purchase",
+        isLoading: isPurchasing,
+        isEnabled: !isPro,
+        action: purchaseSelectedPlan
+    ),
+    secondary: .init(
+        title: "Restore Purchase",
+        isLoading: false,
+        isEnabled: !isPro,
+        action: restore
+    )
+)
+```
+
+The sheet builds on top of `KikiPaywallShell`, so hosts that need custom
+sections can drop down to the shell and atoms without losing visual parity.
 
 ## TODO & Checklist
 

@@ -45,6 +45,31 @@ struct KikiPaywallTests {
     }
 
     @MainActor
+    @Test("Paywall sheet preset is constructible")
+    func paywallSheetPresetIsConstructible() {
+        let plans = [
+            KikiPaywallPlan(
+                id: "lifetime",
+                title: "Lifetime",
+                displayPrice: "$12.99",
+                billingDetail: "one-time purchase"
+            )
+        ]
+
+        let sheet = KikiPaywallSheet(
+            header: .init(title: "Upgrade", subtitle: "Unlock everything"),
+            stats: [.init(value: "3", label: "kits")],
+            features: ["Reusable shell", "Paywall preset"],
+            plans: plans,
+            selectedPlanID: .constant("lifetime"),
+            primary: .init(title: "Unlock") {},
+            secondary: .init(title: "Restore") {}
+        )
+
+        _ = sheet.body
+    }
+
+    @MainActor
     @Test("Paywall status card primitives are constructible")
     func paywallStatusCardPrimitivesAreConstructible() {
         let plan = KikiPaywallPlan(

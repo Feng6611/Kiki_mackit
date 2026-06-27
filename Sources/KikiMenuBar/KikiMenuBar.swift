@@ -79,17 +79,94 @@ public enum KikiMenuItem {
     }
 }
 
-public extension KikiMenuItem {
-    @available(*, deprecated, message: "Use action(title:shortcut:isEnabled:action:) instead.")
-    static func action(
+@MainActor
+public enum KikiMenuBuilder {
+    public static func menu(from items: [KikiMenuItem], title: String) -> NSMenu {
+        let menu = NSMenu(title: title)
+        menu.autoenablesItems = false
+
+        for item in items {
+            switch item {
+            case .separator:
+                menu.addItem(.separator())
+            case .status(let title):
+                menu.addItem(makeStatusItem(title: title))
+            case .link(let title, let urlString, let isEnabled):
+                menu.addItem(makeActionItem(
+                    title: title,
+                    shortcut: nil,
+                    isEnabled: isEnabled,
+                    action: {
+                        KikiMenuActions.openURL(urlString)
+                    }
+                ))
+            case .settings(let title, let action):
+                menu.addItem(makeActionItem(
+                    title: title,
+                    shortcut: .settings,
+                    isEnabled: true,
+                    action: action
+                ))
+            case .about(let title, let action):
+                menu.addItem(makeActionItem(
+                    title: title,
+                    shortcut: nil,
+                    isEnabled: true,
+                    action: action
+                ))
+            case .quit(let appName, let action):
+                menu.addItem(makeActionItem(
+                    title: "Quit \(appName)",
+                    shortcut: .quit,
+                    isEnabled: true,
+                    action: action
+                ))
+            case .action(let title, let shortcut, let isEnabled, let action):
+                menu.addItem(makeActionItem(
+                    title: title,
+                    shortcut: shortcut,
+                    isEnabled: isEnabled,
+                    action: action
+                ))
+            case .toggle(let title, let isOn, let isEnabled, let action):
+                let menuItem = makeActionItem(
+                    title: title,
+                    shortcut: nil,
+                    isEnabled: isEnabled,
+                    action: action
+                )
+                menuItem.state = isOn ? .on : .off
+                menu.addItem(menuItem)
+            }
+        }
+
+        return menu
+    }
+
+    private static func makeActionItem(
         title: String,
-        keyEquivalent: String,
-        modifierMask: NSEvent.ModifierFlags,
-        isEnabled: Bool = true,
+        shortcut: KikiMenuShortcut?,
+        isEnabled: Bool,
         action: @escaping @MainActor () -> Void
-    ) -> KikiMenuItem {
-        let shortcut = keyEquivalent.isEmpty ? nil : KikiMenuShortcut(key: keyEquivalent, modifiers: modifierMask)
-        return .action(title: title, shortcut: shortcut, isEnabled: isEnabled, action: action)
+    ) -> NSMenuItem {
+        let target = KikiMenuActionTarget(action: action)
+
+        let item = NSMenuItem(
+            title: title,
+            action: #selector(KikiMenuActionTarget.performKikiMenuAction),
+            keyEquivalent: shortcut?.key ?? ""
+        )
+        item.target = target
+        item.representedObject = target
+        item.keyEquivalentModifierMask = shortcut?.modifiers ?? []
+        item.isEnabled = isEnabled
+        return item
+    }
+
+    private static func makeStatusItem(title: String) -> NSMenuItem {
+        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        item.isEnabled = false
+        return item
     }
 }
 
@@ -174,91 +251,7 @@ public final class KikiMenuBarController: NSObject {
     }
 
     public func makeMenu() -> NSMenu {
-        let menu = NSMenu(title: title)
-        menu.autoenablesItems = false
-
-        for item in itemsProvider() {
-            switch item {
-            case .separator:
-                menu.addItem(.separator())
-            case .status(let title):
-                menu.addItem(makeStatusItem(title: title))
-            case .link(let title, let urlString, let isEnabled):
-                menu.addItem(makeActionItem(
-                    title: title,
-                    shortcut: nil,
-                    isEnabled: isEnabled,
-                    action: {
-                        KikiMenuActions.openURL(urlString)
-                    }
-                ))
-            case .settings(let title, let action):
-                menu.addItem(makeActionItem(
-                    title: title,
-                    shortcut: .settings,
-                    isEnabled: true,
-                    action: action
-                ))
-            case .about(let title, let action):
-                menu.addItem(makeActionItem(
-                    title: title,
-                    shortcut: nil,
-                    isEnabled: true,
-                    action: action
-                ))
-            case .quit(let appName, let action):
-                menu.addItem(makeActionItem(
-                    title: "Quit \(appName)",
-                    shortcut: .quit,
-                    isEnabled: true,
-                    action: action
-                ))
-            case .action(let title, let shortcut, let isEnabled, let action):
-                menu.addItem(makeActionItem(
-                    title: title,
-                    shortcut: shortcut,
-                    isEnabled: isEnabled,
-                    action: action
-                ))
-            case .toggle(let title, let isOn, let isEnabled, let action):
-                let menuItem = makeActionItem(
-                    title: title,
-                    shortcut: nil,
-                    isEnabled: isEnabled,
-                    action: action
-                )
-                menuItem.state = isOn ? .on : .off
-                menu.addItem(menuItem)
-            }
-        }
-
-        return menu
-    }
-
-    private func makeActionItem(
-        title: String,
-        shortcut: KikiMenuShortcut?,
-        isEnabled: Bool,
-        action: @escaping @MainActor () -> Void
-    ) -> NSMenuItem {
-        let target = KikiMenuActionTarget(action: action)
-
-        let item = NSMenuItem(
-            title: title,
-            action: #selector(KikiMenuActionTarget.performKikiMenuAction),
-            keyEquivalent: shortcut?.key ?? ""
-        )
-        item.target = target
-        item.representedObject = target
-        item.keyEquivalentModifierMask = shortcut?.modifiers ?? []
-        item.isEnabled = isEnabled
-        return item
-    }
-
-    private func makeStatusItem(title: String) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
-        item.isEnabled = false
-        return item
+        KikiMenuBuilder.menu(from: itemsProvider(), title: title)
     }
 }
 

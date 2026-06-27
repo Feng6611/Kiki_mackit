@@ -31,16 +31,26 @@ Host apps own:
 
 ## Primary API
 
-- `KikiScreenEdgeOverlayController`: long-lived presenter owned by the host app.
-- `KikiScreenEdgeOverlayPresentation`: display payload and behavior.
-- `KikiScreenEdgeOverlayStyle`: reusable timing, intensity, sizing, and panel
-  defaults. Use `KikiScreenEdgeOverlayStyle.screenEdge(glowIntensity:)` when an
-  app wants a simple user-facing maximum intensity control; breathing rhythm is
-  a Kiki design default, not a host app setting.
+- `KikiScreenEdgeOverlayController`: long-lived presenter owned by the host
+  app.
+- `KikiScreenEdgeOverlayPresentation`: display payload and behavior, built
+  through the `.lockStarted(...)`, `.lockEnded(...)`, and `.warning(...)`
+  factories.
+- `KikiOverlayTone`: tone-driven palette (`.alert`, `.success`, `.warning`)
+  that maps to the previously hand-tuned color pairs. Hosts that want a
+  custom color pass `tint:` and `companionTint:` directly to the factory.
+- `KikiScreenEdgeOverlayStyle`: tunable defaults. v1 of this module exposed
+  ~25 init parameters; 0.6.0 narrows the public surface to four knobs:
+  `glowIntensity`, `toastWidth`, `panelLevel`, and `toastDuration`. The rest
+  remain internal so hosts cannot accidentally diverge from the Kiki visual
+  rhythm. `KikiScreenEdgeOverlayStyle.screenEdge(glowIntensity:)` is the
+  recommended entry point.
 - `KikiScreenEdgeOverlayBehavior`: `.persistent` or `.momentary(duration:)`.
 - `KikiScreenEdgeOverlayMotion`: `.breathing`, `.breathingWithEntryBurst`,
   `.blink`, or `.steady`.
-- `KikiScreenEdgeOverlayPalette`: shared orange, success, and warning defaults.
+
+`KikiScreenEdgeOverlayPalette` is no longer public in 0.6.0; use
+`KikiOverlayTone` or pass colors explicitly via the presentation factories.
 
 ## Example
 
@@ -60,6 +70,7 @@ final class AppFeedback {
     func showLocked() {
         overlay.show(
             .lockStarted(
+                tone: .alert,
                 title: "Keyboard locked",
                 subtitle: "Hold Ctrl Option Command L to unlock"
             )
@@ -69,6 +80,7 @@ final class AppFeedback {
     func showUnlocked() {
         overlay.show(
             .lockEnded(
+                tone: .success,
                 title: "Keyboard unlocked",
                 subtitle: "Keyboard input is flowing normally."
             )

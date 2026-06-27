@@ -1,4 +1,5 @@
 import AppKit
+import ApplicationServices
 import Foundation
 
 @MainActor
@@ -6,8 +7,10 @@ public final class KikiAuthorizationAssistant {
     public static let shared = KikiAuthorizationAssistant()
 
     private var overlayController: KikiAuthorizationOverlayWindowController?
-    private var trackingTimer: Timer?
     private var activationObserver: NSObjectProtocol?
+    private var screenParametersObserver: NSObjectProtocol?
+    private var axObserver: AXObserver?
+    private var observedSettingsAppElement: AXUIElement?
     private var pendingSourceFrameInScreen: CGRect?
     private var didPresentOverlay = false
 
@@ -53,14 +56,27 @@ public final class KikiAuthorizationAssistant {
     }
 
     public func dismiss() {
-        trackingTimer?.invalidate()
-        trackingTimer = nil
-
         if let activationObserver {
             NSWorkspace.shared.notificationCenter.removeObserver(activationObserver)
             self.activationObserver = nil
         }
 
+        if let screenParametersObserver {
+            NotificationCenter.default.removeObserver(screenParametersObserver)
+            self.screenParametersObserver = nil
+        }
+
+        if let axObserver,
+           let observedSettingsAppElement {
+            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXMovedNotification as CFString)
+            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXResizedNotification as CFString)
+            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXWindowMovedNotification as CFString)
+            AXObserverRemoveNotification(axObserver, observedSettingsAppElement, kAXWindowResizedNotification as CFString)
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(axObserver), .commonModes)
+        }
+
+        axObserver = nil
+        observedSettingsAppElement = nil
         overlayController?.close()
         overlayController = nil
         pendingSourceFrameInScreen = nil
@@ -68,14 +84,6 @@ public final class KikiAuthorizationAssistant {
     }
 
     private func startTrackingSystemSettings() {
-        let timer = Timer(timeInterval: 0.18, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                self?.refreshOverlayPosition()
-            }
-        }
-        RunLoop.main.add(timer, forMode: .common)
-        trackingTimer = timer
-
         activationObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification,
             object: nil,
@@ -86,7 +94,75 @@ public final class KikiAuthorizationAssistant {
             }
         }
 
+        screenParametersObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.refreshOverlayPosition()
+            }
+        }
+
+        installAXObserverIfPossible()
         refreshOverlayPosition()
+    }
+
+    private func installAXObserverIfPossible() {
+        guard let settingsApp = NSRunningApplication
+            .runningApplications(withBundleIdentifier: KikiAuthorizationSettingsWindowLocator.bundleIdentifier)
+            .first else {
+            return
+        }
+
+        let appElement = AXUIElementCreateApplication(settingsApp.processIdentifier)
+        var observer: AXObserver?
+        let callback: AXObserverCallback = { _, _, _, refcon in
+            guard let refcon else {
+                return
+            }
+
+            let assistant = Unmanaged<KikiAuthorizationAssistant>
+                .fromOpaque(refcon)
+                .takeUnretainedValue()
+            Task { @MainActor in
+                assistant.refreshOverlayPosition()
+            }
+        }
+
+        let result = AXObserverCreate(settingsApp.processIdentifier, callback, &observer)
+        guard result == .success, let observer else {
+            return
+        }
+
+        let refcon = Unmanaged.passUnretained(self).toOpaque()
+        let notifications: [CFString] = [
+            kAXMovedNotification as CFString,
+            kAXResizedNotification as CFString,
+            kAXWindowMovedNotification as CFString,
+            kAXWindowResizedNotification as CFString,
+        ]
+
+        var didRegisterNotification = false
+        for notification in notifications {
+            let registrationResult = AXObserverAddNotification(
+                observer,
+                appElement,
+                notification,
+                refcon
+            )
+            if registrationResult == .success || registrationResult == .notificationAlreadyRegistered {
+                didRegisterNotification = true
+            }
+        }
+
+        guard didRegisterNotification else {
+            return
+        }
+
+        CFRunLoopAddSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(observer), .commonModes)
+        axObserver = observer
+        observedSettingsAppElement = appElement
     }
 
     private func refreshOverlayPosition() {

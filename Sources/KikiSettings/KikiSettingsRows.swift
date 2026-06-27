@@ -206,6 +206,41 @@ public struct KikiSettingsSegmentedPickerRow<Value: Hashable>: View {
     }
 }
 
+public struct KikiSettingsMenuPickerRow<Value: Hashable>: View {
+    private let title: String
+    private let options: [Value]
+    private let systemImage: String?
+    private let optionTitle: (Value) -> String
+    @Binding private var selection: Value
+
+    public init(
+        _ title: String,
+        selection: Binding<Value>,
+        options: [Value],
+        systemImage: String? = nil,
+        optionTitle: @escaping (Value) -> String
+    ) {
+        self.title = title
+        self._selection = selection
+        self.options = options
+        self.systemImage = systemImage
+        self.optionTitle = optionTitle
+    }
+
+    public var body: some View {
+        KikiSettingsValueRow(title, systemImage: systemImage) {
+            Picker(title, selection: $selection) {
+                ForEach(options, id: \.self) { option in
+                    Text(optionTitle(option)).tag(option)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(minWidth: 140, alignment: .trailing)
+        }
+    }
+}
+
 public struct KikiSettingsValueRow<Content: View>: View {
     private let title: String
     private let systemImage: String?

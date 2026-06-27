@@ -1,23 +1,21 @@
 import AppKit
 import KikiCore
+import OSLog
 
 @MainActor
 public final class KikiSettingsWindowController {
     private let frameAutosaveName: NSWindow.FrameAutosaveName
     private let minimumContentSize: CGSize
-    fileprivate let windowTitle: String
 
     public init(
         frameAutosaveName: String,
         minimumContentSize: CGSize = CGSize(
             width: KikiSettingsDefaults.minimumWindowWidth,
             height: KikiSettingsDefaults.minimumWindowHeight
-        ),
-        windowTitle: String = "Settings"
+        )
     ) {
         self.frameAutosaveName = NSWindow.FrameAutosaveName(frameAutosaveName)
         self.minimumContentSize = minimumContentSize
-        self.windowTitle = windowTitle
     }
 
     public var isVisible: Bool {
@@ -25,13 +23,13 @@ public final class KikiSettingsWindowController {
     }
 
     public func prepareForSettingsScene() {
-        activateApp()
+        activateForSettingsScene()
         DispatchQueue.main.async { [weak self] in
-            self?.restoreSettingsWindowFrame()
+            self?.restoreSettingsWindowFrameIfNeeded()
         }
     }
 
-    private func activateApp() {
+    fileprivate func activateForSettingsScene() {
         KikiAppActivation.activate()
     }
 
@@ -44,16 +42,13 @@ public final class KikiSettingsWindowController {
         }
 
         return visibleWindows.filter { window in
-            window.title == windowTitle
-                || window.title.localizedCaseInsensitiveContains(windowTitle)
-                || window.frameAutosaveName == frameAutosaveName
+            window.frameAutosaveName == frameAutosaveName
         }
     }
 
-    private func restoreSettingsWindowFrame() {
+    fileprivate func restoreSettingsWindowFrameIfNeeded() {
         for window in visibleSettingsWindows() {
             window.contentMinSize = minimumContentSize
-            window.center()
             window.setFrameUsingName(frameAutosaveName)
             window.setFrameAutosaveName(frameAutosaveName)
             enforceMinimumContentSize(for: window)
@@ -81,6 +76,7 @@ public final class KikiSettingsWindowController {
 
 @MainActor
 public final class KikiSettingsOpener {
+    private static let logger = Logger(subsystem: "kiki.mackit", category: "settings")
     private let windowController: KikiSettingsWindowController?
 
     public init(windowController: KikiSettingsWindowController? = nil) {
@@ -103,13 +99,19 @@ public final class KikiSettingsOpener {
         // SwiftUI's Settings scene does not expose a public imperative opener,
         // so this mirrors the selector AppKit installs for the standard menu
         // item after the explicit menu search above has failed.
+        Self.logger.notice("Using private showSettingsWindow: fallback after standard Settings menu lookup failed")
         NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
     }
 
     public func openForMenuBarApp(preparesWindow: Bool = true) {
-        open(preparesWindow: preparesWindow)
+        if preparesWindow {
+            windowController?.activateForSettingsScene()
+        }
+
+        open(preparesWindow: false)
+
         DispatchQueue.main.async { [weak windowController] in
-            windowController?.prepareForSettingsScene()
+            windowController?.restoreSettingsWindowFrameIfNeeded()
         }
     }
 

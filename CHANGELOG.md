@@ -2,6 +2,56 @@
 
 ## Unreleased
 
+## 0.6.0 - 2026-06-27
+
+### Added
+
+- `KikiSettingsScene` opener path that prefers
+  `EnvironmentValues.openSettings` on macOS 14+, falls back to the standard
+  `Settings...` main-menu item, and only uses the private
+  `showSettingsWindow:` selector as a tracked last resort.
+- `KikiSettingsMenuPickerRow` for three-or-more-option enumerated settings,
+  per macOS HIG.
+- `KikiMenuBuilder.menu(from:title:)` pure function so hosts that own their
+  own `NSStatusItem` can reuse `KikiMenuItem` semantics without
+  `KikiMenuBarController`.
+- `KikiOnboarding` module: `KikiOnboardingScaffold`, `KikiOnboardingRow`,
+  `KikiOnboardingPermissionRow`, `KikiOnboardingAction`, and
+  `KikiOnboardingWindowController`.
+- `KikiActivation` module: `KikiActivationPolicyCoordinator` for menu bar
+  apps that temporarily promote to `.regular` and restore the previous
+  frontmost app.
+- `KikiPaywallSheet` preset that arranges header, stats, features, plan
+  cards, and primary/secondary actions for the most common paywall shape.
+- `KikiOverlayTone` enum (`.alert`, `.success`, `.warning`) so overlay
+  presets express intent without hand-tuned color pairs.
+
+### Changed
+
+- `KikiAuthorizationAssistant` follows the System Settings window with
+  AX move/resize observers plus the existing workspace activation observer
+  instead of a 0.18s `Timer`.
+- `KikiSettingsPane` chrome is now just `Form(.grouped)` with top alignment.
+  Custom backgrounds, hidden scroll backgrounds, and extra scene padding are
+  removed so panes match the system Settings app.
+- `KikiScreenEdgeOverlayStyle` public surface narrows to four host-tunable
+  values (`glowIntensity`, `toastWidth`, `panelLevel`, `toastDuration`); the
+  remaining timing/visual parameters move to internal defaults.
+- `KikiCommerce.KikiProPaywallSheet` composes `KikiPaywallSheet` so commerce
+  layouts stay in sync with the paywall preset.
+
+### Removed
+
+- `KikiSettingsUI` namespace and its `FormPane`, `LinkButton`, `CopyRow`
+  shims and the `AppIdentityView`, `ApplicationRow`, `ApplicationPicker`
+  type aliases.
+- Deprecated
+  `KikiMenuItem.action(title:keyEquivalent:modifierMask:isEnabled:action:)`
+  static helper.
+- `KikiScreenEdgeOverlayPalette` as a public type; tone selection moves to
+  `KikiOverlayTone`. Hosts that want a custom color can still pass
+  `tint:` and `companionTint:` to the presentation factories.
+
 ## 0.5.0 - 2026-06-23
 
 ### Added

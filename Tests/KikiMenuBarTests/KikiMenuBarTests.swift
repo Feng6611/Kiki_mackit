@@ -34,16 +34,15 @@ struct KikiMenuBarTests {
     @MainActor
     @Test("Convenience items build expected menu metadata")
     func convenienceItemsBuildExpectedMenuMetadata() throws {
-        let controller = KikiMenuBarController(title: "Kiki Test") {
-            [
+        let menu = KikiMenuBuilder.menu(
+            from: [
                 .settings {},
                 .quit(appName: "Kiki Test") {},
                 .link(title: "Docs", urlString: "https://example.com"),
                 .status(title: "Ready")
-            ]
-        }
-
-        let menu = controller.makeMenu()
+            ],
+            title: "Kiki Test"
+        )
         let settings = try #require(menu.item(at: 0))
         let quit = try #require(menu.item(at: 1))
         let link = try #require(menu.item(at: 2))

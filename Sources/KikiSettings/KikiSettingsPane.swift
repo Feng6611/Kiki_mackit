@@ -36,22 +36,9 @@ public struct KikiSettingsHelperText: View {
     }
 }
 
-enum KikiSettingsColors {
-    static var sectionBackground: Color {
-        Color(nsColor: .controlBackgroundColor)
-    }
-
-    static var background: Color {
-        Color(nsColor: .windowBackgroundColor)
-    }
-}
-
 extension View {
     func kikiSettingsPaneChrome() -> some View {
         formStyle(.grouped)
-            .scrollContentBackground(.hidden)
-            .background(KikiSettingsColors.background)
-            .scenePadding()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }

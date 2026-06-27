@@ -44,7 +44,7 @@ public struct KikiScreenEdgeOverlayStyle {
     public var blinkDuration: TimeInterval
     public var panelLevel: NSWindow.Level
 
-    public init(
+    init(
         edgeLineWidth: CGFloat = 3,
         glowDepth: CGFloat = 62,
         sideGlowDepth: CGFloat = 58,
@@ -98,7 +98,60 @@ public struct KikiScreenEdgeOverlayStyle {
         self.panelLevel = panelLevel
     }
 
-    public static let `default` = KikiScreenEdgeOverlayStyle()
+    public init(
+        glowIntensity: Double = Self.defaultGlowIntensity,
+        toastWidth: CGFloat = 340,
+        panelLevel: NSWindow.Level = .screenSaver,
+        toastDuration: TimeInterval = 5
+    ) {
+        let intensity = min(max(glowIntensity, 0), 1)
+        self.init(
+            edgeLineWidth: 2.5 + 0.75 * CGFloat(intensity),
+            glowDepth: 88 * CGFloat(intensity),
+            sideGlowDepth: 82 * CGFloat(intensity),
+            washOpacity: 0.044 * intensity,
+            cornerThickness: 6.8 * CGFloat(intensity),
+            cornerShadowRadius: 21 * CGFloat(intensity),
+            toastWidth: toastWidth,
+            toastFadeOutDuration: min(max(toastDuration * 0.07, 0.25), 0.45),
+            entryBurstOpacityBoost: 0.1 + 0.2 * intensity,
+            entryBurstLineWidthBoost: 0.7 + 1.5 * CGFloat(intensity),
+            breathingGlowScale: 0.14 + 0.16 * CGFloat(intensity),
+            breathingLineWidthBoost: 0.22 + 0.34 * CGFloat(intensity),
+            breathingDuration: Self.defaultBreathingDuration,
+            breathingMinOpacity: 0.48 + 0.08 * intensity,
+            breathingMaxOpacity: 0.7 + 0.16 * intensity,
+            panelLevel: panelLevel
+        )
+    }
+
+    public static let `default` = KikiScreenEdgeOverlayStyle(
+        edgeLineWidth: 3,
+        glowDepth: 62,
+        sideGlowDepth: 58,
+        washOpacity: 0.034,
+        cornerLengthRatio: 0.085,
+        maxCornerLength: 120,
+        cornerThickness: 5,
+        cornerShadowRadius: 16,
+        toastWidth: 340,
+        toastTopPadding: 60,
+        toastCornerRadius: 18,
+        toastIconCornerRadius: 9,
+        fadeInDuration: 0.2,
+        fadeOutDuration: 0.42,
+        toastFadeOutDuration: 0.35,
+        entryBurstDuration: 0.52,
+        entryBurstOpacityBoost: 0.22,
+        entryBurstLineWidthBoost: 1.5,
+        breathingGlowScale: 0.16,
+        breathingLineWidthBoost: 0.45,
+        breathingDuration: defaultBreathingDuration,
+        breathingMinOpacity: 0.5,
+        breathingMaxOpacity: 0.82,
+        blinkDuration: 0.28,
+        panelLevel: .screenSaver
+    )
 
     public static func screenEdge(
         glowIntensity: Double = 0.85,
@@ -123,6 +176,12 @@ public struct KikiScreenEdgeOverlayStyle {
             panelLevel: panelLevel
         )
     }
+}
+
+public enum KikiOverlayTone {
+    case alert
+    case success
+    case warning
 }
 
 public struct KikiScreenEdgeOverlayPresentation {
@@ -159,20 +218,22 @@ public struct KikiScreenEdgeOverlayPresentation {
     }
 
     public static func lockStarted(
+        tone: KikiOverlayTone = .alert,
         title: String = "Locked",
         subtitle: String = "",
         systemImage: String = "lock.fill",
-        tint: Color = KikiScreenEdgeOverlayPalette.orange,
-        companionTint: Color = KikiScreenEdgeOverlayPalette.deepOrange,
+        tint: Color? = nil,
+        companionTint: Color? = nil,
         motion: KikiScreenEdgeOverlayMotion = .breathingWithEntryBurst,
         toastDuration: TimeInterval = 5
     ) -> KikiScreenEdgeOverlayPresentation {
-        KikiScreenEdgeOverlayPresentation(
+        let palette = palette(for: tone)
+        return KikiScreenEdgeOverlayPresentation(
             title: title,
             subtitle: subtitle,
             systemImage: systemImage,
-            tint: tint,
-            companionTint: companionTint,
+            tint: tint ?? palette.tint,
+            companionTint: companionTint ?? palette.companionTint,
             behavior: .persistent,
             motion: motion,
             toastDuration: toastDuration,
@@ -181,21 +242,23 @@ public struct KikiScreenEdgeOverlayPresentation {
     }
 
     public static func lockEnded(
+        tone: KikiOverlayTone = .success,
         title: String = "Unlocked",
         subtitle: String = "",
         systemImage: String = "checkmark",
-        tint: Color = KikiScreenEdgeOverlayPalette.brightOrange,
-        companionTint: Color = KikiScreenEdgeOverlayPalette.deepOrange,
+        tint: Color? = nil,
+        companionTint: Color? = nil,
         motion: KikiScreenEdgeOverlayMotion = .breathingWithEntryBurst,
         toastDuration: TimeInterval = 5,
         edgeDuration: TimeInterval = 1.5
     ) -> KikiScreenEdgeOverlayPresentation {
-        KikiScreenEdgeOverlayPresentation(
+        let palette = palette(for: tone)
+        return KikiScreenEdgeOverlayPresentation(
             title: title,
             subtitle: subtitle,
             systemImage: systemImage,
-            tint: tint,
-            companionTint: companionTint,
+            tint: tint ?? palette.tint,
+            companionTint: companionTint ?? palette.companionTint,
             behavior: .momentary(duration: toastDuration + 0.35),
             motion: motion,
             toastDuration: toastDuration,
@@ -204,36 +267,49 @@ public struct KikiScreenEdgeOverlayPresentation {
     }
 
     public static func warning(
+        tone: KikiOverlayTone = .warning,
         title: String = "Warning",
         subtitle: String = "",
         systemImage: String = "exclamationmark.triangle.fill",
-        tint: Color = KikiScreenEdgeOverlayPalette.warning,
-        companionTint: Color = KikiScreenEdgeOverlayPalette.orange,
+        tint: Color? = nil,
+        companionTint: Color? = nil,
         motion: KikiScreenEdgeOverlayMotion = .blink,
         toastDuration: TimeInterval = 5,
         edgeDuration: TimeInterval = 1.8
     ) -> KikiScreenEdgeOverlayPresentation {
-        KikiScreenEdgeOverlayPresentation(
+        let palette = palette(for: tone)
+        return KikiScreenEdgeOverlayPresentation(
             title: title,
             subtitle: subtitle,
             systemImage: systemImage,
-            tint: tint,
-            companionTint: companionTint,
+            tint: tint ?? palette.tint,
+            companionTint: companionTint ?? palette.companionTint,
             behavior: .momentary(duration: toastDuration + 0.35),
             motion: motion,
             toastDuration: toastDuration,
             edgeDuration: edgeDuration
         )
     }
+
+    private static func palette(for tone: KikiOverlayTone) -> (tint: Color, companionTint: Color) {
+        switch tone {
+        case .alert:
+            return (KikiScreenEdgeOverlayPalette.orange, KikiScreenEdgeOverlayPalette.deepOrange)
+        case .success:
+            return (KikiScreenEdgeOverlayPalette.success, KikiScreenEdgeOverlayPalette.deepSuccess)
+        case .warning:
+            return (KikiScreenEdgeOverlayPalette.warning, KikiScreenEdgeOverlayPalette.orange)
+        }
+    }
 }
 
-public enum KikiScreenEdgeOverlayPalette {
-    public static let orange = Color(red: 1.0, green: 0.49, blue: 0.12)
-    public static let brightOrange = Color(red: 1.0, green: 0.68, blue: 0.28)
-    public static let deepOrange = Color(red: 0.86, green: 0.25, blue: 0.03)
-    public static let success = Color(red: 0.0, green: 0.62, blue: 0.34)
-    public static let deepSuccess = Color(red: 0.0, green: 0.42, blue: 0.26)
-    public static let warning = Color(red: 1.0, green: 0.34, blue: 0.12)
+enum KikiScreenEdgeOverlayPalette {
+    static let orange = Color(red: 1.0, green: 0.49, blue: 0.12)
+    static let brightOrange = Color(red: 1.0, green: 0.68, blue: 0.28)
+    static let deepOrange = Color(red: 0.86, green: 0.25, blue: 0.03)
+    static let success = Color(red: 0.0, green: 0.62, blue: 0.34)
+    static let deepSuccess = Color(red: 0.0, green: 0.42, blue: 0.26)
+    static let warning = Color(red: 1.0, green: 0.34, blue: 0.12)
 }
 
 @MainActor

@@ -18,6 +18,10 @@ modules for apps that share the same product mechanics.
   monitor for host-owned actions.
 - `KikiAuthorization`: privacy-permission status helpers, System Settings
   routing, and a draggable app helper overlay for manual authorization.
+- `KikiOnboarding`: first-launch scaffold, row atoms, permission row, and
+  single-window controller.
+- `KikiActivation`: activation-policy coordinator for menu bar apps that
+  temporarily promote to a regular app.
 
 ## Repository Shape
 
@@ -54,7 +58,7 @@ and extraction rules.
 After pushing this package to a remote repository, consume it from another app with SwiftPM:
 
 ```swift
-.package(url: "https://github.com/Feng6611/Kiki_mackit.git", from: "0.5.0")
+.package(url: "https://github.com/Feng6611/Kiki_mackit.git", from: "0.6.0")
 ```
 
 Then add only the required products to the app target:
@@ -68,7 +72,9 @@ Then add only the required products to the app target:
 .product(name: "KikiWindow", package: "Kiki_mackit"),
 .product(name: "KikiOverlay", package: "Kiki_mackit"),
 .product(name: "KikiTriggerCorner", package: "Kiki_mackit"),
-.product(name: "KikiAuthorization", package: "Kiki_mackit")
+.product(name: "KikiAuthorization", package: "Kiki_mackit"),
+.product(name: "KikiOnboarding", package: "Kiki_mackit"),
+.product(name: "KikiActivation", package: "Kiki_mackit")
 ```
 
 Local path development and product app dependency policy are workspace concerns;

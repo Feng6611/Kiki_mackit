@@ -50,6 +50,26 @@ KikiAuthorization must not:
 - hardcode product-specific copy beyond safe defaults;
 - store app permission decisions.
 
+## Assistant Mechanics (0.6.0)
+
+The assistant follows the System Settings window without polling on a timer.
+It listens for these signals:
+
+- `NSWorkspace.didActivateApplicationNotification` to detect when System
+  Settings becomes frontmost or yields back to the host.
+- `kAXMovedNotification` and `kAXResizedNotification` on the System Settings
+  application AX element to update the overlay position when the user drags
+  or resizes the Settings window.
+- `NSApplication.didChangeScreenParametersNotification` to re-anchor the
+  overlay after display changes.
+
+If Accessibility is not granted (or AX observer creation fails), the
+assistant falls back to a one-shot positioning using the current frontmost
+System Settings window snapshot. No `Timer` is installed.
+
+When `KikiAuthorizationAssistant.shared.dismiss()` is called, every observer
+and the AX observer are torn down on the main actor.
+
 ## Reference
 
 This component is independently implemented for Kiki and inspired by
