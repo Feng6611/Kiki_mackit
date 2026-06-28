@@ -67,6 +67,47 @@ post-onboarding routing into `KikiPaywall`.
 - `KikiPaywallSheet`: one-call preset that arranges header, stats, features,
   plan cards, primary CTA, and footer for the most common host shape.
 
+## High-Level Feature: `KikiPaywallPresentation`
+
+`KikiPaywallSheet` is an atom layer that takes raw closures and stats. Most
+apps go through one more level of indirection: a Commerce-agnostic
+presentation that captures *what the user should see right now* without
+embedding RevenueCat types or trial math.
+
+- `KikiPaywallAccessState`: `.notStarted | .trial | .expired | .entitled`.
+  Host code (or `KikiCommerce`) derives this from its own commerce stack.
+- `KikiPaywallPlanPresentation`: pure display fields for a plan; maps to the
+  `KikiPaywallPlan` atom via `paywallPlan`.
+- `KikiPaywallActions`: purchase / restore / optional startTrial / optional
+  dismiss closures.
+- `KikiPaywallPresentation`: full snapshot — access state, header copy,
+  plans, features, stats, footnote, in-flight flags. Exposes computed
+  `primaryButtonTitle` and `canStartTrial`.
+
+Two preset views consume this presentation:
+
+- `KikiCompactPaywall`: settings-sheet sized, restore + purchase actions.
+- `KikiOnboardingPaywall`: larger onboarding-paywall body that adds the
+  start-trial action when `canStartTrial` is true.
+
+Neither view ever touches Commerce. The host (or future `KikiCommerceKit`
+adapter) constructs the presentation and feeds it in.
+
+```swift
+let presentation = KikiPaywallPresentation(
+    accessState: .notStarted,
+    headerTitle: "My App Pro",
+    headerSubtitle: "Unlock all features",
+    plans: planPresentations,
+    actions: KikiPaywallActions(
+        purchase: { id in await commerce.purchase(planID: id) },
+        restore: { await commerce.restore() },
+        startTrial: { await commerce.startTrial() }
+    )
+)
+KikiCompactPaywall(presentation: presentation, selectedPlanID: $planID)
+```
+
 ## Default Shape With KikiPaywallSheet
 
 The shell + atoms approach stays available, but most apps only need the

@@ -29,18 +29,17 @@ surface for new apps.
 3. `KikiAuthorization` overlay tracks the System Settings window with a
    `0.18s` repeating `Timer`. This burns a runloop wakeup forever after
    `present(...)`. AX move/resize observers cover the same need natively.
-4. `MenuBarSpaceController` in
-   `mac-hidden-dot/HiddenDot/App/HiddenDotApp.swift` does five reusable
-   things at once: activation-policy bookkeeping, Dock prewarm,
+4. `MenuBarSpaceController` in a product app's main `App` file does five
+   reusable things at once: activation-policy bookkeeping, Dock prewarm,
    frontmost-app capture/restore, compact main-menu install, and reveal
    lifecycle. The first three belong to Kiki; the last two are product
    code.
-5. Onboarding is duplicated between `HiddenDotOnboardingView.swift` and
+5. Onboarding is duplicated between the product's onboarding view and
    `StarterOnboardingView.swift`. Both run the same scaffold layout, the
    same row visuals, and the same `KikiSingleWindowController` plumbing.
    This is the largest "host should not write" surface today.
 6. `KikiPaywall` exposes the right atoms but no one-call preset, so the
-   starter and Hidden Dot rebuild the same paywall sheet layout.
+   starter and product apps rebuild the same paywall sheet layout.
 7. `KikiOverlay` style has 25 public init parameters. A host can pick any
    combination and break the Kiki visual rhythm. Hosts should not pick a
    palette by hand; tone should drive color.
@@ -206,10 +205,10 @@ Tests
   custom color still pass `tint:`/`companionTint:` directly to the factory.
 
 Downstream impact
-- `build/mac-cat-keyboard-lock/CatKeyboardLock/Shared/CatKeyboardLockOverlayPresentations.swift`
-  calls `KikiScreenEdgeOverlayStyle.style(for:)` (does not exist in 0.5
-  source, but the file references the style ctor). Track follow-up in
-  CatKeyboardLock after this release lands.
+- One product app's overlay-presentations file calls
+  `KikiScreenEdgeOverlayStyle.style(for:)` (does not exist in 0.5 source,
+  but the file references the style ctor). Track follow-up in the
+  product apps after this release lands.
 
 ## Cross-Cutting Conventions Touched
 

@@ -97,6 +97,34 @@ stays app-owned.
   `KikiSettingsCopyRow`, `KikiAppIdentityView`,
   `KikiSettingsApplicationRow`, and `KikiSettingsApplicationPicker`.
 
+## High-Level Features (0.7.0)
+
+The atoms above stay; 0.7.0 adds optional presets that let the host skip
+hand-wiring the most common Settings shapes.
+
+- `KikiAppMetadata`: app identity (name, bundle id, short version, build,
+  copyright) with `displayVersion` and a `KikiAppMetadata.bundle(.main)`
+  factory that reads `Info.plist`. Pair with `KikiStandardAboutLinks` for
+  ordered Website / Support / Feedback / Terms / Privacy rows.
+- `KikiAccessStatusPresentation` + `KikiAccessStatusCard`: a small,
+  Commerce-agnostic status card with a tone (`neutral | trial | active |
+  expired`), title, optional subtitle, optional action title, and an
+  in-flight flag. The host derives the presentation; the card stays
+  unaware of RevenueCat or trial math.
+- `KikiStandardAboutPane`: composes `KikiAboutPane` with an optional
+  `KikiAccessStatusCard` and the ordered links from
+  `KikiStandardAboutLinks`. One call covers the standard About pane.
+- `KikiSettingsCoordinator<Tab>`: owns the
+  `KikiSettingsNavigationModel`, the tab specs, an optional
+  `KikiSettingsWindowController`, and a `KikiSettingsOpener`. Exposes
+  `select(_:)`, `open(tab:isMenuBarApp:)`, `prepare()`, and `isVisible`.
+- `KikiSettingsCoordinatorView`: a thin SwiftUI wrapper that feeds the
+  coordinator's selection into `KikiSettingsShell` so the host only
+  supplies `@ViewBuilder content`.
+
+These presets don't replace `KikiSettingsShell` — they sit on top of it and
+remain Commerce-agnostic.
+
 ## Boundaries
 
 KikiSettings may:

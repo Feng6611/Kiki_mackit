@@ -44,7 +44,9 @@ KikiOnboarding may:
 - own the welcome window chrome, scaffold layout, row visuals, and
   permission row plumbing;
 - provide a single-window controller that closes on Done and stays single
-  instance.
+  instance;
+- track step navigation when the host opts into the 0.7.0 coordinator
+  (see below).
 
 KikiOnboarding must not:
 
@@ -52,3 +54,30 @@ KikiOnboarding must not:
 - decide what the next surface after onboarding is;
 - own paid-access routing, trial start, or restore-purchase decisions;
 - hardcode product copy beyond safe defaults.
+
+## High-Level Features (0.7.0)
+
+The scaffold atom stays; 0.7.0 adds a small declarative coordinator for
+hosts that want a multi-step welcome flow without rolling their own state
+machine.
+
+- `KikiOnboardingStep`: a four-case enum (`.welcome | .features |
+  .permission | .success`) plus `.paywallHandoff` (Commerce-agnostic) and
+  `.custom(id:view:)`. Each non-handoff case carries a typed content
+  struct (`KikiOnboardingWelcomeContent`, etc.) describing copy and the
+  primary/secondary button titles.
+- `KikiOnboardingConfiguration`: the step list together with `appName`,
+  tint, `completionKey`, window autosave name, and window title.
+- `KikiOnboardingCompletionStore`: protocol backed by
+  `KikiOnboardingUserDefaultsCompletionStore` (production) and
+  `KikiOnboardingInMemoryCompletionStore` (tests/previews). Lets the host
+  own the completion-key namespace without forcing UserDefaults.
+- `KikiOnboardingCoordinator`: `@MainActor` ObservableObject that drives
+  step navigation (`startIfNeeded`, `advance`, `back`, `finish`,
+  `resetCompletion`), opens and closes the onboarding window, and routes
+  `.paywallHandoff` to a host-supplied closure (or auto-advances if the
+  closure is nil).
+
+The coordinator never imports Commerce: the host wires the paywall handoff
+closure to whichever paywall surface it chose (`KikiCompactPaywall`,
+`KikiOnboardingPaywall`, or a custom view).

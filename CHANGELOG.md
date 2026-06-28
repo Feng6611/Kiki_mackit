@@ -1,6 +1,35 @@
 # Changelog
 
-## Unreleased
+## Unreleased — 0.7.0
+
+### Added
+
+- `KikiPaywallPresentation`, `KikiPaywallAccessState`,
+  `KikiPaywallPlanPresentation`, `KikiPaywallActions`: Commerce-agnostic
+  view model for paywall surfaces.
+- `KikiCompactPaywall` and `KikiOnboardingPaywall` preset views that
+  consume a `KikiPaywallPresentation` plus a selected-plan binding.
+- `KikiAppMetadata`, `KikiAppMetadata.bundle(_:)`, `KikiStandardAboutLink`,
+  and `KikiStandardAboutLinks` in `KikiSettings`.
+- `KikiAccessStatusTone`, `KikiAccessStatusPresentation`, and
+  `KikiAccessStatusCard` for a Commerce-agnostic access status card.
+- `KikiStandardAboutPane` composing `KikiAboutPane` with an optional
+  status card and the ordered `KikiStandardAboutLinks` rows.
+- `KikiSettingsCoordinator<Tab>` and `KikiSettingsCoordinatorView` for a
+  preset Settings flow that owns navigation, opener, and window
+  controller.
+- `KikiOnboardingStep` (welcome / features / permission / success /
+  paywallHandoff / custom) with typed content structs.
+- `KikiOnboardingConfiguration`, `KikiOnboardingCompletionStore`
+  protocol, `KikiOnboardingUserDefaultsCompletionStore`,
+  `KikiOnboardingInMemoryCompletionStore`, and
+  `KikiOnboardingCoordinator` that drive a multi-step onboarding flow
+  without persisting state inside the module.
+
+### Notes
+
+- All 0.6.0 atoms remain. The 0.7.0 surface is purely additive: the new
+  Feature types sit on top of the existing shells, sheets, and rows.
 
 ## 0.6.0 - 2026-06-27
 
