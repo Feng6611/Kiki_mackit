@@ -31,6 +31,19 @@
 - All 0.6.0 atoms remain. The 0.7.0 surface is purely additive: the new
   Feature types sit on top of the existing shells, sheets, and rows.
 
+### Removed
+
+- The `KikiCommerce` target (and its `KikiCommerceTests`). Its types
+  (`KikiProAccessManager`, `KikiProPlan`, `KikiProAccessConfiguration`,
+  `KikiProPaywallSheet`, `KikiProUpgradeCard`, `KikiProStatusCard`, etc.)
+  now live in the new `KikiCommerceKit` package
+  (`KikiCommerceCore` + `KikiCommercePresentation`). Replace
+  `import KikiCommerce` with `import KikiCommerceCore` and
+  `import KikiCommercePresentation`.
+- The `RevenueCatCommerceKit` package dependency. Apps that need the
+  RevenueCat-backed `CommerceClient` now depend on `KikiCommerceKit`
+  and `import KikiRevenueCat`.
+
 ## 0.6.0 - 2026-06-27
 
 ### Added
