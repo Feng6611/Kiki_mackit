@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 
+@MainActor
 public struct KikiStandardAboutPane: View {
     private let metadata: KikiAppMetadata
     private let icon: NSImage
@@ -12,7 +13,7 @@ public struct KikiStandardAboutPane: View {
 
     public init(
         metadata: KikiAppMetadata,
-        icon: NSImage = NSApp.applicationIconImage,
+        icon: NSImage? = nil,
         iconSize: CGFloat = 76,
         accessStatus: KikiAccessStatusPresentation? = nil,
         onAccessAction: (@MainActor () -> Void)? = nil,
@@ -20,7 +21,7 @@ public struct KikiStandardAboutPane: View {
         onOpenLink: ((URL) -> Void)? = nil
     ) {
         self.metadata = metadata
-        self.icon = icon
+        self.icon = icon ?? NSApp.applicationIconImage
         self.iconSize = iconSize
         self.accessStatus = accessStatus
         self.onAccessAction = onAccessAction

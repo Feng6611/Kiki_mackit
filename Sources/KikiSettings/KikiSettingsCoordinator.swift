@@ -3,10 +3,10 @@ import SwiftUI
 
 @MainActor
 public final class KikiSettingsCoordinator<Tab: Hashable> {
-    public let navigation: KikiSettingsNavigationModel<Tab>
-    public let opener: KikiSettingsOpener
-    public let windowController: KikiSettingsWindowController?
-    public let tabs: [KikiSettingsTabSpec<Tab>]
+    let navigation: KikiSettingsNavigationModel<Tab>
+    let opener: KikiSettingsOpener
+    let windowController: KikiSettingsWindowController?
+    let tabs: [KikiSettingsTabSpec<Tab>]
 
     public init(
         tabs: [KikiSettingsTabSpec<Tab>],

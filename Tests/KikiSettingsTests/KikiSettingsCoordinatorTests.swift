@@ -1,4 +1,4 @@
-import KikiSettings
+@testable import KikiSettings
 import Testing
 
 @MainActor

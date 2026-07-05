@@ -108,18 +108,21 @@ public struct KikiPaywallStatConfig: Identifiable, Equatable {
     }
 }
 
-public struct KikiPaywallActionConfig {
+public struct KikiPaywallActionConfig: Identifiable {
+    public let id: UUID
     public let title: String
     public let isLoading: Bool
     public let isEnabled: Bool
     public let action: @MainActor () -> Void
 
     public init(
+        id: UUID = UUID(),
         title: String,
         isLoading: Bool = false,
         isEnabled: Bool = true,
         action: @escaping @MainActor () -> Void
     ) {
+        self.id = id
         self.title = title
         self.isLoading = isLoading
         self.isEnabled = isEnabled
@@ -260,7 +263,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
                 .disabled(!primary.isEnabled)
                 .opacity(primary.isEnabled ? 1 : 0.45)
 
-                ForEach(Array(secondaryActions.enumerated()), id: \.offset) { _, secondary in
+                ForEach(secondaryActions) { secondary in
                     Button {
                         secondary.action()
                     } label: {

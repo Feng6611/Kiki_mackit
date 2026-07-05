@@ -101,6 +101,26 @@ struct KikiOnboardingCoordinatorTests {
         #expect(coordinator.currentStepIndex == 3)
     }
 
+    @Test("back() re-fires paywallHandoff when stepping back into it")
+    func backIntoPaywallHandoffRefires() {
+        let store = KikiOnboardingInMemoryCompletionStore()
+        var handoffCount = 0
+        let coordinator = KikiOnboardingCoordinator(
+            configuration: makeConfiguration(includePaywall: true),
+            completionStore: store,
+            onPaywallHandoff: { handoffCount += 1 }
+        )
+
+        coordinator.advance()
+        coordinator.advance()
+        #expect(handoffCount == 1)
+
+        coordinator.advance()
+        coordinator.back()
+        #expect(coordinator.currentStepIndex == 2)
+        #expect(handoffCount == 2)
+    }
+
     @Test("Step id reflects step kind")
     func stepIDReflectsCase() {
         #expect(KikiOnboardingStep.welcome(KikiOnboardingWelcomeContent(title: "t")).id == "welcome")

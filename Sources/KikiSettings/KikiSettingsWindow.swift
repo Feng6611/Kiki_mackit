@@ -51,14 +51,10 @@ public final class KikiSettingsWindowController {
         minimumContentSize: CGSize = CGSize(
             width: KikiSettingsDefaults.minimumWindowWidth,
             height: KikiSettingsDefaults.minimumWindowHeight
-        ),
-        windowTitle: String = "Settings"
+        )
     ) {
         self.frameAutosaveName = NSWindow.FrameAutosaveName(frameAutosaveName)
         self.minimumContentSize = minimumContentSize
-        // Retained for 0.6 source compatibility. Exact view registration
-        // makes title-based window discovery unnecessary.
-        _ = windowTitle
     }
 
     public var isVisible: Bool {

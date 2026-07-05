@@ -1,6 +1,6 @@
 # KikiCommerce (moved)
 
-The `KikiCommerce` product was removed from Kiki_mackit before 0.7.0.
+The `KikiCommerce` product was removed from Kiki_mackit in 0.7.0.
 Paid-access workflow now lives in the separate optional `KikiCommerceKit`
 package:
 

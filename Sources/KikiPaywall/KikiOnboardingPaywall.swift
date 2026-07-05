@@ -78,7 +78,7 @@ public struct KikiOnboardingPaywall: View {
                 .disabled(primaryIsEnabled == false)
                 .opacity(primaryIsEnabled ? 1 : 0.45)
 
-                ForEach(Array(presentation.secondaryActions.enumerated()), id: \.offset) { _, secondaryAction in
+                ForEach(presentation.secondaryActions) { secondaryAction in
                     Button {
                         secondaryAction.perform(selectedPlanID: selectedPlanID)
                     } label: {

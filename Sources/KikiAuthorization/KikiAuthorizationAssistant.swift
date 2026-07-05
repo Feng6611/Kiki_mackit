@@ -17,7 +17,7 @@ public final class KikiAuthorizationAssistant {
     private var pendingSourceFrameInScreen: CGRect?
     private var didPresentOverlay = false
 
-    private init() {}
+    public init() {}
 
     public func present(
         panel: KikiAuthorizationPanel,

@@ -74,18 +74,21 @@ public struct KikiPaywallLinkPresentation: Equatable, Identifiable, Sendable {
     }
 }
 
-public struct KikiPaywallActionPresentation {
+public struct KikiPaywallActionPresentation: Identifiable {
+    public let id: UUID
     public let title: String
     public let isLoading: Bool
     private let isEnabled: @MainActor (_ selectedPlanID: String) -> Bool
     private let action: @MainActor (_ selectedPlanID: String) -> Void
 
     public init(
+        id: UUID = UUID(),
         title: String,
         isLoading: Bool = false,
         isEnabled: Bool = true,
         action: @escaping @MainActor () -> Void
     ) {
+        self.id = id
         self.title = title
         self.isLoading = isLoading
         self.isEnabled = { _ in isEnabled }
@@ -93,11 +96,13 @@ public struct KikiPaywallActionPresentation {
     }
 
     public init(
+        id: UUID = UUID(),
         title: String,
         isLoading: Bool = false,
         isEnabled: @escaping @MainActor (_ selectedPlanID: String) -> Bool,
         action: @escaping @MainActor (_ selectedPlanID: String) -> Void
     ) {
+        self.id = id
         self.title = title
         self.isLoading = isLoading
         self.isEnabled = isEnabled

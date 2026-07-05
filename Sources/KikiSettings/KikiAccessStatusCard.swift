@@ -58,9 +58,9 @@ public struct KikiAccessStatusCard: View {
 
             Spacer(minLength: 8)
 
-            if let actionTitle = presentation.actionTitle, let action {
+            if let actionTitle = presentation.actionTitle {
                 Button {
-                    action()
+                    action?()
                 } label: {
                     if presentation.isActionLoading {
                         ProgressView().controlSize(.small)
@@ -70,7 +70,7 @@ public struct KikiAccessStatusCard: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
-                .disabled(presentation.isActionLoading)
+                .disabled(presentation.isActionLoading || action == nil)
             }
         }
     }

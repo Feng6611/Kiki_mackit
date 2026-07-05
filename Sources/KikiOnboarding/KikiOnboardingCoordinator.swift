@@ -69,6 +69,7 @@ public final class KikiOnboardingCoordinator: ObservableObject {
     public func back() {
         guard canGoBack else { return }
         currentStepIndex -= 1
+        handleCurrentStepIfNonInteractive()
     }
 
     public func skip() {
@@ -193,9 +194,11 @@ private struct KikiOnboardingFlowContainer: View {
                 title: content.continueTitle,
                 action: { coordinator.advance() }
             ),
-            secondaryAction: content.skipTitle.map { title in
-                KikiOnboardingAction(title: title, action: { coordinator.finish() })
-            },
+            secondaryAction: coordinator.canSkip
+                ? content.skipTitle.map { title in
+                    KikiOnboardingAction(title: title, action: { coordinator.skip() })
+                }
+                : nil,
             tint: coordinator.configuration.tint,
             size: coordinator.configuration.windowSize
         )

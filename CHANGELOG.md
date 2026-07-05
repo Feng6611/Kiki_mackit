@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.7.1 - 2026-07-05
+
+### Fixed
+
+- Onboarding welcome step's optional skip button now routes through
+  `coordinator.skip()` instead of calling `coordinator.finish()` directly.
+  When `configuration.canSkip == false`, the skip button is hidden rather
+  than presenting a working skip affordance that bypasses the documented
+  guard.
+- `KikiOnboardingCoordinator.back()` now re-runs non-interactive step
+  handling. Stepping back into a `.paywallHandoff` step re-fires
+  `onPaywallHandoff` (or auto-advances when no callback is set) instead of
+  leaving the placeholder visible.
+- `KikiSettingsCoordinator<Tab>` no longer exposes `navigation`,
+  `opener`, `windowController`, and `tabs` as public properties. Hosts
+  route through `select(_:)`, `open(tab:)`, `close()`, and `prepare()`;
+  `KikiSettingsCoordinatorView` still composes them internally.
+- `KikiStandardAboutPane` is `@MainActor`-isolated so the
+  `NSApp.applicationIconImage` default argument evaluates on the main
+  actor under Swift 6 strict concurrency.
+- `KikiAccessStatusCard` renders a disabled button when
+  `presentation.actionTitle` is set but no `action` is supplied, instead
+  of silently dropping the affordance.
+- `KikiPaywallActionPresentation` and `KikiPaywallActionConfig` now
+  conform to `Identifiable` with a stable `UUID` id. Paywall presets
+  use `ForEach(…, id: \.id)` instead of `id: \.offset`, so reordering
+  or inserting secondary actions no longer glitches SwiftUI animations.
+- `KikiAuthorizationAssistant.init()` is `public` again. The 0.6.0
+  regression that made it `private` broke callers that constructed their
+  own assistant and blocked testability of the new AX-observer logic.
+- Removed the no-op `windowTitle` parameter from
+  `KikiSettingsWindowController.init`. Exact view registration makes
+  title-based window discovery unnecessary; no callers passed it.
+
+### Documentation
+
+- `Docs/KikiCommerce.md` clarifies that `KikiCommerce` was removed *in*
+  0.7.0, not before.
+- `CHANGELOG.md` 0.7.0 entry now lists all three `KikiCommerceKit`
+  targets (`KikiCommerceCore` + `KikiRevenueCat` + `KikiCommercePresentation`)
+  and names `CommerceClient` migration consistently with the new package.
+
 ## 0.7.0 - 2026-07-05
 
 ### Added
@@ -60,10 +102,11 @@
 - The `KikiCommerce` target (and its `KikiCommerceTests`). Its types
   (`KikiProAccessManager`, `KikiProPlan`, `KikiProAccessConfiguration`,
   `KikiProPaywallSheet`, `KikiProUpgradeCard`, `KikiProStatusCard`, etc.)
-  now live in the new `KikiCommerceKit` package
-  (`KikiCommerceCore` + `KikiCommercePresentation`). Replace
-  `import KikiCommerce` with `import KikiCommerceCore` and
-  `import KikiCommercePresentation`.
+  now live in the separate `KikiCommerceKit` package
+  (`KikiCommerceCore` + `KikiRevenueCat` + `KikiCommercePresentation`).
+  Replace `import KikiCommerce` with `import KikiCommerceCore` and
+  `import KikiCommercePresentation` (and `import KikiRevenueCat` for the
+  RevenueCat-backed `CommerceClient`).
 - The `RevenueCatCommerceKit` package dependency. Apps that need the
   RevenueCat-backed `CommerceClient` now depend on `KikiCommerceKit`
   and `import KikiRevenueCat`.
