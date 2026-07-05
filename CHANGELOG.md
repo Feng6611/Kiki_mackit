@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.7.2 - 2026-07-05
+
+### Changed
+
+- `KikiStandardAboutPane` now composes the existing row atoms
+  (`KikiAppIdentityView` + `KikiSettingsStatusRow` +
+  `KikiSettingsLinkRow` + `KikiSettingsCopyRow`) instead of rendering a
+  custom `KikiAccessStatusCard` and minimal link buttons. Status appears
+  as a tappable row with value + chevron; links show title + derived
+  host/email value + trailing icon. `KikiAccessStatusCard` remains as an
+  atom for other contexts.
+- `KikiStandardAboutLink` now carries non-optional `value`, `systemImage`,
+  and `kind` fields, derived in the init. `mailto:` URLs auto-resolve to
+  `.copy` kind with the email as value; `https` URLs derive the host as
+  value. Hosts can override any field by constructing the link directly.
+- `KikiOnboardingPaywall` now delegates to `KikiPaywallSheet` with
+  `size: .onboarding` instead of duplicating the sheet's stats/features/
+  plans/actions layout (~70 lines removed). Added `KikiPaywallSheetSize`
+  enum (`.compact` / `.onboarding`) and a `size` parameter on every
+  `KikiPaywallSheet` initializer.
+- `KikiOnboardingCoordinator`'s paywall-handoff placeholder now uses a
+  new `KikiOnboardingLoadingScaffold` atom that shares the scaffold's
+  background, frame, and accessibility label, instead of a hand-rolled
+  `VStack { ProgressView(); Text("Loading…") }`.
+- Onboarding step transitions use `.transition(.opacity.combined(with:
+  .move(edge: .trailing)))` + `.animation(.easeInOut(duration: 0.22))`
+  instead of `.id(currentStepIndex)` rebuilds, so advancing/backing
+  animates instead of jumping.
+
+### Removed
+
+- `KikiStandardAboutPane.onOpenLink` parameter. No consumer used it, and
+  `KikiSettingsLinkRow` already opens URLs via `NSWorkspace`. Hosts
+  needing custom routing build their own about from the same atoms.
+
 ## 0.7.1 - 2026-07-05
 
 ### Fixed

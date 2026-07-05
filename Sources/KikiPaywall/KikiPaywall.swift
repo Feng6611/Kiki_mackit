@@ -13,6 +13,25 @@ public enum KikiPaywallDefaults {
     public static let sheetPadding: CGFloat = 28
 }
 
+public enum KikiPaywallSheetSize: Sendable {
+    case compact
+    case onboarding
+
+    public var width: CGFloat {
+        switch self {
+        case .compact: return KikiPaywallDefaults.sheetWidth
+        case .onboarding: return KikiPaywallDefaults.onboardingSheetWidth
+        }
+    }
+
+    public var height: CGFloat {
+        switch self {
+        case .compact: return KikiPaywallDefaults.sheetHeight
+        case .onboarding: return KikiPaywallDefaults.onboardingSheetHeight
+        }
+    }
+}
+
 @MainActor
 public final class KikiPaywallWindowController<Content: View> {
     private let windowController: KikiSingleWindowController<Content>
@@ -139,6 +158,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
     private let primary: KikiPaywallActionConfig
     private let secondaryActions: [KikiPaywallActionConfig]
     private let tint: Color
+    private let size: KikiPaywallSheetSize
     private let showsCloseButton: Bool
     private let onClose: (() -> Void)?
     private let footer: Footer
@@ -152,6 +172,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
         primary: KikiPaywallActionConfig,
         secondary: KikiPaywallActionConfig? = nil,
         tint: Color = .accentColor,
+        size: KikiPaywallSheetSize = .compact,
         showsCloseButton: Bool = false,
         onClose: (() -> Void)? = nil,
         @ViewBuilder footer: () -> Footer
@@ -164,6 +185,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
         self.primary = primary
         self.secondaryActions = secondary.map { [$0] } ?? []
         self.tint = tint
+        self.size = size
         self.showsCloseButton = showsCloseButton
         self.onClose = onClose
         self.footer = footer()
@@ -178,6 +200,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
         primary: KikiPaywallActionConfig,
         secondaryActions: [KikiPaywallActionConfig],
         tint: Color = .accentColor,
+        size: KikiPaywallSheetSize = .compact,
         showsCloseButton: Bool = false,
         onClose: (() -> Void)? = nil,
         @ViewBuilder footer: () -> Footer
@@ -190,6 +213,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
         self.primary = primary
         self.secondaryActions = secondaryActions
         self.tint = tint
+        self.size = size
         self.showsCloseButton = showsCloseButton
         self.onClose = onClose
         self.footer = footer()
@@ -197,6 +221,8 @@ public struct KikiPaywallSheet<Footer: View>: View {
 
     public var body: some View {
         KikiPaywallShell(
+            width: size.width,
+            height: size.height,
             tint: tint,
             showsCloseButton: showsCloseButton,
             onClose: onClose
@@ -295,6 +321,7 @@ public extension KikiPaywallSheet where Footer == EmptyView {
         primary: KikiPaywallActionConfig,
         secondary: KikiPaywallActionConfig? = nil,
         tint: Color = .accentColor,
+        size: KikiPaywallSheetSize = .compact,
         showsCloseButton: Bool = false,
         onClose: (() -> Void)? = nil
     ) {
@@ -307,6 +334,7 @@ public extension KikiPaywallSheet where Footer == EmptyView {
             primary: primary,
             secondary: secondary,
             tint: tint,
+            size: size,
             showsCloseButton: showsCloseButton,
             onClose: onClose,
             footer: { EmptyView() }
@@ -322,6 +350,7 @@ public extension KikiPaywallSheet where Footer == EmptyView {
         primary: KikiPaywallActionConfig,
         secondaryActions: [KikiPaywallActionConfig],
         tint: Color = .accentColor,
+        size: KikiPaywallSheetSize = .compact,
         showsCloseButton: Bool = false,
         onClose: (() -> Void)? = nil
     ) {
@@ -334,6 +363,7 @@ public extension KikiPaywallSheet where Footer == EmptyView {
             primary: primary,
             secondaryActions: secondaryActions,
             tint: tint,
+            size: size,
             showsCloseButton: showsCloseButton,
             onClose: onClose,
             footer: { EmptyView() }

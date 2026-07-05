@@ -167,7 +167,8 @@ private struct KikiOnboardingFlowContainer: View {
                 EmptyView()
             }
         }
-        .id(coordinator.currentStepIndex)
+        .transition(.opacity.combined(with: .move(edge: .trailing)))
+        .animation(.easeInOut(duration: 0.22), value: coordinator.currentStepIndex)
         .frame(
             width: coordinator.configuration.windowSize.width,
             height: coordinator.configuration.windowSize.height
@@ -264,15 +265,11 @@ private struct KikiOnboardingFlowContainer: View {
     }
 
     private var paywallHandoffPlaceholder: some View {
-        VStack(spacing: 12) {
-            ProgressView()
-            Text("Loading…")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-        }
-        .frame(
-            width: coordinator.configuration.windowSize.width,
-            height: coordinator.configuration.windowSize.height
+        KikiOnboardingLoadingScaffold(
+            appName: coordinator.configuration.appName,
+            title: "Loading…",
+            tint: coordinator.configuration.tint,
+            size: coordinator.configuration.windowSize
         )
     }
 }
