@@ -1,5 +1,12 @@
 # Kiki_mackit 0.7.0 Refactor Plan — High-Level Features
 
+> **Historical implementation plan, not current API documentation.** The 2a
+> work described here has been implemented, with final API changes documented
+> in the module guides. The later 2b split removed `KikiCommerce` from this
+> package and moved commerce into the standalone `KikiCommerceKit`. Use
+> [`APIConventions.md`](APIConventions.md) for current Kit boundaries and the
+> workspace `BUILD_SYSTEM.md` / `MIGRATION.md` for current status.
+
 ## 关系与定位
 
 本文件是工作区 [`build/BUILD_SYSTEM.md`](../../BUILD_SYSTEM.md) §2.2 "Base Kit" 在 Kit 内的落地计划，承接 [`Refactor-0.6.0.md`](Refactor-0.6.0.md)。
@@ -85,11 +92,13 @@ API 边界守则：
 
 - `KikiPaywallPresentation.swift`
   - `public struct KikiPaywallPresentation: Sendable`：
-    - `accessState: KikiAccessPresentationState`（本地枚举，不依赖 Commerce：`.notStarted / .trial(daysRemaining:) / .expired / .entitled(planTitle:)`）
+    - `accessState: KikiPaywallAccessState`（本地枚举，不依赖 Commerce：`.notStarted / .trial / .expired / .entitled(planTitle:)`）
     - `plans: [KikiPaywallPlanPresentation]`
     - `features: [String]`
     - `headerTitle / subtitle / footnote?`
-    - `actions: KikiPaywallActions`（purchase / restore / startTrial / dismiss closures）
+    - `primaryAction / secondaryActions`：宿主提供的通用
+      `KikiPaywallActionPresentation`；Base Kit 不推断 purchase / restore /
+      trial / dismiss 策略。
 - `KikiCompactPaywall.swift`
   - SwiftUI `View`，紧凑布局，适合 Settings sheet。仅消费 `KikiPaywallPresentation`，内部复用 0.6 的 `KikiPaywallSheet`/`KikiPaywallShell` atoms。
 - `KikiOnboardingPaywall.swift`

@@ -1,12 +1,14 @@
 # Changelog
 
-## Unreleased — 0.7.0
+## 0.7.0 - 2026-07-05
 
 ### Added
 
 - `KikiPaywallPresentation`, `KikiPaywallAccessState`,
-  `KikiPaywallPlanPresentation`, `KikiPaywallActions`: Commerce-agnostic
-  view model for paywall surfaces.
+  `KikiPaywallPlanPresentation`, `KikiPaywallActionPresentation`, and
+  `KikiPaywallLinkPresentation`: Commerce-agnostic view models for paywall
+  surfaces. The host supplies the primary and ordered secondary actions, so
+  Kit does not infer purchase, restore, trial, or dismiss policy.
 - `KikiCompactPaywall` and `KikiOnboardingPaywall` preset views that
   consume a `KikiPaywallPresentation` plus a selected-plan binding.
 - `KikiAppMetadata`, `KikiAppMetadata.bundle(_:)`, `KikiStandardAboutLink`,
@@ -36,12 +38,22 @@
   protocol, `KikiOnboardingUserDefaultsCompletionStore`,
   `KikiOnboardingInMemoryCompletionStore`, and
   `KikiOnboardingCoordinator` that drive a multi-step onboarding flow
-  without persisting state inside the module.
+  with an app-namespaced completion store.
+- Configurable onboarding window and minimum sizes plus
+  `KikiOnboardingCloseDisposition` for explicit close semantics.
+- Exact Settings-window registration through `kikiSettingsWindow(_:)`, used
+  automatically by `KikiSettingsCoordinatorView`.
 
-### Notes
+### Changed
 
-- All 0.6.0 atoms remain. The 0.7.0 surface is purely additive: the new
-  Feature types sit on top of the existing shells, sheets, and rows.
+- `KikiSettingsWindowController` now tracks the exact SwiftUI Settings window
+  registered by its view instead of scanning or mutating `NSApp.windows`.
+- `KikiPaywallSheet` supports multiple secondary actions while preserving its
+  single-secondary-action initializer.
+- Compact and onboarding paywalls render messages, footnotes, and footer links
+  together and share host-supplied action semantics.
+- Empty onboarding step lists complete immediately instead of presenting an
+  empty window.
 
 ### Removed
 
@@ -55,6 +67,12 @@
 - The `RevenueCatCommerceKit` package dependency. Apps that need the
   RevenueCat-backed `CommerceClient` now depend on `KikiCommerceKit`
   and `import KikiRevenueCat`.
+
+### Migration
+
+- 0.6 atom APIs remain available. Apps using the former `KikiCommerce` product
+  must move imports and dependencies to `KikiCommerceKit`; see
+  `Docs/KikiCommerce.md`.
 
 ## 0.6.0 - 2026-06-27
 

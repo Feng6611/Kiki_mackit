@@ -134,7 +134,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
     private let plans: [KikiPaywallPlan]
     @Binding private var selectedPlanID: String
     private let primary: KikiPaywallActionConfig
-    private let secondary: KikiPaywallActionConfig?
+    private let secondaryActions: [KikiPaywallActionConfig]
     private let tint: Color
     private let showsCloseButton: Bool
     private let onClose: (() -> Void)?
@@ -159,7 +159,33 @@ public struct KikiPaywallSheet<Footer: View>: View {
         self.plans = plans
         self._selectedPlanID = selectedPlanID
         self.primary = primary
-        self.secondary = secondary
+        self.secondaryActions = secondary.map { [$0] } ?? []
+        self.tint = tint
+        self.showsCloseButton = showsCloseButton
+        self.onClose = onClose
+        self.footer = footer()
+    }
+
+    public init(
+        header: KikiPaywallHeaderConfig,
+        stats: [KikiPaywallStatConfig] = [],
+        features: [String] = [],
+        plans: [KikiPaywallPlan],
+        selectedPlanID: Binding<String>,
+        primary: KikiPaywallActionConfig,
+        secondaryActions: [KikiPaywallActionConfig],
+        tint: Color = .accentColor,
+        showsCloseButton: Bool = false,
+        onClose: (() -> Void)? = nil,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.header = header
+        self.stats = stats
+        self.features = features
+        self.plans = plans
+        self._selectedPlanID = selectedPlanID
+        self.primary = primary
+        self.secondaryActions = secondaryActions
         self.tint = tint
         self.showsCloseButton = showsCloseButton
         self.onClose = onClose
@@ -234,7 +260,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
                 .disabled(!primary.isEnabled)
                 .opacity(primary.isEnabled ? 1 : 0.45)
 
-                if let secondary {
+                ForEach(Array(secondaryActions.enumerated()), id: \.offset) { _, secondary in
                     Button {
                         secondary.action()
                     } label: {
@@ -277,6 +303,33 @@ public extension KikiPaywallSheet where Footer == EmptyView {
             selectedPlanID: selectedPlanID,
             primary: primary,
             secondary: secondary,
+            tint: tint,
+            showsCloseButton: showsCloseButton,
+            onClose: onClose,
+            footer: { EmptyView() }
+        )
+    }
+
+    init(
+        header: KikiPaywallHeaderConfig,
+        stats: [KikiPaywallStatConfig] = [],
+        features: [String] = [],
+        plans: [KikiPaywallPlan],
+        selectedPlanID: Binding<String>,
+        primary: KikiPaywallActionConfig,
+        secondaryActions: [KikiPaywallActionConfig],
+        tint: Color = .accentColor,
+        showsCloseButton: Bool = false,
+        onClose: (() -> Void)? = nil
+    ) {
+        self.init(
+            header: header,
+            stats: stats,
+            features: features,
+            plans: plans,
+            selectedPlanID: selectedPlanID,
+            primary: primary,
+            secondaryActions: secondaryActions,
             tint: tint,
             showsCloseButton: showsCloseButton,
             onClose: onClose,
@@ -721,7 +774,7 @@ public struct KikiPaywallDotSeparator: View {
     }
 }
 
-public enum KikiPaywallMessageTone {
+public enum KikiPaywallMessageTone: Equatable, Sendable {
     case neutral
     case warning
     case success

@@ -1,4 +1,4 @@
-import KikiOnboarding
+@testable import KikiOnboarding
 import SwiftUI
 import Testing
 
@@ -153,6 +153,82 @@ struct KikiOnboardingCoordinatorTests {
         coordinator.skip()
 
         #expect(store.isCompleted(forKey: config.completionKey) == false)
+    }
+
+    @Test("Window close can complete onboarding exactly once")
+    func windowCloseCompletesWhenConfigured() {
+        let store = KikiOnboardingInMemoryCompletionStore()
+        var finishedCount = 0
+        let config = KikiOnboardingConfiguration(
+            appName: "Test",
+            steps: [
+                .welcome(KikiOnboardingWelcomeContent(title: "Welcome"))
+            ],
+            completionKey: "kiki.onboarding.tests.close",
+            closeDisposition: .complete
+        )
+        let coordinator = KikiOnboardingCoordinator(
+            configuration: config,
+            completionStore: store,
+            onFinished: { finishedCount += 1 }
+        )
+
+        coordinator.handleWindowClosed()
+        coordinator.finish()
+
+        #expect(store.isCompleted(forKey: config.completionKey))
+        #expect(finishedCount == 1)
+    }
+
+    @Test("Window close keeps onboarding pending by default")
+    func windowCloseKeepsPendingByDefault() {
+        let store = KikiOnboardingInMemoryCompletionStore()
+        let config = makeConfiguration()
+        let coordinator = KikiOnboardingCoordinator(
+            configuration: config,
+            completionStore: store
+        )
+
+        coordinator.handleWindowClosed()
+
+        #expect(store.isCompleted(forKey: config.completionKey) == false)
+    }
+
+    @Test("Configuration preserves custom window geometry")
+    func configurationPreservesWindowGeometry() {
+        let size = CGSize(width: 620, height: 660)
+        let config = KikiOnboardingConfiguration(
+            appName: "Test",
+            steps: [],
+            completionKey: "kiki.onboarding.tests.geometry",
+            windowSize: size,
+            minimumWindowSize: CGSize(width: 560, height: 560)
+        )
+
+        #expect(config.windowSize == size)
+        #expect(config.minimumWindowSize == CGSize(width: 560, height: 560))
+    }
+
+    @Test("An empty flow completes without presenting a window")
+    func emptyFlowCompletesWithoutWindow() {
+        let store = KikiOnboardingInMemoryCompletionStore()
+        var finishedCount = 0
+        let config = KikiOnboardingConfiguration(
+            appName: "Test",
+            steps: [],
+            completionKey: "kiki.onboarding.tests.empty"
+        )
+        let coordinator = KikiOnboardingCoordinator(
+            configuration: config,
+            completionStore: store,
+            onFinished: { finishedCount += 1 }
+        )
+
+        coordinator.start()
+
+        #expect(store.isCompleted(forKey: config.completionKey))
+        #expect(coordinator.isVisible == false)
+        #expect(finishedCount == 1)
     }
 
     @Test("custom step receives a working navigation struct")

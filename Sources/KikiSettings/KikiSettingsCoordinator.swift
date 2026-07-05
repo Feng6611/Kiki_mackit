@@ -52,6 +52,7 @@ public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
     private let tabs: [KikiSettingsTabSpec<Tab>]
     private let width: CGFloat
     private let height: CGFloat
+    private let windowController: KikiSettingsWindowController?
     private let content: (Tab) -> Content
 
     public init(
@@ -64,6 +65,7 @@ public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
         self.tabs = coordinator.tabs
         self.width = width
         self.height = height
+        self.windowController = coordinator.windowController
         self.content = content
     }
 
@@ -75,5 +77,54 @@ public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
             height: height,
             content: content
         )
+        .kikiSettingsWindow(windowController)
+    }
+}
+
+@MainActor
+private final class KikiSettingsWindowRegistrationView: NSView {
+    var onWindowAvailable: ((NSWindow) -> Void)?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        guard let window else {
+            return
+        }
+        onWindowAvailable?(window)
+    }
+}
+
+private struct KikiSettingsWindowRegistration: NSViewRepresentable {
+    let controller: KikiSettingsWindowController?
+
+    func makeNSView(context: Context) -> KikiSettingsWindowRegistrationView {
+        let view = KikiSettingsWindowRegistrationView()
+        updateRegistration(for: view)
+        return view
+    }
+
+    func updateNSView(_ nsView: KikiSettingsWindowRegistrationView, context: Context) {
+        updateRegistration(for: nsView)
+    }
+
+    private func updateRegistration(for view: KikiSettingsWindowRegistrationView) {
+        view.onWindowAvailable = { [weak controller] window in
+            controller?.register(window: window)
+        }
+        if let window = view.window {
+            controller?.register(window: window)
+        }
+    }
+}
+
+public extension View {
+    /// Registers the native SwiftUI Settings window with Kiki so frame
+    /// restoration, visibility, and imperative close operate on one exact
+    /// window instead of scanning unrelated application windows.
+    func kikiSettingsWindow(_ controller: KikiSettingsWindowController?) -> some View {
+        background {
+            KikiSettingsWindowRegistration(controller: controller)
+                .frame(width: 0, height: 0)
+        }
     }
 }

@@ -54,7 +54,7 @@ public final class KikiActivationPolicyCoordinator {
         }
 
         if #available(macOS 14.0, *) {
-            NSApp.yieldActivation(to: previousFrontmostApplication)
+            NSApplication.shared.yieldActivation(to: previousFrontmostApplication)
             _ = previousFrontmostApplication.activate(
                 from: NSRunningApplication.current,
                 options: []
@@ -96,6 +96,6 @@ public final class KikiActivationPolicyCoordinator {
     }
 
     private func apply(policy: NSApplication.ActivationPolicy) {
-        NSApp.setActivationPolicy(policy)
+        NSApplication.shared.setActivationPolicy(policy)
     }
 }

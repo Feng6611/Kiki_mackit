@@ -1,9 +1,8 @@
 # Kiki API Conventions
 
 `Kiki_mackit` is an API package for business apps. It exposes reusable macOS
-UI, AppKit bridge APIs, reusable app workflow APIs, and shared commerce
-workflow APIs. It does not own product-specific business policy or app
-architecture.
+UI, AppKit bridge APIs, and commerce-agnostic app workflow APIs. It does not
+own commerce workflow, product-specific business policy, or app architecture.
 
 ## Package Role
 
@@ -14,7 +13,7 @@ workflow mechanics:
 - Settings shell and common rows
 - single-window AppKit presentation for SwiftUI content
 - paywall presentation primitives
-- paid-access workflow on top of RevenueCatCommerceKit
+- commerce-agnostic paywall presentation
 - non-interactive overlay presentation
 - trigger-corner detection
 - privacy permission status and System Settings authorization helpers
@@ -47,7 +46,7 @@ Good API shape:
 Bad API shape:
 
 - knows a product name;
-- assumes a product-specific purchase provider outside `KikiCommerce`;
+- assumes or embeds any purchase provider;
 - hardcodes one app's feature gate, catalog, or campaign rule;
 - hardcodes one app's onboarding routing or window flow;
 - reaches into app-specific models or hardcoded storage keys;
@@ -106,8 +105,9 @@ non-public macOS detail to keep an API working, the module must:
 Current private fallbacks tracked here:
 
 - `KikiSettingsOpener` uses `NSApp.sendAction(Selector(("showSettingsWindow:")))`
-  only after `EnvironmentValues.openSettings` and the standard main-menu
-  `Settings...` item have both failed.
+  only after its AppKit-side standard main-menu `Settings...` lookup fails.
+  SwiftUI callers should use `EnvironmentValues.openSettings` directly and do
+  not need this fallback.
 
 ## Extraction Rule
 
@@ -155,18 +155,12 @@ Provides paywall UI primitives only. It has no RevenueCat dependency. Apps or
 commerce packages own product IDs, pricing, purchase, restore, trial, and
 entitlement decisions.
 
-### KikiCommerce
+### Commerce boundary
 
-Provides the shared paid-access state machine and high-level Pro paywall views
-on top of `RevenueCatCommerceKit` and `KikiPaywall`. Apps provide plans,
-storage keys, trial policy, product copy, links, and feature gating;
-`KikiCommerce` owns configure, refresh, offerings, purchase, restore, trial
-start, onboarding completion, and local debug override behavior.
-
-This module is intentionally higher-level than `RevenueCatCommerceKit`.
-`RevenueCatCommerceKit` owns provider transport and entitlement I/O.
-`KikiCommerce` owns reusable app-facing workflow that multiple Kiki apps can
-share.
+Commerce is not a Kiki_mackit module. The separate optional
+`KikiCommerceKit` package owns provider-neutral access/trial workflow,
+RevenueCat transport, and the adapter from commerce state to
+`KikiPaywallPresentation`. Free apps depend only on Kiki_mackit.
 
 ### KikiOverlay
 
@@ -186,10 +180,11 @@ what failure means, and how recovery is routed.
 
 ### KikiOnboarding
 
-Provides reusable first-launch window chrome: a welcome scaffold view, common
-row types, a permission row that binds to `KikiAuthorization`, and a single
-window controller built on `KikiWindow`. Apps own copy, persistence,
-completion semantics, and any paid-access routing that follows onboarding.
+Provides reusable first-launch coordination and window chrome: completion
+stores, configuration and steps, a welcome scaffold, common row types, a
+permission row that binds to `KikiAuthorization`, and a window controller built
+on `KikiWindow`. Apps own the completion key, legacy-key migration, copy,
+product-specific completion policy, and any paid-access routing.
 
 ### KikiActivation
 
@@ -215,8 +210,9 @@ Before adding or changing public Kiki API:
 - Can a business app call this without product-specific assumptions?
 - Are all app-specific actions supplied by the caller?
 - Are product copy and policy outside Kiki?
-- If the API touches RevenueCat or entitlement state, does it belong in
-  `KikiCommerce` instead of `KikiPaywall` or another UI-only module?
+- If the API touches purchase transport, trial calculation, or entitlement
+  state, does it belong in the separate `KikiCommerceKit` package instead of
+  Kiki_mackit?
 - Is the public name based on the API role?
 - Is the behavior covered by package tests?
 - Does the README or module doc need an API note?

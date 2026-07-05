@@ -10,6 +10,8 @@ public final class KikiOnboardingCoordinator: ObservableObject {
 
     @Published public private(set) var currentStepIndex: Int = 0
     private var windowController: KikiOnboardingWindowController?
+    private var isClosingAfterFinish = false
+    private var hasFinishedCurrentPresentation = false
 
     public init(
         configuration: KikiOnboardingConfiguration,
@@ -36,13 +38,20 @@ public final class KikiOnboardingCoordinator: ObservableObject {
 
     public var canSkip: Bool { configuration.canSkip }
 
+    public var isVisible: Bool { windowController?.isVisible == true }
+
     public func startIfNeeded() {
         guard isCompleted == false else { return }
         start()
     }
 
     public func start() {
+        hasFinishedCurrentPresentation = false
         currentStepIndex = 0
+        guard configuration.steps.isEmpty == false else {
+            finish()
+            return
+        }
         presentWindow()
         handleCurrentStepIfNonInteractive()
     }
@@ -67,8 +76,18 @@ public final class KikiOnboardingCoordinator: ObservableObject {
         finish()
     }
 
+    public func close() {
+        windowController?.close()
+    }
+
     public func finish() {
+        guard hasFinishedCurrentPresentation == false else {
+            return
+        }
+
+        hasFinishedCurrentPresentation = true
         completionStore.markCompleted(forKey: configuration.completionKey)
+        isClosingAfterFinish = windowController != nil
         windowController?.close()
         windowController = nil
         onFinished?()
@@ -95,6 +114,8 @@ public final class KikiOnboardingCoordinator: ObservableObject {
         let controller = KikiOnboardingWindowController(
             title: configuration.windowTitle,
             frameAutosaveName: configuration.windowAutosaveName,
+            size: configuration.windowSize,
+            minimumSize: configuration.minimumWindowSize,
             onClose: { [weak self] in
                 self?.handleWindowClosed()
             }
@@ -105,8 +126,21 @@ public final class KikiOnboardingCoordinator: ObservableObject {
         controller.show()
     }
 
-    private func handleWindowClosed() {
+    func handleWindowClosed() {
         windowController = nil
+        if isClosingAfterFinish {
+            isClosingAfterFinish = false
+            return
+        }
+
+        guard configuration.closeDisposition == .complete,
+              hasFinishedCurrentPresentation == false else {
+            return
+        }
+
+        hasFinishedCurrentPresentation = true
+        completionStore.markCompleted(forKey: configuration.completionKey)
+        onFinished?()
     }
 }
 
@@ -133,6 +167,10 @@ private struct KikiOnboardingFlowContainer: View {
             }
         }
         .id(coordinator.currentStepIndex)
+        .frame(
+            width: coordinator.configuration.windowSize.width,
+            height: coordinator.configuration.windowSize.height
+        )
     }
 
     private var navigation: KikiOnboardingNavigation {
@@ -158,7 +196,8 @@ private struct KikiOnboardingFlowContainer: View {
             secondaryAction: content.skipTitle.map { title in
                 KikiOnboardingAction(title: title, action: { coordinator.finish() })
             },
-            tint: coordinator.configuration.tint
+            tint: coordinator.configuration.tint,
+            size: coordinator.configuration.windowSize
         )
     }
 
@@ -178,7 +217,8 @@ private struct KikiOnboardingFlowContainer: View {
                     ? KikiOnboardingAction(title: title, action: { coordinator.back() })
                     : nil
             },
-            tint: coordinator.configuration.tint
+            tint: coordinator.configuration.tint,
+            size: coordinator.configuration.windowSize
         )
     }
 
@@ -199,7 +239,8 @@ private struct KikiOnboardingFlowContainer: View {
                     ? KikiOnboardingAction(title: title, action: { coordinator.back() })
                     : nil
             },
-            tint: coordinator.configuration.tint
+            tint: coordinator.configuration.tint,
+            size: coordinator.configuration.windowSize
         )
     }
 
@@ -214,7 +255,8 @@ private struct KikiOnboardingFlowContainer: View {
                 title: content.finishTitle,
                 action: { coordinator.advance() }
             ),
-            tint: coordinator.configuration.tint
+            tint: coordinator.configuration.tint,
+            size: coordinator.configuration.windowSize
         )
     }
 
@@ -225,6 +267,9 @@ private struct KikiOnboardingFlowContainer: View {
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
-        .frame(width: 560, height: 520)
+        .frame(
+            width: coordinator.configuration.windowSize.width,
+            height: coordinator.configuration.windowSize.height
+        )
     }
 }

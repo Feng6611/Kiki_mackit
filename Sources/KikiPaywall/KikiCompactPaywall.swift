@@ -29,37 +29,36 @@ public struct KikiCompactPaywall: View {
             plans: presentation.plans.map(\.paywallPlan),
             selectedPlanID: $selectedPlanID,
             primary: primaryAction,
-            secondary: secondaryAction,
+            secondaryActions: secondaryActions,
             tint: tint,
             showsCloseButton: showsCloseButton,
-            onClose: presentation.actions.dismiss
-        )
+            onClose: presentation.dismiss
+        ) {
+            KikiPaywallPresentationFooter(presentation: presentation)
+        }
     }
 
     private var primaryAction: KikiPaywallActionConfig {
-        if presentation.canStartTrial, let startTrial = presentation.actions.startTrial {
-            return KikiPaywallActionConfig(
-                title: "Start free trial",
-                isLoading: presentation.isPurchaseInFlight,
-                isEnabled: presentation.isPurchaseInFlight == false,
-                action: startTrial
-            )
-        }
         let planID = selectedPlanID
         return KikiPaywallActionConfig(
-            title: presentation.primaryButtonTitle,
-            isLoading: presentation.isPurchaseInFlight,
-            isEnabled: presentation.isPurchaseInFlight == false && planID.isEmpty == false,
-            action: { presentation.actions.purchase(planID) }
+            title: presentation.primaryAction.title,
+            isLoading: presentation.primaryAction.isLoading,
+            isEnabled: presentation.isInteractionDisabled == false
+                && presentation.primaryAction.isEnabled(for: planID),
+            action: { presentation.primaryAction.perform(selectedPlanID: planID) }
         )
     }
 
-    private var secondaryAction: KikiPaywallActionConfig? {
-        KikiPaywallActionConfig(
-            title: "Restore purchases",
-            isLoading: presentation.isRestoreInFlight,
-            isEnabled: presentation.isRestoreInFlight == false,
-            action: presentation.actions.restore
-        )
+    private var secondaryActions: [KikiPaywallActionConfig] {
+        let planID = selectedPlanID
+        return presentation.secondaryActions.map { action in
+            KikiPaywallActionConfig(
+                title: action.title,
+                isLoading: action.isLoading,
+                isEnabled: presentation.isInteractionDisabled == false
+                    && action.isEnabled(for: planID),
+                action: { action.perform(selectedPlanID: planID) }
+            )
+        }
     }
 }

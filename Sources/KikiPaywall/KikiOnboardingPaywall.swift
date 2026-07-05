@@ -20,8 +20,8 @@ public struct KikiOnboardingPaywall: View {
             width: KikiPaywallDefaults.onboardingSheetWidth,
             height: KikiPaywallDefaults.onboardingSheetHeight,
             tint: tint,
-            showsCloseButton: presentation.actions.dismiss != nil,
-            onClose: presentation.actions.dismiss
+            showsCloseButton: presentation.dismiss != nil,
+            onClose: presentation.dismiss
         ) {
             KikiPaywallHeader(
                 title: presentation.headerTitle,
@@ -65,58 +65,47 @@ public struct KikiOnboardingPaywall: View {
         } actions: {
             VStack(spacing: 8) {
                 Button {
-                    primaryAction()
+                    presentation.primaryAction.perform(selectedPlanID: selectedPlanID)
                 } label: {
                     KikiPaywallActionLabel(
-                        title: primaryTitle,
-                        isLoading: presentation.isPurchaseInFlight,
+                        title: presentation.primaryAction.title,
+                        isLoading: presentation.primaryAction.isLoading,
                         isProminent: true,
                         tint: tint
                     )
                 }
                 .buttonStyle(.plain)
-                .disabled(presentation.isPurchaseInFlight)
-                .opacity(presentation.isPurchaseInFlight ? 0.45 : 1)
+                .disabled(primaryIsEnabled == false)
+                .opacity(primaryIsEnabled ? 1 : 0.45)
 
-                Button {
-                    presentation.actions.restore()
-                } label: {
-                    KikiPaywallActionLabel(
-                        title: "Restore purchases",
-                        isLoading: presentation.isRestoreInFlight,
-                        isProminent: false,
-                        tint: tint
-                    )
+                ForEach(Array(presentation.secondaryActions.enumerated()), id: \.offset) { _, secondaryAction in
+                    Button {
+                        secondaryAction.perform(selectedPlanID: selectedPlanID)
+                    } label: {
+                        KikiPaywallActionLabel(
+                            title: secondaryAction.title,
+                            isLoading: secondaryAction.isLoading,
+                            isProminent: false,
+                            tint: tint
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(secondaryIsEnabled(secondaryAction) == false)
+                    .opacity(secondaryIsEnabled(secondaryAction) ? 1 : 0.45)
                 }
-                .buttonStyle(.plain)
-                .disabled(presentation.isRestoreInFlight)
-                .opacity(presentation.isRestoreInFlight ? 0.45 : 1)
             }
         } footer: {
-            if let footnote = presentation.footnote {
-                Text(footnote)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-            }
+            KikiPaywallPresentationFooter(presentation: presentation)
         }
     }
 
-    private var primaryTitle: String {
-        if presentation.canStartTrial {
-            return "Start free trial"
-        }
-        return presentation.primaryButtonTitle
+    private var primaryIsEnabled: Bool {
+        presentation.isInteractionDisabled == false
+            && presentation.primaryAction.isEnabled(for: selectedPlanID)
     }
 
-    private func primaryAction() {
-        if presentation.canStartTrial, let startTrial = presentation.actions.startTrial {
-            startTrial()
-            return
-        }
-        let planID = selectedPlanID
-        guard planID.isEmpty == false else { return }
-        presentation.actions.purchase(planID)
+    private func secondaryIsEnabled(_ action: KikiPaywallActionPresentation) -> Bool {
+        presentation.isInteractionDisabled == false
+            && action.isEnabled(for: selectedPlanID)
     }
 }

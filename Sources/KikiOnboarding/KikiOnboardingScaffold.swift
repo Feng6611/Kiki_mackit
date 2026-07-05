@@ -11,6 +11,7 @@ public struct KikiOnboardingScaffold: View {
     private let primaryAction: KikiOnboardingAction
     private let secondaryAction: KikiOnboardingAction?
     private let tint: Color
+    private let size: CGSize
 
     public init(
         appName: String,
@@ -23,6 +24,32 @@ public struct KikiOnboardingScaffold: View {
         secondaryAction: KikiOnboardingAction? = nil,
         tint: Color = .accentColor
     ) {
+        self.init(
+            appName: appName,
+            title: title,
+            bodyText: bodyText,
+            iconSystemName: iconSystemName,
+            rows: rows,
+            permissionRow: permissionRow,
+            primaryAction: primaryAction,
+            secondaryAction: secondaryAction,
+            tint: tint,
+            size: KikiOnboardingDefaults.windowSize
+        )
+    }
+
+    public init(
+        appName: String,
+        title: String,
+        bodyText: String? = nil,
+        iconSystemName: String = "sparkles",
+        rows: [KikiOnboardingRow],
+        permissionRow: KikiOnboardingPermissionRow? = nil,
+        primaryAction: KikiOnboardingAction,
+        secondaryAction: KikiOnboardingAction? = nil,
+        tint: Color = .accentColor,
+        size: CGSize
+    ) {
         self.appName = appName
         self.title = title
         self.bodyText = bodyText
@@ -32,6 +59,7 @@ public struct KikiOnboardingScaffold: View {
         self.primaryAction = primaryAction
         self.secondaryAction = secondaryAction
         self.tint = tint
+        self.size = size
     }
 
     public var body: some View {
@@ -102,7 +130,7 @@ public struct KikiOnboardingScaffold: View {
             .padding(.horizontal, 28)
             .padding(.bottom, 24)
         }
-        .frame(width: 560, height: 520)
+        .frame(width: size.width, height: size.height)
         .background {
             ZStack {
                 KikiMaterialSurface(in: Rectangle(), material: .regularMaterial, tint: tint, tintOpacity: 0.02)

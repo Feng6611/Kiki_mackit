@@ -3,7 +3,7 @@ import SwiftUI
 
 public enum KikiPaywallAccessState: Equatable, Sendable {
     case notStarted
-    case trial(daysRemaining: Int)
+    case trial
     case expired
     case entitled(planTitle: String)
 }
@@ -48,22 +48,73 @@ public struct KikiPaywallPlanPresentation: Equatable, Identifiable, Sendable {
     }
 }
 
-public struct KikiPaywallActions {
-    public let purchase: @MainActor (_ planID: String) -> Void
-    public let restore: @MainActor () -> Void
-    public let startTrial: (@MainActor () -> Void)?
-    public let dismiss: (@MainActor () -> Void)?
+public struct KikiPaywallMessagePresentation: Equatable, Sendable {
+    public let text: String
+    public let tone: KikiPaywallMessageTone
+
+    public init(text: String, tone: KikiPaywallMessageTone = .neutral) {
+        self.text = text
+        self.tone = tone
+    }
+}
+
+public struct KikiPaywallLinkPresentation: Equatable, Identifiable, Sendable {
+    public let id: String
+    public let title: String
+    public let url: URL
 
     public init(
-        purchase: @escaping @MainActor (_ planID: String) -> Void,
-        restore: @escaping @MainActor () -> Void,
-        startTrial: (@MainActor () -> Void)? = nil,
-        dismiss: (@MainActor () -> Void)? = nil
+        id: String,
+        title: String,
+        url: URL
     ) {
-        self.purchase = purchase
-        self.restore = restore
-        self.startTrial = startTrial
-        self.dismiss = dismiss
+        self.id = id
+        self.title = title
+        self.url = url
+    }
+}
+
+public struct KikiPaywallActionPresentation {
+    public let title: String
+    public let isLoading: Bool
+    private let isEnabled: @MainActor (_ selectedPlanID: String) -> Bool
+    private let action: @MainActor (_ selectedPlanID: String) -> Void
+
+    public init(
+        title: String,
+        isLoading: Bool = false,
+        isEnabled: Bool = true,
+        action: @escaping @MainActor () -> Void
+    ) {
+        self.title = title
+        self.isLoading = isLoading
+        self.isEnabled = { _ in isEnabled }
+        self.action = { _ in action() }
+    }
+
+    public init(
+        title: String,
+        isLoading: Bool = false,
+        isEnabled: @escaping @MainActor (_ selectedPlanID: String) -> Bool,
+        action: @escaping @MainActor (_ selectedPlanID: String) -> Void
+    ) {
+        self.title = title
+        self.isLoading = isLoading
+        self.isEnabled = isEnabled
+        self.action = action
+    }
+
+    @MainActor
+    public func isEnabled(for selectedPlanID: String) -> Bool {
+        isEnabled(selectedPlanID)
+    }
+
+    @MainActor
+    public func perform(selectedPlanID: String) {
+        guard isEnabled(for: selectedPlanID) else {
+            return
+        }
+        action(selectedPlanID)
     }
 }
 
@@ -75,9 +126,12 @@ public struct KikiPaywallPresentation {
     public let features: [String]
     public let stats: [KikiPaywallStatConfig]
     public let footnote: String?
-    public let isPurchaseInFlight: Bool
-    public let isRestoreInFlight: Bool
-    public let actions: KikiPaywallActions
+    public let footerLinks: [KikiPaywallLinkPresentation]
+    public let message: KikiPaywallMessagePresentation?
+    public let isInteractionDisabled: Bool
+    public let primaryAction: KikiPaywallActionPresentation
+    public let secondaryActions: [KikiPaywallActionPresentation]
+    public let dismiss: (@MainActor () -> Void)?
 
     public init(
         accessState: KikiPaywallAccessState,
@@ -87,9 +141,12 @@ public struct KikiPaywallPresentation {
         features: [String] = [],
         stats: [KikiPaywallStatConfig] = [],
         footnote: String? = nil,
-        isPurchaseInFlight: Bool = false,
-        isRestoreInFlight: Bool = false,
-        actions: KikiPaywallActions
+        footerLinks: [KikiPaywallLinkPresentation] = [],
+        message: KikiPaywallMessagePresentation? = nil,
+        isInteractionDisabled: Bool = false,
+        primaryAction: KikiPaywallActionPresentation,
+        secondaryActions: [KikiPaywallActionPresentation] = [],
+        dismiss: (@MainActor () -> Void)? = nil
     ) {
         self.accessState = accessState
         self.headerTitle = headerTitle
@@ -98,24 +155,45 @@ public struct KikiPaywallPresentation {
         self.features = features
         self.stats = stats
         self.footnote = footnote
-        self.isPurchaseInFlight = isPurchaseInFlight
-        self.isRestoreInFlight = isRestoreInFlight
-        self.actions = actions
+        self.footerLinks = footerLinks
+        self.message = message
+        self.isInteractionDisabled = isInteractionDisabled
+        self.primaryAction = primaryAction
+        self.secondaryActions = secondaryActions
+        self.dismiss = dismiss
     }
+}
 
-    public var primaryButtonTitle: String {
-        switch accessState {
-        case .entitled:
-            return "Manage subscription"
-        case .trial, .expired, .notStarted:
-            return "Continue"
-        }
-    }
+struct KikiPaywallPresentationFooter: View {
+    let presentation: KikiPaywallPresentation
 
-    public var canStartTrial: Bool {
-        if case .notStarted = accessState {
-            return actions.startTrial != nil
+    var body: some View {
+        VStack(spacing: 8) {
+            if let message = presentation.message {
+                KikiPaywallMessage(message.text, tone: message.tone)
+            }
+
+            if let footnote = presentation.footnote {
+                Text(footnote)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+            }
+
+            if presentation.footerLinks.isEmpty == false {
+                HStack(spacing: 10) {
+                    ForEach(Array(presentation.footerLinks.enumerated()), id: \.element.id) { index, link in
+                        if index > 0 {
+                            KikiPaywallDotSeparator()
+                        }
+                        Link(link.title, destination: link.url)
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity)
+            }
         }
-        return false
     }
 }

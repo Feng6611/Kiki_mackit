@@ -4,9 +4,11 @@
 a SwiftUI scaffold view, a few row types, a permission row that binds to
 `KikiAuthorization`, and a single-window controller built on `KikiWindow`.
 
-Hosts own copy, persistence (`hasCompletedOnboarding`), completion semantics,
-and any paid-access routing that follows onboarding. Kiki does not store
-onboarding state and does not decide what happens after the user finishes.
+Hosts own copy, the completion-key namespace, legacy-key migration, product
+completion policy, and any paid-access routing that follows onboarding. The
+optional 0.7 coordinator persists completion only through a caller-selected
+`KikiOnboardingCompletionStore`; Kiki does not share that state with commerce
+or decide what happens after the user finishes.
 
 ## Visual Rules
 
@@ -50,7 +52,7 @@ KikiOnboarding may:
 
 KikiOnboarding must not:
 
-- store `hasCompletedOnboarding` or any persistence;
+- invent app-global completion keys or migrate app legacy state;
 - decide what the next surface after onboarding is;
 - own paid-access routing, trial start, or restore-purchase decisions;
 - hardcode product copy beyond safe defaults.
@@ -73,9 +75,10 @@ machine.
   handed to custom step views. Narrowing navigation to these four actions
   keeps custom steps decoupled from the coordinator's internal state.
 - `KikiOnboardingConfiguration`: the step list together with `appName`,
-  `tint`, `canSkip`, `completionKey`, window autosave name, and window
-  title. `canSkip` defaults to `false`; flip it to `true` to enable
-  coordinator-level `skip()` and surface `canSkip` to custom views.
+  `tint`, `canSkip`, `completionKey`, window autosave name/title, initial and
+  minimum window size, and close disposition. `canSkip` defaults to `false`.
+  Closing defaults to `.keepPending`; use `.complete` only when closing is an
+  intentional completion path for that app.
 - `KikiOnboardingCompletionStore`: protocol backed by
   `KikiOnboardingUserDefaultsCompletionStore` (production) and
   `KikiOnboardingInMemoryCompletionStore` (tests/previews). Lets the host
@@ -85,7 +88,8 @@ machine.
   `resetCompletion`), opens and closes the onboarding window, and routes
   `.paywallHandoff` to a host-supplied closure (or auto-advances if the
   closure is nil). `skip()` is a guarded no-op when `canSkip` is false;
-  when allowed, it commits completion via `finish()`.
+  when allowed, it commits completion via `finish()`. An empty step list
+  completes immediately without opening a window.
 
 The coordinator never imports Commerce: the host wires the paywall handoff
 closure to whichever paywall surface it chose (`KikiCompactPaywall`,

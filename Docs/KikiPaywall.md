@@ -12,14 +12,14 @@
 
 - SwiftUI-first because this module is presentation-focused.
 - No RevenueCat dependency; purchasing and entitlement policy belong to the app
-  or the `KikiCommerce` workflow module.
+  or the separate `KikiCommerceKit` package.
 - `KikiPaywallShell` extracts a stable small-app paywall sheet structure:
   scrollable header/content, fixed action/footer area, optional close button,
   default sheet sizes, and subtle native material background.
 - `KikiPaywallWindowController` is only a presentation adapter. It uses
   `KikiWindow` to host app-provided paywall content in a standalone `NSWindow`
   when a sheet is not the right product surface.
-- The shell is not a full purchase flow. The host app or `KikiCommerce` supplies
+- The shell is not a full purchase flow. The host app or `KikiCommerceKit` supplies
   content, action buttons, footer links, loading state, close behavior, and all
   side effects.
 - Dismissal policy belongs to the host app. `KikiPaywall` components may render
@@ -49,7 +49,7 @@ success, restore success, close button, app quit/relaunch, already-entitled
 accounts, and error/cancel paths. Every intentional exit from onboarding should
 either complete the flow or deliberately keep it pending.
 
-Keep this orchestration in the app, starter template, or `KikiCommerce`. Do not
+Keep this orchestration in the app, starter template, or `KikiCommerceKit`. Do not
 move entitlement state, onboarding persistence, RevenueCat calls, or
 post-onboarding routing into `KikiPaywall`.
 
@@ -75,23 +75,24 @@ presentation that captures *what the user should see right now* without
 embedding RevenueCat types or trial math.
 
 - `KikiPaywallAccessState`: `.notStarted | .trial | .expired | .entitled`.
-  Host code (or `KikiCommerce`) derives this from its own commerce stack.
+  Host code (or `KikiCommerceKit`) derives this from its own commerce stack.
 - `KikiPaywallPlanPresentation`: pure display fields for a plan; maps to the
   `KikiPaywallPlan` atom via `paywallPlan`.
-- `KikiPaywallActions`: purchase / restore / optional startTrial / optional
-  dismiss closures.
+- `KikiPaywallActionPresentation`: caller-owned title, loading state,
+  plan-aware enabled predicate, and action. There is no purchase-specific action
+  enum in Base Kit.
 - `KikiPaywallPresentation`: full snapshot — access state, header copy,
-  plans, features, stats, footnote, in-flight flags. Exposes computed
-  `primaryButtonTitle` and `canStartTrial`.
+  plans, features, stats, typed feedback, footnote, footer links, interaction
+  state, one primary action, ordered secondary actions, and optional dismiss.
 
 Two preset views consume this presentation:
 
-- `KikiCompactPaywall`: settings-sheet sized, restore + purchase actions.
-- `KikiOnboardingPaywall`: larger onboarding-paywall body that adds the
-  start-trial action when `canStartTrial` is true.
+- `KikiCompactPaywall`: settings-sheet-sized preset.
+- `KikiOnboardingPaywall`: larger onboarding-paywall preset.
 
-Neither view ever touches Commerce. The host (or future `KikiCommerceKit`
-adapter) constructs the presentation and feeds it in.
+Neither view touches Commerce or decides which action is purchase, restore,
+trial, or dismiss. The host (or `KikiCommerceKit` adapter) constructs the
+presentation and feeds it in.
 
 ```swift
 let presentation = KikiPaywallPresentation(
@@ -99,11 +100,14 @@ let presentation = KikiPaywallPresentation(
     headerTitle: "My App Pro",
     headerSubtitle: "Unlock all features",
     plans: planPresentations,
-    actions: KikiPaywallActions(
-        purchase: { id in await commerce.purchase(planID: id) },
-        restore: { await commerce.restore() },
-        startTrial: { await commerce.startTrial() }
-    )
+    primaryAction: KikiPaywallActionPresentation(
+        title: "Unlock",
+        isEnabled: { planID in availablePlanIDs.contains(planID) },
+        action: { planID in purchase(planID) }
+    ),
+    secondaryActions: [
+        KikiPaywallActionPresentation(title: "Restore", action: restore)
+    ]
 )
 KikiCompactPaywall(presentation: presentation, selectedPlanID: $planID)
 ```
@@ -141,7 +145,7 @@ sections can drop down to the shell and atoms without losing visual parity.
 ## TODO & Checklist
 
 - Put shared RevenueCat, trial, restore, and entitlement state in
-  `KikiCommerce`, not `KikiPaywall`.
+  `KikiCommerceKit`, not `KikiPaywall`.
 - Keep grandfathering, product ids, and product-specific access gating outside
   this module.
 - Validate visual parity in host apps after replacing local private components.

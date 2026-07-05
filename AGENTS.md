@@ -14,19 +14,18 @@ Do not add product-specific business logic:
 - Do not add Direct distribution logic.
 - Do not add raw RevenueCat SDK transport outside the dedicated commerce
   boundary.
-- Keep provider-specific purchase transport in the standalone
-  `RevenueCatCommerceKit` repository.
+- Keep paid-access workflow and provider-specific purchase transport in the
+  standalone `KikiCommerceKit` repository.
 - Do not add app-specific copy, paywall policy, entitlement mapping,
   clipboard/history logic, analytics, networking, persistence, or distribution
   branching.
 
-Kiki may include reusable workflow modules such as `KikiCommerce` when the API
-stays product-agnostic and can be reused by multiple apps with caller-supplied
-plans, copy, storage keys, and policy.
+Kiki may include reusable commerce-agnostic workflows such as Settings and
+Onboarding coordination. It must not regain a commerce target or SDK dependency.
 
 Prefer small, package-local changes that preserve and clarify the public
 surfaces of `KikiDesign`, `KikiWindow`, `KikiMenuBar`, `KikiSettings`,
-`KikiPaywall`, `KikiCommerce`, `KikiAuthorization`, `KikiOverlay`, and
+`KikiPaywall`, `KikiOnboarding`, `KikiAuthorization`, `KikiOverlay`, and
 `KikiTriggerCorner`.
 
 Read `Docs/APIConventions.md` before changing public API. Kiki only exposes APIs

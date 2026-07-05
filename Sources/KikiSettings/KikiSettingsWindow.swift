@@ -3,9 +3,48 @@ import KikiCore
 import OSLog
 
 @MainActor
+protocol KikiSettingsWindowManaging: AnyObject {
+    var isVisible: Bool { get }
+    func configure(
+        frameAutosaveName: NSWindow.FrameAutosaveName,
+        minimumContentSize: CGSize
+    )
+    func close()
+}
+
+extension NSWindow: KikiSettingsWindowManaging {
+    func configure(
+        frameAutosaveName: NSWindow.FrameAutosaveName,
+        minimumContentSize: CGSize
+    ) {
+        contentMinSize = minimumContentSize
+        setFrameUsingName(frameAutosaveName)
+        setFrameAutosaveName(frameAutosaveName)
+
+        let currentContentSize = contentLayoutRect.size
+        guard currentContentSize.width < minimumContentSize.width
+                || currentContentSize.height < minimumContentSize.height else {
+            return
+        }
+
+        var targetWindowFrame = frame
+        let targetContentSize = CGSize(
+            width: max(currentContentSize.width, minimumContentSize.width),
+            height: max(currentContentSize.height, minimumContentSize.height)
+        )
+        let targetFrameSize = frameRect(
+            forContentRect: CGRect(origin: .zero, size: targetContentSize)
+        ).size
+        targetWindowFrame.size = targetFrameSize
+        setFrame(targetWindowFrame, display: true)
+    }
+}
+
+@MainActor
 public final class KikiSettingsWindowController {
     private let frameAutosaveName: NSWindow.FrameAutosaveName
     private let minimumContentSize: CGSize
+    private weak var settingsWindow: (any KikiSettingsWindowManaging)?
 
     public init(
         frameAutosaveName: String,
@@ -17,68 +56,41 @@ public final class KikiSettingsWindowController {
     ) {
         self.frameAutosaveName = NSWindow.FrameAutosaveName(frameAutosaveName)
         self.minimumContentSize = minimumContentSize
+        // Retained for 0.6 source compatibility. Exact view registration
+        // makes title-based window discovery unnecessary.
         _ = windowTitle
     }
 
     public var isVisible: Bool {
-        visibleSettingsWindows().isEmpty == false
+        settingsWindow?.isVisible == true
     }
 
     public func close() {
-        for window in visibleSettingsWindows() {
-            window.close()
-        }
+        settingsWindow?.close()
     }
 
     public func prepareForSettingsScene() {
         activateForSettingsScene()
-        DispatchQueue.main.async { [weak self] in
-            self?.restoreSettingsWindowFrameIfNeeded()
-        }
     }
 
     fileprivate func activateForSettingsScene() {
         KikiAppActivation.activate()
     }
 
-    fileprivate func visibleSettingsWindows(excluding excludedWindowNumbers: Set<Int> = []) -> [NSWindow] {
-        let visibleWindows = NSApp.windows.filter { window in
-            window.isVisible
-                && window.isMiniaturized == false
-                && window.level == .normal
-                && excludedWindowNumbers.contains(window.windowNumber) == false
-        }
-
-        return visibleWindows.filter { window in
-            window.frameAutosaveName == frameAutosaveName
-        }
+    func register(window: NSWindow) {
+        register(managedWindow: window)
     }
 
-    fileprivate func restoreSettingsWindowFrameIfNeeded() {
-        for window in visibleSettingsWindows() {
-            window.contentMinSize = minimumContentSize
-            window.setFrameUsingName(frameAutosaveName)
-            window.setFrameAutosaveName(frameAutosaveName)
-            enforceMinimumContentSize(for: window)
-        }
-    }
-
-    private func enforceMinimumContentSize(for window: NSWindow) {
-        let currentContentSize = window.contentLayoutRect.size
-        guard currentContentSize.width < minimumContentSize.width
-                || currentContentSize.height < minimumContentSize.height else {
+    func register(managedWindow: any KikiSettingsWindowManaging) {
+        guard (settingsWindow as AnyObject?) !== (managedWindow as AnyObject) else {
             return
         }
 
-        var frame = window.frame
-        let targetContentSize = CGSize(
-            width: max(currentContentSize.width, minimumContentSize.width),
-            height: max(currentContentSize.height, minimumContentSize.height)
+        settingsWindow = managedWindow
+        managedWindow.configure(
+            frameAutosaveName: frameAutosaveName,
+            minimumContentSize: minimumContentSize
         )
-        let targetFrame = window.frameRect(forContentRect: CGRect(origin: .zero, size: targetContentSize))
-        frame.size.width = targetFrame.size.width
-        frame.size.height = targetFrame.size.height
-        window.setFrame(frame, display: true)
     }
 }
 
@@ -117,10 +129,6 @@ public final class KikiSettingsOpener {
         }
 
         open(preparesWindow: false)
-
-        DispatchQueue.main.async { [weak windowController] in
-            windowController?.restoreSettingsWindowFrameIfNeeded()
-        }
     }
 
     private func performMainMenuSettingsItem() -> Bool {

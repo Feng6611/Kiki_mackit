@@ -14,7 +14,7 @@ mechanics, and window helpers.
 - `KikiSettingsPane`: grouped `Form` pane chrome with top alignment.
 - `KikiAboutPane`: app identity, status, and links layout for About panes.
 - `KikiSettingsWindowController`: AppKit helper that activates the app and
-  restores the autosaved frame for the Settings window.
+  manages the exact Settings window registered by the SwiftUI scene.
 - `KikiSettingsOpener`: imperative opener that triggers SwiftUI Settings
   through native paths first and a private selector only as a last resort.
 - `KikiSettingsDefaults`: stable defaults for width, height, and minimum
@@ -41,9 +41,9 @@ mechanics, and window helpers.
    `OSLog(subsystem: "kiki.mackit", category: "settings")` so the private
    path is visible in Console.
 
-Menu bar hosts call `openForMenuBarApp()` so the window controller has a
-chance to prepare the app activation state and to restore the autosaved
-frame after AppKit presents the scene.
+Menu bar hosts call `openForMenuBarApp()` so the window controller prepares
+the app activation state. The registered SwiftUI view configures autosave and
+minimum size when AppKit attaches it to the native Settings window.
 
 `EnvironmentValues.openSettings` is the most native way to open Settings,
 but it must be invoked from a SwiftUI view tree. `KikiSettingsOpener` is
@@ -84,10 +84,14 @@ stays app-owned.
 
 - Activates the app on `prepareForSettingsScene()` so a menu bar app can
   present the Settings window without losing focus.
-- Restores the autosaved frame and applies `contentMinSize` after the
-  scene is presented.
-- Reports `isVisible` by searching `NSApp.windows` for a window with the
-  matching `frameAutosaveName`. Title matching is no longer used.
+- Restores the autosaved frame and applies `contentMinSize` to the exact native
+  window registered by `kikiSettingsWindow(_:)`.
+- Reports visibility and closes that registered window without searching or
+  mutating unrelated `NSApp.windows`.
+
+`KikiSettingsCoordinatorView` installs the registration bridge automatically.
+Hosts composing `KikiSettingsShell` directly can apply
+`.kikiSettingsWindow(windowController)` themselves.
 
 ## Removed in 0.6.0
 
@@ -118,16 +122,15 @@ hand-wiring the most common Settings shapes.
   `KikiSettingsNavigationModel`, the tab specs, an optional
   `KikiSettingsWindowController`, and a `KikiSettingsOpener`. Exposes
   `select(_:)`, `open(tab:isMenuBarApp:)`, `close()`, `prepare()`, and
-  `isVisible`. `close()` walks the visible windows matching the
-  controller's `frameAutosaveName` and closes each, so a menu bar host
-  can dismiss Settings from an arbitrary trigger (paywall sheet,
-  timeout, etc.) without owning window state.
+  `isVisible`. `close()` acts only on the registered Settings window, so a
+  menu bar host can dismiss Settings from an arbitrary trigger without owning
+  or scanning global window state.
 - `KikiSettingsCoordinatorView`: a thin SwiftUI wrapper that feeds the
   coordinator's selection into `KikiSettingsShell` so the host only
   supplies `@ViewBuilder content`.
-- `KikiSettingsWindowController.close()`: closes every visible Settings
-  window that matches the controller's autosave name. Paired with
-  `isVisible`, this lets hosts manage Settings dismissal imperatively.
+- `KikiSettingsWindowController.close()`: closes the registered Settings
+  window. Paired with `isVisible`, this lets hosts manage Settings dismissal
+  imperatively.
 
 These presets don't replace `KikiSettingsShell` — they sit on top of it and
 remain Commerce-agnostic.
