@@ -19,7 +19,19 @@
   preset Settings flow that owns navigation, opener, and window
   controller.
 - `KikiOnboardingStep` (welcome / features / permission / success /
-  paywallHandoff / custom) with typed content structs.
+  paywallHandoff / custom) with typed content structs. The `custom` view
+  builder receives a `KikiOnboardingNavigation` so it can drive
+  `advance` / `back` / `skip` / `finish` without capturing the
+  coordinator.
+- `KikiOnboardingNavigation`: small struct of `@MainActor` closures
+  built by `KikiOnboardingCoordinator` and handed to custom step views.
+- `KikiOnboardingConfiguration.canSkip` (default `false`) plus
+  `KikiOnboardingCoordinator.canSkip` and `skip()`. `skip()` is a guarded
+  no-op when `canSkip` is false; otherwise it commits completion through
+  `finish()`.
+- `KikiSettingsCoordinator.close()` and
+  `KikiSettingsWindowController.close()` for dismissing the Settings
+  window imperatively from any trigger.
 - `KikiOnboardingConfiguration`, `KikiOnboardingCompletionStore`
   protocol, `KikiOnboardingUserDefaultsCompletionStore`,
   `KikiOnboardingInMemoryCompletionStore`, and

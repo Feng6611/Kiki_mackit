@@ -95,13 +95,32 @@ public struct KikiOnboardingSuccessContent: Equatable {
     }
 }
 
+public struct KikiOnboardingNavigation {
+    public let advance: @MainActor () -> Void
+    public let back: @MainActor () -> Void
+    public let skip: @MainActor () -> Void
+    public let finish: @MainActor () -> Void
+
+    public init(
+        advance: @escaping @MainActor () -> Void,
+        back: @escaping @MainActor () -> Void,
+        skip: @escaping @MainActor () -> Void,
+        finish: @escaping @MainActor () -> Void
+    ) {
+        self.advance = advance
+        self.back = back
+        self.skip = skip
+        self.finish = finish
+    }
+}
+
 public enum KikiOnboardingStep {
     case welcome(KikiOnboardingWelcomeContent)
     case features(KikiOnboardingFeatureContent)
     case permission(KikiOnboardingPermissionContent)
     case success(KikiOnboardingSuccessContent)
     case paywallHandoff
-    case custom(id: String, view: @MainActor () -> AnyView)
+    case custom(id: String, view: @MainActor (KikiOnboardingNavigation) -> AnyView)
 
     public var id: String {
         switch self {

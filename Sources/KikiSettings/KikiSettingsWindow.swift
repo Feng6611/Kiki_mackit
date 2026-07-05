@@ -24,6 +24,12 @@ public final class KikiSettingsWindowController {
         visibleSettingsWindows().isEmpty == false
     }
 
+    public func close() {
+        for window in visibleSettingsWindows() {
+            window.close()
+        }
+    }
+
     public func prepareForSettingsScene() {
         activateForSettingsScene()
         DispatchQueue.main.async { [weak self] in

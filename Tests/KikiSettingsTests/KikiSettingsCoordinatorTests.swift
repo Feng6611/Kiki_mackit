@@ -45,6 +45,16 @@ struct KikiSettingsCoordinatorTests {
         #expect(coordinator.isVisible == false)
     }
 
+    @Test("close() is a no-op when no window controller is attached")
+    func closeIsNoOpWithoutWindowController() {
+        let coordinator = KikiSettingsCoordinator<Tab>(
+            tabs: makeTabs(),
+            initialTab: .general
+        )
+        coordinator.close()
+        #expect(coordinator.isVisible == false)
+    }
+
     @Test("Coordinator view is constructible from coordinator")
     func coordinatorViewIsConstructible() {
         let coordinator = KikiSettingsCoordinator<Tab>(

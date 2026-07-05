@@ -117,10 +117,17 @@ hand-wiring the most common Settings shapes.
 - `KikiSettingsCoordinator<Tab>`: owns the
   `KikiSettingsNavigationModel`, the tab specs, an optional
   `KikiSettingsWindowController`, and a `KikiSettingsOpener`. Exposes
-  `select(_:)`, `open(tab:isMenuBarApp:)`, `prepare()`, and `isVisible`.
+  `select(_:)`, `open(tab:isMenuBarApp:)`, `close()`, `prepare()`, and
+  `isVisible`. `close()` walks the visible windows matching the
+  controller's `frameAutosaveName` and closes each, so a menu bar host
+  can dismiss Settings from an arbitrary trigger (paywall sheet,
+  timeout, etc.) without owning window state.
 - `KikiSettingsCoordinatorView`: a thin SwiftUI wrapper that feeds the
   coordinator's selection into `KikiSettingsShell` so the host only
   supplies `@ViewBuilder content`.
+- `KikiSettingsWindowController.close()`: closes every visible Settings
+  window that matches the controller's autosave name. Paired with
+  `isVisible`, this lets hosts manage Settings dismissal imperatively.
 
 These presets don't replace `KikiSettingsShell` — they sit on top of it and
 remain Commerce-agnostic.

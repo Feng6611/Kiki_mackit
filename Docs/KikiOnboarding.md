@@ -65,18 +65,27 @@ machine.
   .permission | .success`) plus `.paywallHandoff` (Commerce-agnostic) and
   `.custom(id:view:)`. Each non-handoff case carries a typed content
   struct (`KikiOnboardingWelcomeContent`, etc.) describing copy and the
-  primary/secondary button titles.
+  primary/secondary button titles. The `custom` view builder receives a
+  `KikiOnboardingNavigation` so it can drive `advance` / `back` / `skip` /
+  `finish` without capturing the coordinator itself.
+- `KikiOnboardingNavigation`: a small struct of `@MainActor` closures
+  (`advance`, `back`, `skip`, `finish`) built by the coordinator and
+  handed to custom step views. Narrowing navigation to these four actions
+  keeps custom steps decoupled from the coordinator's internal state.
 - `KikiOnboardingConfiguration`: the step list together with `appName`,
-  tint, `completionKey`, window autosave name, and window title.
+  `tint`, `canSkip`, `completionKey`, window autosave name, and window
+  title. `canSkip` defaults to `false`; flip it to `true` to enable
+  coordinator-level `skip()` and surface `canSkip` to custom views.
 - `KikiOnboardingCompletionStore`: protocol backed by
   `KikiOnboardingUserDefaultsCompletionStore` (production) and
   `KikiOnboardingInMemoryCompletionStore` (tests/previews). Lets the host
   own the completion-key namespace without forcing UserDefaults.
 - `KikiOnboardingCoordinator`: `@MainActor` ObservableObject that drives
-  step navigation (`startIfNeeded`, `advance`, `back`, `finish`,
+  step navigation (`startIfNeeded`, `advance`, `back`, `skip`, `finish`,
   `resetCompletion`), opens and closes the onboarding window, and routes
   `.paywallHandoff` to a host-supplied closure (or auto-advances if the
-  closure is nil).
+  closure is nil). `skip()` is a guarded no-op when `canSkip` is false;
+  when allowed, it commits completion via `finish()`.
 
 The coordinator never imports Commerce: the host wires the paywall handoff
 closure to whichever paywall surface it chose (`KikiCompactPaywall`,

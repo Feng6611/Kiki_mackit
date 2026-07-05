@@ -38,6 +38,10 @@ public final class KikiSettingsCoordinator<Tab: Hashable> {
         }
     }
 
+    public func close() {
+        windowController?.close()
+    }
+
     public func prepare() {
         opener.prepare()
     }

@@ -105,6 +105,92 @@ struct KikiOnboardingCoordinatorTests {
     func stepIDReflectsCase() {
         #expect(KikiOnboardingStep.welcome(KikiOnboardingWelcomeContent(title: "t")).id == "welcome")
         #expect(KikiOnboardingStep.paywallHandoff.id == "paywallHandoff")
-        #expect(KikiOnboardingStep.custom(id: "demo", view: { AnyView(EmptyView()) }).id == "custom.demo")
+        #expect(KikiOnboardingStep.custom(id: "demo", view: { _ in AnyView(EmptyView()) }).id == "custom.demo")
+    }
+
+    @Test("skip() finishes when canSkip is true")
+    func skipFinishesWhenAllowed() {
+        let store = KikiOnboardingInMemoryCompletionStore()
+        let config = KikiOnboardingConfiguration(
+            appName: "Test",
+            steps: [
+                .welcome(KikiOnboardingWelcomeContent(title: "Welcome", continueTitle: "Continue")),
+                .success(KikiOnboardingSuccessContent(title: "Done"))
+            ],
+            completionKey: "kiki.onboarding.tests.skip",
+            canSkip: true
+        )
+        let coordinator = KikiOnboardingCoordinator(
+            configuration: config,
+            completionStore: store
+        )
+
+        #expect(coordinator.canSkip == true)
+        coordinator.skip()
+
+        #expect(store.isCompleted(forKey: config.completionKey))
+        #expect(coordinator.currentStepIndex == 0)
+    }
+
+    @Test("skip() is a no-op when canSkip is false")
+    func skipIsNoOpWhenDisallowed() {
+        let store = KikiOnboardingInMemoryCompletionStore()
+        let config = KikiOnboardingConfiguration(
+            appName: "Test",
+            steps: [
+                .welcome(KikiOnboardingWelcomeContent(title: "Welcome", continueTitle: "Continue")),
+                .success(KikiOnboardingSuccessContent(title: "Done"))
+            ],
+            completionKey: "kiki.onboarding.tests.noskip",
+            canSkip: false
+        )
+        let coordinator = KikiOnboardingCoordinator(
+            configuration: config,
+            completionStore: store
+        )
+
+        #expect(coordinator.canSkip == false)
+        coordinator.skip()
+
+        #expect(store.isCompleted(forKey: config.completionKey) == false)
+    }
+
+    @Test("custom step receives a working navigation struct")
+    func customStepNavigationAdvances() {
+        let store = KikiOnboardingInMemoryCompletionStore()
+        var captured: KikiOnboardingNavigation?
+        let config = KikiOnboardingConfiguration(
+            appName: "Test",
+            steps: [
+                .custom(id: "demo", view: { nav in
+                    captured = nav
+                    return AnyView(EmptyView())
+                }),
+                .success(KikiOnboardingSuccessContent(title: "Done"))
+            ],
+            completionKey: "kiki.onboarding.tests.custom"
+        )
+        let coordinator = KikiOnboardingCoordinator(
+            configuration: config,
+            completionStore: store
+        )
+
+        coordinator.start()
+        guard let nav = captured else {
+            Issue.record("custom view builder was not invoked with navigation")
+            return
+        }
+
+        nav.advance()
+        #expect(coordinator.currentStepIndex == 1)
+
+        nav.back()
+        #expect(coordinator.currentStepIndex == 0)
+
+        nav.skip()
+        #expect(store.isCompleted(forKey: config.completionKey) == false)
+
+        nav.finish()
+        #expect(store.isCompleted(forKey: config.completionKey))
     }
 }

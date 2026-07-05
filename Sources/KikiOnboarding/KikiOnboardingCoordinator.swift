@@ -34,6 +34,8 @@ public final class KikiOnboardingCoordinator: ObservableObject {
 
     public var canGoBack: Bool { currentStepIndex > 0 }
 
+    public var canSkip: Bool { configuration.canSkip }
+
     public func startIfNeeded() {
         guard isCompleted == false else { return }
         start()
@@ -58,6 +60,11 @@ public final class KikiOnboardingCoordinator: ObservableObject {
     public func back() {
         guard canGoBack else { return }
         currentStepIndex -= 1
+    }
+
+    public func skip() {
+        guard configuration.canSkip else { return }
+        finish()
     }
 
     public func finish() {
@@ -120,12 +127,21 @@ private struct KikiOnboardingFlowContainer: View {
             case .paywallHandoff:
                 paywallHandoffPlaceholder
             case .custom(_, let viewBuilder):
-                viewBuilder()
+                viewBuilder(navigation)
             case .none:
                 EmptyView()
             }
         }
         .id(coordinator.currentStepIndex)
+    }
+
+    private var navigation: KikiOnboardingNavigation {
+        KikiOnboardingNavigation(
+            advance: { coordinator.advance() },
+            back: { coordinator.back() },
+            skip: { coordinator.skip() },
+            finish: { coordinator.finish() }
+        )
     }
 
     private func welcomeView(content: KikiOnboardingWelcomeContent) -> some View {
