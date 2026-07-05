@@ -40,6 +40,7 @@ public struct KikiSettingsStatusRow: View {
     private let value: String
     private let systemImage: String?
     private let tone: KikiSettingsStatusTone
+    private let tint: Color
     private let valueColor: Color?
     private let trailingSystemImage: String?
     private let action: (() -> Void)?
@@ -49,6 +50,7 @@ public struct KikiSettingsStatusRow: View {
         value: String,
         systemImage: String? = nil,
         tone: KikiSettingsStatusTone = .neutral,
+        tint: Color = .accentColor,
         valueColor: Color? = nil,
         trailingSystemImage: String? = nil,
         action: (() -> Void)? = nil
@@ -57,6 +59,7 @@ public struct KikiSettingsStatusRow: View {
         self.value = value
         self.systemImage = systemImage
         self.tone = tone
+        self.tint = tint
         self.valueColor = valueColor
         self.trailingSystemImage = trailingSystemImage
         self.action = action
@@ -76,13 +79,17 @@ public struct KikiSettingsStatusRow: View {
         }
     }
 
+    private var resolvedForeground: Color {
+        tone == .accent ? tint : tone.foregroundStyle
+    }
+
     private var rowContent: some View {
         KikiSettingsValueRow(title, systemImage: systemImage) {
             statusValue
             if let trailingSystemImage {
                 Image(systemName: trailingSystemImage)
                     .font(.caption)
-                    .foregroundStyle(tone.foregroundStyle)
+                    .foregroundStyle(resolvedForeground)
             }
         }
     }
@@ -92,16 +99,16 @@ public struct KikiSettingsStatusRow: View {
         if tone.usesBadge {
             Text(value)
                 .fontWeight(.medium)
-                .foregroundStyle(tone.foregroundStyle)
+                .foregroundStyle(resolvedForeground)
                 .lineLimit(1)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(
-                    Capsule().fill(tone.backgroundStyle)
+                    Capsule().fill(resolvedForeground.opacity(0.12))
                 )
         } else {
             Text(value)
-                .foregroundStyle(valueColor ?? tone.foregroundStyle)
+                .foregroundStyle(valueColor ?? resolvedForeground)
                 .lineLimit(1)
         }
     }
@@ -237,6 +244,48 @@ public struct KikiSettingsMenuPickerRow<Value: Hashable>: View {
             .labelsHidden()
             .pickerStyle(.menu)
             .frame(minWidth: 140, alignment: .trailing)
+        }
+    }
+}
+
+public struct KikiSettingsDebugPreviewRow<Item: Hashable>: View {
+    private let title: String
+    private let systemImage: String?
+    private let options: [Item]
+    private let controlWidth: CGFloat
+    private let isOverrideActive: Bool
+    private let optionTitle: (Item) -> String
+    @Binding private var selection: Item
+
+    public init(
+        _ title: String = "Test override",
+        selection: Binding<Item>,
+        options: [Item],
+        systemImage: String? = "hammer",
+        controlWidth: CGFloat = 320,
+        isOverrideActive: Bool = true,
+        optionTitle: @escaping (Item) -> String
+    ) {
+        self.title = title
+        self._selection = selection
+        self.options = options
+        self.systemImage = systemImage
+        self.controlWidth = controlWidth
+        self.isOverrideActive = isOverrideActive
+        self.optionTitle = optionTitle
+    }
+
+    public var body: some View {
+        KikiSettingsValueRow(title, systemImage: systemImage) {
+            Picker(title, selection: $selection) {
+                ForEach(options, id: \.self) { option in
+                    Text(optionTitle(option)).tag(option)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.segmented)
+            .frame(width: controlWidth)
+            .foregroundStyle(isOverrideActive ? .orange : .secondary)
         }
     }
 }

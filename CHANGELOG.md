@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.7.3 - 2026-07-05
+
+### Changed
+
+- `KikiAccessStatusTone` now carries the canonical tone→SF Symbol→color
+  mapping (`systemImage`, `settingsTone`, `foregroundColor(tint:)`). Hosts
+  no longer reimplement the per-tone icon/color switch. `trial` uses
+  `clock.badge.checkmark` + `.secondary`; `active` uses `checkmark.seal` +
+  host tint (no longer `.green`); `expired` uses `exclamationmark.triangle`
+  + `.orange`; `neutral` uses `info.circle` + `.secondary`.
+- `KikiSettingsStatusRow` accepts a `tint: Color` parameter. When the tone
+  is `.accent`, the row renders with the host-supplied tint instead of a
+  hardcoded purple. `KikiStandardAboutPane` threads the tint through so
+  the access-status row matches the app's brand color.
+- `KikiStandardAboutLinks` defaults to three links: `website`, `feedback`,
+  `github`. `terms` and `privacy` moved out — they belong in the paywall
+  footer now. `support` renamed to `github` with a code-bracket SF Symbol.
+  `KikiStandardAboutLink` derives `envelope` for `mailto:` URLs (was
+  `doc`).
+- `KikiPaywallSheet` renders plans as vertical `KikiPaywallPlanCard`s in
+  an `HStack` instead of horizontal `KikiPaywallPlanRow`s in a `VStack`.
+  Stats wrap in a new `KikiPaywallStatsCard` tinted card. The header title
+  is 24pt bold (was 28pt rounded). `KikiPaywallMessage` is plain text
+  (no pill background). Footer links use `Button` with `.link` style
+  instead of `Link` styled `.secondary`.
+- `KikiOnboardingScaffold` accepts an optional `appIcon: NSImage?`. When
+  provided, renders an 88×88 app-icon hero (cornerRadius 20, shadow)
+  instead of the SF Symbol. Title is 24pt bold (was 30pt rounded). Primary
+  button uses `.tint(tint)`. Optional `stepIndex`/`stepCount` show
+  `KikiOnboardingProgressDots` above the action area.
+- `KikiOnboardingWindowController` uses `KikiWindow.transparentUtility`
+  with `hiddenButtons: .all` — transparent titlebar, no traffic lights.
+  Default size is 680×680 (was 560×520).
+
+### Added
+
+- `KikiOnboardingProgressDots` atom: `count` + `currentIndex` + `tint`,
+  renders a row of capsules (active = tint, inactive = secondary 0.25).
+- `KikiPaywallStatsCard` atom: wraps `KikiPaywallStatItem`s in a tinted
+  rounded card.
+- `KikiSettingsDebugPreviewRow<Item>` atom: segmented picker with debug
+  defaults ("Test override" title, `hammer` icon, orange tint when
+  override active). Generic over `Hashable` `Item` so hosts wire it to
+  their own preview-mode enum.
+
 ## 0.7.2 - 2026-07-05
 
 ### Changed

@@ -12,11 +12,12 @@ public final class KikiOnboardingWindowController {
         @ViewBuilder content: @escaping () -> some View
     ) {
         self.windowController = KikiSingleWindowController(
-            configuration: .utility(
+            configuration: .transparentUtility(
                 title: title,
                 size: KikiOnboardingDefaults.windowSize,
                 minimumSize: KikiOnboardingDefaults.windowSize,
-                frameAutosaveName: frameAutosaveName
+                frameAutosaveName: frameAutosaveName,
+                hiddenButtons: .all
             ),
             onClose: onClose
         ) {
@@ -33,11 +34,12 @@ public final class KikiOnboardingWindowController {
         @ViewBuilder content: @escaping () -> some View
     ) {
         self.windowController = KikiSingleWindowController(
-            configuration: .utility(
+            configuration: .transparentUtility(
                 title: title,
                 size: size,
                 minimumSize: minimumSize,
-                frameAutosaveName: frameAutosaveName
+                frameAutosaveName: frameAutosaveName,
+                hiddenButtons: .all
             ),
             onClose: onClose
         ) {

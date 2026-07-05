@@ -235,15 +235,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
         } content: {
             VStack(spacing: 14) {
                 if stats.isEmpty == false {
-                    HStack(spacing: 10) {
-                        ForEach(stats) { stat in
-                            KikiPaywallStatItem(
-                                value: stat.value,
-                                label: stat.label,
-                                tint: tint
-                            )
-                        }
-                    }
+                    KikiPaywallStatsCard(stats: stats, tint: tint)
                 }
 
                 if features.isEmpty == false {
@@ -259,9 +251,9 @@ public struct KikiPaywallSheet<Footer: View>: View {
                 }
 
                 if plans.isEmpty == false {
-                    VStack(spacing: 10) {
+                    HStack(spacing: 10) {
                         ForEach(plans) { plan in
-                            KikiPaywallPlanRow(
+                            KikiPaywallPlanCard(
                                 plan: plan,
                                 isSelected: selectedPlanID == plan.id,
                                 tint: tint,
@@ -512,7 +504,7 @@ public struct KikiPaywallHeader: View {
             }
 
             Text(title)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(.system(size: 24, weight: .bold))
                 .multilineTextAlignment(.center)
 
             Text(subtitle)
@@ -547,6 +539,35 @@ public struct KikiPaywallStatItem: View {
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+public struct KikiPaywallStatsCard: View {
+    private let stats: [KikiPaywallStatConfig]
+    private let tint: Color
+
+    public init(stats: [KikiPaywallStatConfig], tint: Color = .accentColor) {
+        self.stats = stats
+        self.tint = tint
+    }
+
+    public var body: some View {
+        HStack(spacing: 10) {
+            ForEach(stats) { stat in
+                KikiPaywallStatItem(
+                    value: stat.value,
+                    label: stat.label,
+                    tint: tint
+                )
+            }
+        }
+        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(tint.opacity(0.08))
+        )
     }
 }
 
@@ -828,15 +849,11 @@ public struct KikiPaywallMessage: View {
 
     public var body: some View {
         Text(text)
-            .font(.caption)
+            .font(.callout)
             .foregroundStyle(color)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 9)
-            .background(
-                RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(color.opacity(0.10))
-            )
+            .frame(maxWidth: .infinity, alignment: .center)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private var color: Color {

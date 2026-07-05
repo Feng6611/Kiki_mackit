@@ -74,7 +74,7 @@ public struct KikiStandardAboutLink: Identifiable, Equatable, Sendable {
         let resolvedKind = (kind == .link && url.scheme == "mailto") ? .copy : kind
         self.kind = resolvedKind
         self.value = value ?? Self.deriveValue(from: url, kind: resolvedKind)
-        self.systemImage = systemImage ?? (resolvedKind == .copy ? "doc" : "link")
+        self.systemImage = systemImage ?? Self.deriveSystemImage(from: url, kind: resolvedKind)
     }
 
     private static func deriveValue(from url: URL, kind: KikiStandardAboutLinkKind) -> String {
@@ -86,27 +86,28 @@ public struct KikiStandardAboutLink: Identifiable, Equatable, Sendable {
         }
         return url.absoluteString
     }
+
+    private static func deriveSystemImage(from url: URL, kind: KikiStandardAboutLinkKind) -> String {
+        if kind == .copy, url.scheme == "mailto" {
+            return "envelope"
+        }
+        return "link"
+    }
 }
 
 public struct KikiStandardAboutLinks: Equatable, Sendable {
-    public let terms: URL?
-    public let privacy: URL?
-    public let support: URL?
-    public let feedback: URL?
     public let website: URL?
+    public let feedback: URL?
+    public let github: URL?
 
     public init(
-        terms: URL? = nil,
-        privacy: URL? = nil,
-        support: URL? = nil,
+        website: URL? = nil,
         feedback: URL? = nil,
-        website: URL? = nil
+        github: URL? = nil
     ) {
-        self.terms = terms
-        self.privacy = privacy
-        self.support = support
-        self.feedback = feedback
         self.website = website
+        self.feedback = feedback
+        self.github = github
     }
 
     public var orderedLinks: [KikiStandardAboutLink] {
@@ -119,36 +120,19 @@ public struct KikiStandardAboutLinks: Equatable, Sendable {
                 systemImage: "globe"
             ))
         }
-        if let support {
-            result.append(KikiStandardAboutLink(
-                id: "support",
-                title: "Support",
-                url: support,
-                systemImage: "lifepreserver"
-            ))
-        }
         if let feedback {
             result.append(KikiStandardAboutLink(
                 id: "feedback",
                 title: "Send feedback",
-                url: feedback,
-                systemImage: "envelope"
+                url: feedback
             ))
         }
-        if let terms {
+        if let github {
             result.append(KikiStandardAboutLink(
-                id: "terms",
-                title: "Terms of use",
-                url: terms,
-                systemImage: "doc.text"
-            ))
-        }
-        if let privacy {
-            result.append(KikiStandardAboutLink(
-                id: "privacy",
-                title: "Privacy policy",
-                url: privacy,
-                systemImage: "lock.shield"
+                id: "github",
+                title: "GitHub",
+                url: github,
+                systemImage: "chevron.left.forwardslash.chevron.right"
             ))
         }
         return result

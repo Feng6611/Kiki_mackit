@@ -9,6 +9,7 @@ public struct KikiStandardAboutPane: View {
     private let accessStatus: KikiAccessStatusPresentation?
     private let onAccessAction: (@MainActor () -> Void)?
     private let links: KikiStandardAboutLinks
+    private let tint: Color
 
     public init(
         metadata: KikiAppMetadata,
@@ -16,7 +17,8 @@ public struct KikiStandardAboutPane: View {
         iconSize: CGFloat = 76,
         accessStatus: KikiAccessStatusPresentation? = nil,
         onAccessAction: (@MainActor () -> Void)? = nil,
-        links: KikiStandardAboutLinks = KikiStandardAboutLinks()
+        links: KikiStandardAboutLinks = KikiStandardAboutLinks(),
+        tint: Color = .accentColor
     ) {
         self.metadata = metadata
         self.icon = icon ?? NSApp.applicationIconImage
@@ -24,6 +26,7 @@ public struct KikiStandardAboutPane: View {
         self.accessStatus = accessStatus
         self.onAccessAction = onAccessAction
         self.links = links
+        self.tint = tint
     }
 
     public var body: some View {
@@ -54,8 +57,9 @@ public struct KikiStandardAboutPane: View {
         KikiSettingsStatusRow(
             title: "Status",
             value: presentation.title,
-            systemImage: statusSymbol(for: presentation.tone),
-            tone: statusTone(for: presentation.tone),
+            systemImage: presentation.tone.systemImage,
+            tone: presentation.tone.settingsTone,
+            tint: tint,
             trailingSystemImage: onAccessAction != nil ? "chevron.right" : nil,
             action: onAccessAction
         )
@@ -77,24 +81,6 @@ public struct KikiStandardAboutPane: View {
                 value: link.value,
                 systemImage: link.systemImage
             )
-        }
-    }
-
-    private func statusSymbol(for tone: KikiAccessStatusTone) -> String {
-        switch tone {
-        case .neutral: return "info.circle"
-        case .trial: return "clock"
-        case .active: return "checkmark.seal"
-        case .expired: return "exclamationmark.triangle"
-        }
-    }
-
-    private func statusTone(for tone: KikiAccessStatusTone) -> KikiSettingsStatusTone {
-        switch tone {
-        case .neutral: return .neutral
-        case .trial: return .accent
-        case .active: return .success
-        case .expired: return .warning
         }
     }
 }

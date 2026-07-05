@@ -1,7 +1,7 @@
 import SwiftUI
 
 public enum KikiOnboardingDefaults {
-    public static let windowSize = CGSize(width: 560, height: 520)
+    public static let windowSize = CGSize(width: 680, height: 680)
 }
 
 public enum KikiOnboardingCloseDisposition: Equatable, Sendable {

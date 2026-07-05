@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import SwiftUI
 
@@ -192,11 +193,13 @@ struct KikiPaywallPresentationFooter: View {
                         if index > 0 {
                             KikiPaywallDotSeparator()
                         }
-                        Link(link.title, destination: link.url)
+                        Button(link.title) {
+                            NSWorkspace.shared.open(link.url)
+                        }
+                        .buttonStyle(.link)
                     }
                 }
                 .font(.caption)
-                .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
             }
         }

@@ -1,3 +1,4 @@
+import AppKit
 import KikiDesign
 import SwiftUI
 
@@ -5,6 +6,7 @@ public struct KikiOnboardingScaffold: View {
     private let appName: String
     private let title: String
     private let bodyText: String?
+    private let appIcon: NSImage?
     private let iconSystemName: String
     private let rows: [KikiOnboardingRow]
     private let permissionRow: KikiOnboardingPermissionRow?
@@ -12,29 +14,37 @@ public struct KikiOnboardingScaffold: View {
     private let secondaryAction: KikiOnboardingAction?
     private let tint: Color
     private let size: CGSize
+    private let stepIndex: Int?
+    private let stepCount: Int?
 
     public init(
         appName: String,
         title: String,
         bodyText: String? = nil,
+        appIcon: NSImage? = nil,
         iconSystemName: String = "sparkles",
         rows: [KikiOnboardingRow],
         permissionRow: KikiOnboardingPermissionRow? = nil,
         primaryAction: KikiOnboardingAction,
         secondaryAction: KikiOnboardingAction? = nil,
-        tint: Color = .accentColor
+        tint: Color = .accentColor,
+        stepIndex: Int? = nil,
+        stepCount: Int? = nil
     ) {
         self.init(
             appName: appName,
             title: title,
             bodyText: bodyText,
+            appIcon: appIcon,
             iconSystemName: iconSystemName,
             rows: rows,
             permissionRow: permissionRow,
             primaryAction: primaryAction,
             secondaryAction: secondaryAction,
             tint: tint,
-            size: KikiOnboardingDefaults.windowSize
+            size: KikiOnboardingDefaults.windowSize,
+            stepIndex: stepIndex,
+            stepCount: stepCount
         )
     }
 
@@ -42,17 +52,21 @@ public struct KikiOnboardingScaffold: View {
         appName: String,
         title: String,
         bodyText: String? = nil,
+        appIcon: NSImage? = nil,
         iconSystemName: String = "sparkles",
         rows: [KikiOnboardingRow],
         permissionRow: KikiOnboardingPermissionRow? = nil,
         primaryAction: KikiOnboardingAction,
         secondaryAction: KikiOnboardingAction? = nil,
         tint: Color = .accentColor,
-        size: CGSize
+        size: CGSize,
+        stepIndex: Int? = nil,
+        stepCount: Int? = nil
     ) {
         self.appName = appName
         self.title = title
         self.bodyText = bodyText
+        self.appIcon = appIcon
         self.iconSystemName = iconSystemName
         self.rows = Array(rows.prefix(3))
         self.permissionRow = permissionRow
@@ -60,24 +74,19 @@ public struct KikiOnboardingScaffold: View {
         self.secondaryAction = secondaryAction
         self.tint = tint
         self.size = size
+        self.stepIndex = stepIndex
+        self.stepCount = stepCount
     }
 
     public var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: 18) {
                 VStack(spacing: 12) {
-                    Image(systemName: iconSystemName)
-                        .font(.system(size: 28, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 68, height: 68)
-                        .background(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(tint)
-                        )
+                    hero
 
                     VStack(spacing: 6) {
                         Text(title)
-                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .font(.system(size: 24, weight: .bold))
                             .multilineTextAlignment(.center)
 
                         if let bodyText {
@@ -105,6 +114,15 @@ public struct KikiOnboardingScaffold: View {
 
             Spacer(minLength: 0)
 
+            if let stepIndex, let stepCount, stepCount > 1 {
+                KikiOnboardingProgressDots(
+                    count: stepCount,
+                    currentIndex: stepIndex,
+                    tint: tint
+                )
+                .padding(.bottom, 14)
+            }
+
             VStack(spacing: 10) {
                 Button {
                     primaryAction.action()
@@ -114,6 +132,7 @@ public struct KikiOnboardingScaffold: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+                .tint(tint)
                 .keyboardShortcut(.defaultAction)
 
                 if let secondaryAction {
@@ -144,5 +163,26 @@ public struct KikiOnboardingScaffold: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(appName) onboarding")
+    }
+
+    @ViewBuilder
+    private var hero: some View {
+        if let appIcon {
+            Image(nsImage: appIcon)
+                .resizable()
+                .interpolation(.high)
+                .frame(width: 88, height: 88)
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .shadow(color: .black.opacity(0.12), radius: 12, y: 6)
+        } else {
+            Image(systemName: iconSystemName)
+                .font(.system(size: 28, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 68, height: 68)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(tint)
+                )
+        }
     }
 }

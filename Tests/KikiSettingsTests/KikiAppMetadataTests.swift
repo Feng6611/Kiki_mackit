@@ -35,14 +35,12 @@ struct KikiAppMetadataTests {
     @Test("Standard about links emits ordered entries for provided URLs only")
     func standardLinksReturnOnlyProvidedURLs() throws {
         let links = KikiStandardAboutLinks(
-            terms: URL(string: "https://example.com/terms"),
-            privacy: nil,
-            support: URL(string: "https://example.com/support"),
+            website: URL(string: "https://example.com"),
             feedback: nil,
-            website: URL(string: "https://example.com")
+            github: URL(string: "https://github.com/foo/bar")
         )
         let ordered = links.orderedLinks
-        #expect(ordered.map(\.id) == ["website", "support", "terms"])
+        #expect(ordered.map(\.id) == ["website", "github"])
     }
 
     @Test("Standard about links produces empty list when none provided")

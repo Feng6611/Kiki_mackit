@@ -5,6 +5,33 @@ public enum KikiAccessStatusTone: Equatable, Sendable {
     case trial
     case active
     case expired
+
+    public var systemImage: String {
+        switch self {
+        case .neutral: return "info.circle"
+        case .trial: return "clock.badge.checkmark"
+        case .active: return "checkmark.seal"
+        case .expired: return "exclamationmark.triangle"
+        }
+    }
+
+    public var settingsTone: KikiSettingsStatusTone {
+        switch self {
+        case .neutral: return .neutral
+        case .trial: return .neutral
+        case .active: return .accent
+        case .expired: return .warning
+        }
+    }
+
+    public func foregroundColor(tint: Color = .accentColor) -> Color {
+        switch self {
+        case .neutral: return .secondary
+        case .trial: return .secondary
+        case .active: return tint
+        case .expired: return .orange
+        }
+    }
 }
 
 public struct KikiAccessStatusPresentation: Equatable, Sendable {
@@ -31,13 +58,16 @@ public struct KikiAccessStatusPresentation: Equatable, Sendable {
 
 public struct KikiAccessStatusCard: View {
     private let presentation: KikiAccessStatusPresentation
+    private let tint: Color
     private let action: (@MainActor () -> Void)?
 
     public init(
         presentation: KikiAccessStatusPresentation,
+        tint: Color = .accentColor,
         action: (@MainActor () -> Void)? = nil
     ) {
         self.presentation = presentation
+        self.tint = tint
         self.action = action
     }
 
@@ -76,31 +106,13 @@ public struct KikiAccessStatusCard: View {
     }
 
     private var badge: some View {
-        Image(systemName: toneSymbol)
+        Image(systemName: presentation.tone.systemImage)
             .font(.system(size: 18, weight: .semibold))
             .foregroundStyle(.white)
             .frame(width: 36, height: 36)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(toneColor)
+                    .fill(presentation.tone.foregroundColor(tint: tint))
             )
-    }
-
-    private var toneSymbol: String {
-        switch presentation.tone {
-        case .neutral: return "info.circle"
-        case .trial: return "clock"
-        case .active: return "checkmark.seal"
-        case .expired: return "exclamationmark.triangle"
-        }
-    }
-
-    private var toneColor: Color {
-        switch presentation.tone {
-        case .neutral: return .gray
-        case .trial: return .blue
-        case .active: return .green
-        case .expired: return .orange
-        }
     }
 }
