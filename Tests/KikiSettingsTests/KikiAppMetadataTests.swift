@@ -50,4 +50,40 @@ struct KikiAppMetadataTests {
         let links = KikiStandardAboutLinks()
         #expect(links.orderedLinks.isEmpty)
     }
+
+    @Test("mailto feedback link resolves to copy kind with email value")
+    func mailtoFeedbackResolvesToCopy() {
+        let links = KikiStandardAboutLinks(
+            feedback: URL(string: "mailto:hello@example.com")
+        )
+        let link = links.orderedLinks.first
+        #expect(link?.kind == .copy)
+        #expect(link?.value == "hello@example.com")
+        #expect(link?.systemImage == "envelope")
+    }
+
+    @Test("https link resolves to link kind with host value")
+    func httpsLinkResolvesToLinkWithHost() {
+        let links = KikiStandardAboutLinks(
+            website: URL(string: "https://www.example.com/path")
+        )
+        let link = links.orderedLinks.first
+        #expect(link?.kind == .link)
+        #expect(link?.value == "example.com")
+        #expect(link?.systemImage == "globe")
+    }
+
+    @Test("Explicit value and kind override derivation")
+    func explicitValueAndKindOverride() {
+        let link = KikiStandardAboutLink(
+            id: "repo",
+            title: "GitHub",
+            url: URL(string: "https://github.com/foo/bar")!,
+            value: "foo/bar",
+            systemImage: "chevron.left.forwardslash.chevron.right"
+        )
+        #expect(link.kind == .link)
+        #expect(link.value == "foo/bar")
+        #expect(link.systemImage == "chevron.left.forwardslash.chevron.right")
+    }
 }

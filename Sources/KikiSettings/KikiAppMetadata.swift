@@ -47,22 +47,44 @@ public struct KikiAppMetadata: Equatable, Sendable {
     }
 }
 
+public enum KikiStandardAboutLinkKind: Sendable {
+    case link
+    case copy
+}
+
 public struct KikiStandardAboutLink: Identifiable, Equatable, Sendable {
     public let id: String
     public let title: String
     public let url: URL
-    public let systemImage: String?
+    public let value: String
+    public let systemImage: String
+    public let kind: KikiStandardAboutLinkKind
 
     public init(
         id: String,
         title: String,
         url: URL,
-        systemImage: String? = nil
+        value: String? = nil,
+        systemImage: String? = nil,
+        kind: KikiStandardAboutLinkKind = .link
     ) {
         self.id = id
         self.title = title
         self.url = url
-        self.systemImage = systemImage
+        let resolvedKind = (kind == .link && url.scheme == "mailto") ? .copy : kind
+        self.kind = resolvedKind
+        self.value = value ?? Self.deriveValue(from: url, kind: resolvedKind)
+        self.systemImage = systemImage ?? (resolvedKind == .copy ? "doc" : "link")
+    }
+
+    private static func deriveValue(from url: URL, kind: KikiStandardAboutLinkKind) -> String {
+        if kind == .copy, url.scheme == "mailto" {
+            return url.absoluteString.replacingOccurrences(of: "mailto:", with: "")
+        }
+        if let host = url.host {
+            return host.hasPrefix("www.") ? String(host.dropFirst(4)) : host
+        }
+        return url.absoluteString
     }
 }
 
@@ -90,19 +112,44 @@ public struct KikiStandardAboutLinks: Equatable, Sendable {
     public var orderedLinks: [KikiStandardAboutLink] {
         var result: [KikiStandardAboutLink] = []
         if let website {
-            result.append(KikiStandardAboutLink(id: "website", title: "Website", url: website, systemImage: "globe"))
+            result.append(KikiStandardAboutLink(
+                id: "website",
+                title: "Website",
+                url: website,
+                systemImage: "globe"
+            ))
         }
         if let support {
-            result.append(KikiStandardAboutLink(id: "support", title: "Support", url: support, systemImage: "lifepreserver"))
+            result.append(KikiStandardAboutLink(
+                id: "support",
+                title: "Support",
+                url: support,
+                systemImage: "lifepreserver"
+            ))
         }
         if let feedback {
-            result.append(KikiStandardAboutLink(id: "feedback", title: "Send feedback", url: feedback, systemImage: "envelope"))
+            result.append(KikiStandardAboutLink(
+                id: "feedback",
+                title: "Send feedback",
+                url: feedback,
+                systemImage: "envelope"
+            ))
         }
         if let terms {
-            result.append(KikiStandardAboutLink(id: "terms", title: "Terms of use", url: terms, systemImage: "doc.text"))
+            result.append(KikiStandardAboutLink(
+                id: "terms",
+                title: "Terms of use",
+                url: terms,
+                systemImage: "doc.text"
+            ))
         }
         if let privacy {
-            result.append(KikiStandardAboutLink(id: "privacy", title: "Privacy policy", url: privacy, systemImage: "lock.shield"))
+            result.append(KikiStandardAboutLink(
+                id: "privacy",
+                title: "Privacy policy",
+                url: privacy,
+                systemImage: "lock.shield"
+            ))
         }
         return result
     }

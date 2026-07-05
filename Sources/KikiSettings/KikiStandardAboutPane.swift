@@ -9,7 +9,6 @@ public struct KikiStandardAboutPane: View {
     private let accessStatus: KikiAccessStatusPresentation?
     private let onAccessAction: (@MainActor () -> Void)?
     private let links: KikiStandardAboutLinks
-    private let onOpenLink: ((URL) -> Void)?
 
     public init(
         metadata: KikiAppMetadata,
@@ -17,8 +16,7 @@ public struct KikiStandardAboutPane: View {
         iconSize: CGFloat = 76,
         accessStatus: KikiAccessStatusPresentation? = nil,
         onAccessAction: (@MainActor () -> Void)? = nil,
-        links: KikiStandardAboutLinks = KikiStandardAboutLinks(),
-        onOpenLink: ((URL) -> Void)? = nil
+        links: KikiStandardAboutLinks = KikiStandardAboutLinks()
     ) {
         self.metadata = metadata
         self.icon = icon ?? NSApp.applicationIconImage
@@ -26,7 +24,6 @@ public struct KikiStandardAboutPane: View {
         self.accessStatus = accessStatus
         self.onAccessAction = onAccessAction
         self.links = links
-        self.onOpenLink = onOpenLink
     }
 
     public var body: some View {
@@ -37,29 +34,12 @@ public struct KikiStandardAboutPane: View {
             iconSize: iconSize,
             status: {
                 if let accessStatus {
-                    KikiAccessStatusCard(presentation: accessStatus, action: onAccessAction)
-                        .padding(.vertical, 4)
+                    statusRow(for: accessStatus)
                 }
             },
             links: {
                 ForEach(links.orderedLinks) { link in
-                    Button {
-                        openLink(link.url)
-                    } label: {
-                        HStack(spacing: KikiSettingsSpacing.sm) {
-                            if let systemImage = link.systemImage {
-                                Image(systemName: systemImage)
-                                    .frame(width: 18)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Text(link.title)
-                            Spacer(minLength: 0)
-                            Image(systemName: "arrow.up.right.square")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .contentShape(Rectangle())
+                    linkRow(for: link)
                 }
                 if let copyright = metadata.copyright, copyright.isEmpty == false {
                     Text(copyright)
@@ -70,11 +50,51 @@ public struct KikiStandardAboutPane: View {
         )
     }
 
-    private func openLink(_ url: URL) {
-        if let onOpenLink {
-            onOpenLink(url)
-        } else {
-            NSWorkspace.shared.open(url)
+    private func statusRow(for presentation: KikiAccessStatusPresentation) -> some View {
+        KikiSettingsStatusRow(
+            title: "Status",
+            value: presentation.title,
+            systemImage: statusSymbol(for: presentation.tone),
+            tone: statusTone(for: presentation.tone),
+            trailingSystemImage: onAccessAction != nil ? "chevron.right" : nil,
+            action: onAccessAction
+        )
+    }
+
+    @ViewBuilder
+    private func linkRow(for link: KikiStandardAboutLink) -> some View {
+        switch link.kind {
+        case .link:
+            KikiSettingsLinkRow(
+                title: link.title,
+                value: link.value,
+                urlString: link.url.absoluteString,
+                systemImage: link.systemImage
+            )
+        case .copy:
+            KikiSettingsCopyRow(
+                title: link.title,
+                value: link.value,
+                systemImage: link.systemImage
+            )
+        }
+    }
+
+    private func statusSymbol(for tone: KikiAccessStatusTone) -> String {
+        switch tone {
+        case .neutral: return "info.circle"
+        case .trial: return "clock"
+        case .active: return "checkmark.seal"
+        case .expired: return "exclamationmark.triangle"
+        }
+    }
+
+    private func statusTone(for tone: KikiAccessStatusTone) -> KikiSettingsStatusTone {
+        switch tone {
+        case .neutral: return .neutral
+        case .trial: return .accent
+        case .active: return .success
+        case .expired: return .warning
         }
     }
 }
