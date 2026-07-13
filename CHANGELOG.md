@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.8.0 - 2026-07-14
+
 ### Fixed
 
 - Onboarding custom steps now receive distinct page identities and direction-aware slide transitions, preventing stale text/image remnants during navigation.
