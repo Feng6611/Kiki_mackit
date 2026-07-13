@@ -52,6 +52,10 @@ product.
 See [Docs/APIConventions.md](Docs/APIConventions.md) for public API boundaries
 and extraction rules.
 
+Optional celebration effects and third-party guidance are documented in
+[Docs/KikiCelebration.md](Docs/KikiCelebration.md); they are intentionally not
+part of the default Kiki dependency graph.
+
 ## Remote Usage
 
 After pushing this package to a remote repository, consume it from another app with SwiftPM:

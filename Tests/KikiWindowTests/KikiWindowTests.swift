@@ -18,10 +18,12 @@ struct KikiWindowTests {
         #expect(configuration.size == CGSize(width: 480, height: 360))
         #expect(configuration.minimumSize == CGSize(width: 320, height: 240))
         #expect(configuration.frameAutosaveName == "KikiWindowTests.Welcome")
-        #expect(configuration.styleMask.contains(.fullSizeContentView))
+        #expect(configuration.styleMask == [.borderless])
         #expect(configuration.titlebarAppearsTransparent)
         #expect(configuration.titleVisibility == .hidden)
         #expect(configuration.isMovableByWindowBackground)
+        #expect(configuration.backgroundColor == .clear)
+        #expect(configuration.contentCornerRadius == 20)
         #expect(configuration.hiddenButtons == .all)
     }
 
@@ -45,5 +47,26 @@ struct KikiWindowTests {
 
         _ = transparentBackground
         #expect(!controller.isVisible)
+    }
+
+    @MainActor
+    @Test("Transparent utility applies rounded non-opaque content at runtime")
+    func transparentUtilityAppliesRoundedContentAtRuntime() {
+        let controller = KikiSingleWindowController(
+            configuration: .transparentUtility(
+                title: "Rounded Welcome",
+                size: CGSize(width: 320, height: 240)
+            )
+        ) {
+            Color.clear
+        }
+
+        controller.show()
+        defer { controller.close() }
+
+        #expect(controller.window?.isOpaque == false)
+        #expect(controller.window?.styleMask == [.borderless])
+        #expect(controller.window?.contentView?.layer?.cornerRadius == 20)
+        #expect(controller.window?.contentView?.layer?.masksToBounds == true)
     }
 }

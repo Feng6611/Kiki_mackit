@@ -1,5 +1,9 @@
 # KikiOnboarding
 
+Step changes use direction-aware whole-page slide transitions. Custom steps
+must provide stable IDs through `KikiOnboardingStep.custom(id:view:)`; the
+coordinator uses those page boundaries rather than mutating content in place.
+
 `KikiOnboarding` owns the reusable first-launch window for small macOS apps:
 a SwiftUI scaffold view, a few row types, a permission row that binds to
 `KikiAuthorization`, and a single-window controller built on `KikiWindow`.
@@ -10,6 +14,18 @@ optional 0.7 coordinator persists completion only through a caller-selected
 `KikiOnboardingCompletionStore`; Kiki does not share that state with commerce
 or decide what happens after the user finishes.
 
+## Recommended Adoption
+
+Use `KikiOnboardingCoordinator` and declarative `KikiOnboardingStep` values as
+the default Feature API. Standard copy-only steps use the typed cases. Product
+interaction such as Command Reopen's minimize/return exercise uses
+`.custom(id:view:)` and receives only `KikiOnboardingNavigation`.
+
+Use `KikiOnboardingScaffold` and the lower-level window controller directly only
+when a product cannot express its flow through the coordinator. Do not create an
+App-local page state machine for standard welcome/features/permission/success
+navigation.
+
 ## Visual Rules
 
 - Default window size is `560 x 520`, matching the macOS Welcome shape used
@@ -17,11 +33,14 @@ or decide what happens after the user finishes.
 - The primary action uses `.borderedProminent` and carries
   `.keyboardShortcut(.defaultAction)` so Return triggers it; the secondary
   action uses `.bordered` with no default shortcut.
-- The header is `Image(systemName:)` framed in a rounded accent square plus
-  a single H1 and an optional body paragraph. Custom artwork is not part of
-  v1; hosts that need brand art compose atoms manually.
+- The header is an app icon when `appIcon` is supplied, otherwise an
+  `Image(systemName:)` framed in a rounded accent square, followed by a single
+  H1 and optional body paragraph.
 - Body rows stack vertically, capped at three for scannability. Rows use
   system images and follow the row spacing in `KikiSettings`.
+- Header and body content stay together near the top of the flexible body
+  region; progress and actions remain anchored to the bottom edge. This avoids
+  a large empty band above sparse first-run content.
 - The permission row uses `KikiAuthorization` for state and routing; it
   never hardcodes the System Settings URL.
 

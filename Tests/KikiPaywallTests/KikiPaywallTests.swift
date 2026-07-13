@@ -3,6 +3,12 @@ import SwiftUI
 import Testing
 
 struct KikiPaywallTests {
+    @Test("Onboarding paywall stays within the welcome window")
+    func onboardingPaywallStaysWithinWelcomeWindow() {
+        #expect(KikiPaywallSheetSize.onboarding.width == 520)
+        #expect(KikiPaywallSheetSize.onboarding.height == 520)
+    }
+
     @Test("Paywall plan stores display metadata")
     func paywallPlanStoresDisplayMetadata() {
         let plan = KikiPaywallPlan(

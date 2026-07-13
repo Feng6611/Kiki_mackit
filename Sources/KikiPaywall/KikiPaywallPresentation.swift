@@ -83,7 +83,20 @@ public struct KikiPaywallActionPresentation: Identifiable {
     private let action: @MainActor (_ selectedPlanID: String) -> Void
 
     public init(
-        id: UUID = UUID(),
+        title: String,
+        isLoading: Bool = false,
+        isEnabled: Bool = true,
+        action: @escaping @MainActor () -> Void
+    ) {
+        self.id = UUID()
+        self.title = title
+        self.isLoading = isLoading
+        self.isEnabled = { _ in isEnabled }
+        self.action = { _ in action() }
+    }
+
+    public init(
+        id: UUID,
         title: String,
         isLoading: Bool = false,
         isEnabled: Bool = true,
@@ -97,7 +110,20 @@ public struct KikiPaywallActionPresentation: Identifiable {
     }
 
     public init(
-        id: UUID = UUID(),
+        title: String,
+        isLoading: Bool = false,
+        isEnabled: @escaping @MainActor (_ selectedPlanID: String) -> Bool,
+        action: @escaping @MainActor (_ selectedPlanID: String) -> Void
+    ) {
+        self.id = UUID()
+        self.title = title
+        self.isLoading = isLoading
+        self.isEnabled = isEnabled
+        self.action = action
+    }
+
+    public init(
+        id: UUID,
         title: String,
         isLoading: Bool = false,
         isEnabled: @escaping @MainActor (_ selectedPlanID: String) -> Bool,

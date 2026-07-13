@@ -8,6 +8,16 @@
 - Reusable plan card, feature row, stat item, and action label views.
 - Loading, disabled, selected, and unavailable visual states.
 
+## Recommended Adoption
+
+Most Apps should render a `KikiCompactPaywall` or `KikiOnboardingPaywall` from a
+`KikiPaywallPresentation` supplied by the host or `KikiCommercePresentation`.
+This is the Feature layer and owns the repeated layout and interaction state.
+
+Use `KikiPaywallSheet`, `KikiPaywallShell`, and individual cards/rows only for a
+proven custom surface. Purchase, restore, trial calculation, feature gating, and
+post-success routing remain outside Base Kit in both cases.
+
 ## Technical Decisions
 
 - SwiftUI-first because this module is presentation-focused.

@@ -51,10 +51,14 @@ public final class KikiSettingsWindowController {
         minimumContentSize: CGSize = CGSize(
             width: KikiSettingsDefaults.minimumWindowWidth,
             height: KikiSettingsDefaults.minimumWindowHeight
-        )
+        ),
+        windowTitle: String = "Settings"
     ) {
         self.frameAutosaveName = NSWindow.FrameAutosaveName(frameAutosaveName)
         self.minimumContentSize = minimumContentSize
+        // Retained for source compatibility. Exact view registration makes
+        // title-based window discovery unnecessary.
+        _ = windowTitle
     }
 
     public var isVisible: Bool {
@@ -152,6 +156,14 @@ public final class KikiSettingsOpener {
     }
 
     private func isSettingsItem(_ item: NSMenuItem) -> Bool {
+        // Selector comparison is locale-independent; the English title match
+        // below fails as soon as the app menu is localized.
+        if let action = item.action,
+           action == Selector(("showSettingsWindow:"))
+            || action == Selector(("showPreferencesWindow:")) {
+            return true
+        }
+
         if item.keyEquivalent == "," {
             return true
         }

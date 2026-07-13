@@ -1,3 +1,4 @@
+import AppKit
 import KikiWindow
 import SwiftUI
 
@@ -49,6 +50,10 @@ public final class KikiOnboardingWindowController {
 
     public var isVisible: Bool {
         windowController.isVisible
+    }
+
+    public var window: NSWindow? {
+        windowController.window
     }
 
     public func show() {

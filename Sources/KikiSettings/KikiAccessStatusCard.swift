@@ -4,6 +4,7 @@ public enum KikiAccessStatusTone: Equatable, Sendable {
     case neutral
     case trial
     case active
+    case lifetime
     case expired
 
     public var systemImage: String {
@@ -11,6 +12,7 @@ public enum KikiAccessStatusTone: Equatable, Sendable {
         case .neutral: return "info.circle"
         case .trial: return "clock.badge.checkmark"
         case .active: return "checkmark.seal"
+        case .lifetime: return "crown.fill"
         case .expired: return "exclamationmark.triangle"
         }
     }
@@ -18,8 +20,9 @@ public enum KikiAccessStatusTone: Equatable, Sendable {
     public var settingsTone: KikiSettingsStatusTone {
         switch self {
         case .neutral: return .neutral
-        case .trial: return .neutral
+        case .trial: return .info
         case .active: return .accent
+        case .lifetime: return .accent
         case .expired: return .warning
         }
     }
@@ -27,8 +30,9 @@ public enum KikiAccessStatusTone: Equatable, Sendable {
     public func foregroundColor(tint: Color = .accentColor) -> Color {
         switch self {
         case .neutral: return .secondary
-        case .trial: return .secondary
+        case .trial: return .blue
         case .active: return tint
+        case .lifetime: return tint
         case .expired: return .orange
         }
     }
@@ -63,7 +67,16 @@ public struct KikiAccessStatusCard: View {
 
     public init(
         presentation: KikiAccessStatusPresentation,
-        tint: Color = .accentColor,
+        action: (@MainActor () -> Void)? = nil
+    ) {
+        self.presentation = presentation
+        self.tint = .accentColor
+        self.action = action
+    }
+
+    public init(
+        presentation: KikiAccessStatusPresentation,
+        tint: Color,
         action: (@MainActor () -> Void)? = nil
     ) {
         self.presentation = presentation

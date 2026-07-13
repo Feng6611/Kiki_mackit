@@ -1,4 +1,4 @@
-import KikiDesign
+@testable import KikiDesign
 import SwiftUI
 import Testing
 
@@ -40,5 +40,16 @@ struct KikiDesignTests {
         _ = KikiDesignColor.systemAccent
         _ = KikiDesignColor.brand_accent
         _ = KikiDesignColor.system_accent
+    }
+
+    @Test("Application icon resource names support Icon Composer output")
+    func applicationIconResourceNamesSupportIconComposerOutput() {
+        let implicitExtension = KikiApplicationIcon.resourceLocation(for: "AppIcon")
+        #expect(implicitExtension.name == "AppIcon")
+        #expect(implicitExtension.extension == "icns")
+
+        let explicitExtension = KikiApplicationIcon.resourceLocation(for: "ProductIcon.icns")
+        #expect(explicitExtension.name == "ProductIcon")
+        #expect(explicitExtension.extension == "icns")
     }
 }

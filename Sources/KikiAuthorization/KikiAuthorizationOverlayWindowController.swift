@@ -4,7 +4,7 @@ import QuartzCore
 
 @MainActor
 final class KikiAuthorizationOverlayWindowController: NSWindowController {
-    private static let windowSize = NSSize(width: 520, height: 112)
+    private static let windowSize = NSSize(width: 440, height: 138)
 
     init(
         hostApp: KikiAuthorizationHostApp,

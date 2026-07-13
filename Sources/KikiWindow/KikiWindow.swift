@@ -25,6 +25,7 @@ public struct KikiWindowConfiguration {
     public var titleVisibility: NSWindow.TitleVisibility
     public var isMovableByWindowBackground: Bool
     public var backgroundColor: NSColor
+    public var contentCornerRadius: CGFloat?
     public var isReleasedWhenClosed: Bool
     public var hiddenButtons: KikiWindowButtonVisibility
     public var centersOnShow: Bool
@@ -40,6 +41,7 @@ public struct KikiWindowConfiguration {
         titleVisibility: NSWindow.TitleVisibility = .visible,
         isMovableByWindowBackground: Bool = false,
         backgroundColor: NSColor = .windowBackgroundColor,
+        contentCornerRadius: CGFloat? = nil,
         isReleasedWhenClosed: Bool = false,
         hiddenButtons: KikiWindowButtonVisibility = [],
         centersOnShow: Bool = true,
@@ -54,6 +56,7 @@ public struct KikiWindowConfiguration {
         self.titleVisibility = titleVisibility
         self.isMovableByWindowBackground = isMovableByWindowBackground
         self.backgroundColor = backgroundColor
+        self.contentCornerRadius = contentCornerRadius
         self.isReleasedWhenClosed = isReleasedWhenClosed
         self.hiddenButtons = hiddenButtons
         self.centersOnShow = centersOnShow
@@ -86,12 +89,16 @@ public struct KikiWindowConfiguration {
             title: title,
             size: size,
             minimumSize: minimumSize,
-            styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
+            // Borderless removes the otherwise detached transparent title-bar
+            // shadow. The content remains draggable through
+            // `isMovableByWindowBackground` below.
+            styleMask: [.borderless],
             frameAutosaveName: frameAutosaveName,
             titlebarAppearsTransparent: true,
             titleVisibility: .hidden,
             isMovableByWindowBackground: true,
             backgroundColor: .clear,
+            contentCornerRadius: 20,
             hiddenButtons: hiddenButtons
         )
     }
@@ -169,7 +176,10 @@ public final class KikiSingleWindowController<Content: View>: NSObject, NSWindow
     private let configuration: KikiWindowConfiguration
     private let content: () -> Content
     private let onClose: (() -> Void)?
-    private var window: NSWindow?
+
+    /// Escape hatch for product window behavior the controller does not model
+    /// (e.g. miniaturize-driven onboarding sessions). Nil until first `show()`.
+    public private(set) var window: NSWindow?
 
     public init(
         configuration: KikiWindowConfiguration,
@@ -215,6 +225,14 @@ public final class KikiSingleWindowController<Content: View>: NSObject, NSWindow
         window.titleVisibility = configuration.titleVisibility
         window.isMovableByWindowBackground = configuration.isMovableByWindowBackground
         window.backgroundColor = configuration.backgroundColor
+        window.isOpaque = configuration.backgroundColor.alphaComponent >= 1
+        window.hasShadow = true
+        if let cornerRadius = configuration.contentCornerRadius {
+            window.contentView?.wantsLayer = true
+            window.contentView?.layer?.cornerRadius = cornerRadius
+            window.contentView?.layer?.cornerCurve = .continuous
+            window.contentView?.layer?.masksToBounds = true
+        }
         window.isReleasedWhenClosed = configuration.isReleasedWhenClosed
         window.setContentSize(configuration.size)
 

@@ -4,6 +4,20 @@ import XCTest
 
 @MainActor
 final class KikiSettingsWindowControllerTests: XCTestCase {
+    func testLegacyWindowTitleInitializerPreservesSourceCompatibility() {
+        let controller = KikiSettingsWindowController(
+            frameAutosaveName: "KikiSettingsTests.LegacyWindow",
+            minimumContentSize: CGSize(width: 440, height: 330),
+            windowTitle: "Settings"
+        )
+        let window = FakeSettingsWindow()
+
+        controller.register(managedWindow: window)
+
+        XCTAssertEqual(window.configuredAutosaveName, "KikiSettingsTests.LegacyWindow")
+        XCTAssertEqual(window.configuredMinimumSize, CGSize(width: 440, height: 330))
+    }
+
     func testRegisteredWindowOwnsConfigurationVisibilityAndClose() {
         let controller = KikiSettingsWindowController(
             frameAutosaveName: "KikiSettingsTests.Window",

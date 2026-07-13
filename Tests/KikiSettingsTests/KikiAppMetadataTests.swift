@@ -41,6 +41,7 @@ struct KikiAppMetadataTests {
         )
         let ordered = links.orderedLinks
         #expect(ordered.map(\.id) == ["website", "github"])
+        #expect(ordered.map(\.title) == ["Official", "GitHub"])
     }
 
     @Test("Standard about links produces empty list when none provided")
@@ -55,6 +56,7 @@ struct KikiAppMetadataTests {
             feedback: URL(string: "mailto:hello@example.com")
         )
         let link = links.orderedLinks.first
+        #expect(link?.title == "Email")
         #expect(link?.kind == .copy)
         #expect(link?.value == "hello@example.com")
         #expect(link?.systemImage == "envelope")

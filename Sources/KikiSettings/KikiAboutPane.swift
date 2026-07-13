@@ -1,4 +1,5 @@
 import AppKit
+import KikiDesign
 import SwiftUI
 
 public struct KikiAppIdentityView: View {
@@ -10,12 +11,12 @@ public struct KikiAppIdentityView: View {
     public init(
         appName: String,
         versionText: String,
-        icon: NSImage = NSApp.applicationIconImage,
+        icon: NSImage? = nil,
         iconSize: CGFloat = 76
     ) {
         self.appName = appName
         self.versionText = versionText
-        self.icon = icon
+        self.icon = icon ?? KikiApplicationIcon.current
         self.iconSize = iconSize
     }
 
@@ -49,14 +50,14 @@ public struct KikiAboutPane<StatusContent: View, LinksContent: View>: View {
     public init(
         appName: String,
         versionText: String,
-        icon: NSImage = NSApp.applicationIconImage,
+        icon: NSImage? = nil,
         iconSize: CGFloat = 76,
         @ViewBuilder status: () -> StatusContent,
         @ViewBuilder links: () -> LinksContent
     ) {
         self.appName = appName
         self.versionText = versionText
-        self.icon = icon
+        self.icon = icon ?? KikiApplicationIcon.current
         self.iconSize = iconSize
         self.statusContent = status()
         self.linksContent = links()

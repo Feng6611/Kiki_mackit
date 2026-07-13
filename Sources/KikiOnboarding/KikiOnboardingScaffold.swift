@@ -2,16 +2,48 @@ import AppKit
 import KikiDesign
 import SwiftUI
 
-public struct KikiOnboardingScaffold: View {
+/// Default middle content for `KikiOnboardingScaffold`: feature rows plus an
+/// optional permission row. Apps with bespoke step bodies provide their own
+/// content view instead while the scaffold keeps owning the window chrome.
+public struct KikiOnboardingRowsContent: View {
+    private let rows: [KikiOnboardingRow]
+    private let permissionRow: KikiOnboardingPermissionRow?
+    private let tint: Color
+
+    public init(
+        rows: [KikiOnboardingRow],
+        permissionRow: KikiOnboardingPermissionRow? = nil,
+        tint: Color = .accentColor
+    ) {
+        self.rows = Array(rows.prefix(3))
+        self.permissionRow = permissionRow
+        self.tint = tint
+    }
+
+    public var body: some View {
+        VStack(spacing: 12) {
+            ForEach(rows) { row in
+                KikiOnboardingRowView(row: row, tint: tint)
+            }
+
+            if let permissionRow {
+                permissionRow
+            }
+        }
+    }
+}
+
+public struct KikiOnboardingScaffold<Content: View>: View {
     private let appName: String
     private let title: String
     private let bodyText: String?
     private let appIcon: NSImage?
     private let iconSystemName: String
-    private let rows: [KikiOnboardingRow]
-    private let permissionRow: KikiOnboardingPermissionRow?
+    private let content: Content
     private let primaryAction: KikiOnboardingAction
     private let secondaryAction: KikiOnboardingAction?
+    private let backAction: KikiOnboardingAction?
+    private let skipAction: KikiOnboardingAction?
     private let tint: Color
     private let size: CGSize
     private let stepIndex: Int?
@@ -23,55 +55,26 @@ public struct KikiOnboardingScaffold: View {
         bodyText: String? = nil,
         appIcon: NSImage? = nil,
         iconSystemName: String = "sparkles",
-        rows: [KikiOnboardingRow],
-        permissionRow: KikiOnboardingPermissionRow? = nil,
         primaryAction: KikiOnboardingAction,
         secondaryAction: KikiOnboardingAction? = nil,
+        backAction: KikiOnboardingAction? = nil,
+        skipAction: KikiOnboardingAction? = nil,
         tint: Color = .accentColor,
+        size: CGSize = KikiOnboardingDefaults.windowSize,
         stepIndex: Int? = nil,
-        stepCount: Int? = nil
-    ) {
-        self.init(
-            appName: appName,
-            title: title,
-            bodyText: bodyText,
-            appIcon: appIcon,
-            iconSystemName: iconSystemName,
-            rows: rows,
-            permissionRow: permissionRow,
-            primaryAction: primaryAction,
-            secondaryAction: secondaryAction,
-            tint: tint,
-            size: KikiOnboardingDefaults.windowSize,
-            stepIndex: stepIndex,
-            stepCount: stepCount
-        )
-    }
-
-    public init(
-        appName: String,
-        title: String,
-        bodyText: String? = nil,
-        appIcon: NSImage? = nil,
-        iconSystemName: String = "sparkles",
-        rows: [KikiOnboardingRow],
-        permissionRow: KikiOnboardingPermissionRow? = nil,
-        primaryAction: KikiOnboardingAction,
-        secondaryAction: KikiOnboardingAction? = nil,
-        tint: Color = .accentColor,
-        size: CGSize,
-        stepIndex: Int? = nil,
-        stepCount: Int? = nil
+        stepCount: Int? = nil,
+        @ViewBuilder content: () -> Content
     ) {
         self.appName = appName
         self.title = title
         self.bodyText = bodyText
         self.appIcon = appIcon
         self.iconSystemName = iconSystemName
-        self.rows = Array(rows.prefix(3))
-        self.permissionRow = permissionRow
+        self.content = content()
         self.primaryAction = primaryAction
         self.secondaryAction = secondaryAction
+        self.backAction = backAction
+        self.skipAction = skipAction
         self.tint = tint
         self.size = size
         self.stepIndex = stepIndex
@@ -86,7 +89,7 @@ public struct KikiOnboardingScaffold: View {
 
                     VStack(spacing: 6) {
                         Text(title)
-                            .font(.system(size: 24, weight: .bold))
+                            .font(.title.bold())
                             .multilineTextAlignment(.center)
 
                         if let bodyText {
@@ -99,20 +102,14 @@ public struct KikiOnboardingScaffold: View {
                     }
                 }
 
-                VStack(spacing: 12) {
-                    ForEach(rows) { row in
-                        KikiOnboardingRowView(row: row, tint: tint)
-                    }
-
-                    if let permissionRow {
-                        permissionRow
-                    }
-                }
+                content
             }
-            .frame(maxWidth: .infinity, alignment: .top)
-            .padding(28)
-
-            Spacer(minLength: 0)
+            // Keep the header and page content together near the top. The
+            // footer owns the bottom edge; centering sparse steps makes the
+            // hero drift too far down in a fixed welcome window.
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .padding(.horizontal, 28)
+            .padding(.top, 28)
 
             if let stepIndex, let stepCount, stepCount > 1 {
                 KikiOnboardingProgressDots(
@@ -123,31 +120,9 @@ public struct KikiOnboardingScaffold: View {
                 .padding(.bottom, 14)
             }
 
-            VStack(spacing: 10) {
-                Button {
-                    primaryAction.action()
-                } label: {
-                    Text(primaryAction.title)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .tint(tint)
-                .keyboardShortcut(.defaultAction)
-
-                if let secondaryAction {
-                    Button {
-                        secondaryAction.action()
-                    } label: {
-                        Text(secondaryAction.title)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-                }
-            }
-            .padding(.horizontal, 28)
-            .padding(.bottom, 24)
+            actionArea
+                .padding(.horizontal, 28)
+                .padding(.bottom, 24)
         }
         .frame(width: size.width, height: size.height)
         .background {
@@ -160,9 +135,81 @@ public struct KikiOnboardingScaffold: View {
                     endRadius: 280
                 )
             }
+            // Cover the full-size transparent title bar as well as the content
+            // area. This mirrors Command Reopen and prevents a detached top
+            // shadow when AppKit reserves a title-bar safe area.
+            .ignoresSafeArea()
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(appName) onboarding")
+    }
+
+    @ViewBuilder
+    private var actionArea: some View {
+        if backAction != nil || skipAction != nil {
+            navigationBar
+        } else {
+            stackedActions
+        }
+    }
+
+    private var navigationBar: some View {
+        HStack(spacing: 12) {
+            if let skipAction {
+                Button(skipAction.title, action: skipAction.action)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .controlSize(.large)
+            }
+
+            Spacer(minLength: 0)
+
+            if let backAction {
+                Button(backAction.title, action: backAction.action)
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+            }
+
+            if let secondaryAction {
+                Button(secondaryAction.title, action: secondaryAction.action)
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+            }
+
+            Button(primaryAction.title, action: primaryAction.action)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .tint(tint)
+                .disabled(!primaryAction.isEnabled)
+                .keyboardShortcut(.defaultAction)
+        }
+    }
+
+    private var stackedActions: some View {
+        VStack(spacing: 10) {
+            Button {
+                primaryAction.action()
+            } label: {
+                Text(primaryAction.title)
+                    .frame(width: KikiOnboardingDefaults.primaryActionWidth)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(tint)
+            .disabled(!primaryAction.isEnabled)
+            .keyboardShortcut(.defaultAction)
+
+            if let secondaryAction {
+                Button {
+                    secondaryAction.action()
+                } label: {
+                    Text(secondaryAction.title)
+                        .frame(width: KikiOnboardingDefaults.primaryActionWidth)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+            }
+        }
     }
 
     @ViewBuilder
@@ -183,6 +230,137 @@ public struct KikiOnboardingScaffold: View {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
                         .fill(tint)
                 )
+        }
+    }
+}
+
+extension KikiOnboardingScaffold where Content == KikiOnboardingRowsContent {
+    @available(*, deprecated, message: "Use the Feature initializer with appIcon/progress when needed")
+    public init(
+        appName: String,
+        title: String,
+        bodyText: String? = nil,
+        iconSystemName: String = "sparkles",
+        rows: [KikiOnboardingRow],
+        permissionRow: KikiOnboardingPermissionRow? = nil,
+        primaryAction: KikiOnboardingAction,
+        secondaryAction: KikiOnboardingAction? = nil,
+        tint: Color = .accentColor
+    ) {
+        self.init(
+            appName: appName,
+            title: title,
+            bodyText: bodyText,
+            appIcon: nil,
+            iconSystemName: iconSystemName,
+            rows: rows,
+            permissionRow: permissionRow,
+            primaryAction: primaryAction,
+            secondaryAction: secondaryAction,
+            tint: tint
+        )
+    }
+
+    @available(*, deprecated, message: "Use the Feature initializer with appIcon/progress when needed")
+    public init(
+        appName: String,
+        title: String,
+        bodyText: String? = nil,
+        iconSystemName: String = "sparkles",
+        rows: [KikiOnboardingRow],
+        permissionRow: KikiOnboardingPermissionRow? = nil,
+        primaryAction: KikiOnboardingAction,
+        secondaryAction: KikiOnboardingAction? = nil,
+        tint: Color = .accentColor,
+        size: CGSize
+    ) {
+        self.init(
+            appName: appName,
+            title: title,
+            bodyText: bodyText,
+            appIcon: nil,
+            iconSystemName: iconSystemName,
+            rows: rows,
+            permissionRow: permissionRow,
+            primaryAction: primaryAction,
+            secondaryAction: secondaryAction,
+            tint: tint,
+            size: size
+        )
+    }
+
+    public init(
+        appName: String,
+        title: String,
+        bodyText: String? = nil,
+        appIcon: NSImage? = nil,
+        iconSystemName: String = "sparkles",
+        rows: [KikiOnboardingRow],
+        permissionRow: KikiOnboardingPermissionRow? = nil,
+        primaryAction: KikiOnboardingAction,
+        secondaryAction: KikiOnboardingAction? = nil,
+        backAction: KikiOnboardingAction? = nil,
+        skipAction: KikiOnboardingAction? = nil,
+        tint: Color = .accentColor,
+        stepIndex: Int? = nil,
+        stepCount: Int? = nil
+    ) {
+        self.init(
+            appName: appName,
+            title: title,
+            bodyText: bodyText,
+            appIcon: appIcon,
+            iconSystemName: iconSystemName,
+            rows: rows,
+            permissionRow: permissionRow,
+            primaryAction: primaryAction,
+            secondaryAction: secondaryAction,
+            backAction: backAction,
+            skipAction: skipAction,
+            tint: tint,
+            size: KikiOnboardingDefaults.windowSize,
+            stepIndex: stepIndex,
+            stepCount: stepCount
+        )
+    }
+
+    public init(
+        appName: String,
+        title: String,
+        bodyText: String? = nil,
+        appIcon: NSImage? = nil,
+        iconSystemName: String = "sparkles",
+        rows: [KikiOnboardingRow],
+        permissionRow: KikiOnboardingPermissionRow? = nil,
+        primaryAction: KikiOnboardingAction,
+        secondaryAction: KikiOnboardingAction? = nil,
+        backAction: KikiOnboardingAction? = nil,
+        skipAction: KikiOnboardingAction? = nil,
+        tint: Color = .accentColor,
+        size: CGSize,
+        stepIndex: Int? = nil,
+        stepCount: Int? = nil
+    ) {
+        self.init(
+            appName: appName,
+            title: title,
+            bodyText: bodyText,
+            appIcon: appIcon,
+            iconSystemName: iconSystemName,
+            primaryAction: primaryAction,
+            secondaryAction: secondaryAction,
+            backAction: backAction,
+            skipAction: skipAction,
+            tint: tint,
+            size: size,
+            stepIndex: stepIndex,
+            stepCount: stepCount
+        ) {
+            KikiOnboardingRowsContent(
+                rows: rows,
+                permissionRow: permissionRow,
+                tint: tint
+            )
         }
     }
 }

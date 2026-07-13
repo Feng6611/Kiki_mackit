@@ -2,11 +2,12 @@ import AppKit
 import KikiDesign
 import SwiftUI
 
-public enum KikiSettingsStatusTone {
+public enum KikiSettingsStatusTone: Equatable, Sendable {
     case neutral
     case success
     case warning
     case accent
+    case info
 
     var foregroundStyle: Color {
         switch self {
@@ -17,7 +18,9 @@ public enum KikiSettingsStatusTone {
         case .warning:
             return .orange
         case .accent:
-            return Color(red: 0.58, green: 0.20, blue: 0.62)
+            return .accentColor
+        case .info:
+            return .blue
         }
     }
 
@@ -29,7 +32,7 @@ public enum KikiSettingsStatusTone {
         switch self {
         case .warning, .accent:
             return true
-        case .neutral, .success:
+        case .neutral, .success, .info:
             return false
         }
     }
@@ -42,6 +45,7 @@ public struct KikiSettingsStatusRow: View {
     private let tone: KikiSettingsStatusTone
     private let tint: Color
     private let valueColor: Color?
+    private let showsBadge: Bool?
     private let trailingSystemImage: String?
     private let action: (() -> Void)?
 
@@ -50,8 +54,30 @@ public struct KikiSettingsStatusRow: View {
         value: String,
         systemImage: String? = nil,
         tone: KikiSettingsStatusTone = .neutral,
-        tint: Color = .accentColor,
         valueColor: Color? = nil,
+        showsBadge: Bool? = nil,
+        trailingSystemImage: String? = nil,
+        action: (() -> Void)? = nil
+    ) {
+        self.title = title
+        self.value = value
+        self.systemImage = systemImage
+        self.tone = tone
+        self.tint = .accentColor
+        self.valueColor = valueColor
+        self.showsBadge = showsBadge
+        self.trailingSystemImage = trailingSystemImage
+        self.action = action
+    }
+
+    public init(
+        title: String,
+        value: String,
+        systemImage: String? = nil,
+        tone: KikiSettingsStatusTone = .neutral,
+        tint: Color,
+        valueColor: Color? = nil,
+        showsBadge: Bool? = nil,
         trailingSystemImage: String? = nil,
         action: (() -> Void)? = nil
     ) {
@@ -61,6 +87,7 @@ public struct KikiSettingsStatusRow: View {
         self.tone = tone
         self.tint = tint
         self.valueColor = valueColor
+        self.showsBadge = showsBadge
         self.trailingSystemImage = trailingSystemImage
         self.action = action
     }
@@ -72,7 +99,6 @@ public struct KikiSettingsStatusRow: View {
                     rowContent
                 }
                 .buttonStyle(.plain)
-                .focusable(false)
             } else {
                 rowContent
             }
@@ -84,19 +110,19 @@ public struct KikiSettingsStatusRow: View {
     }
 
     private var rowContent: some View {
-        KikiSettingsValueRow(title, systemImage: systemImage) {
+        KikiSettingsValueRow(title, systemImage: systemImage, iconColor: resolvedForeground) {
             statusValue
             if let trailingSystemImage {
                 Image(systemName: trailingSystemImage)
                     .font(.caption)
-                    .foregroundStyle(resolvedForeground)
+                    .foregroundStyle(.secondary)
             }
         }
     }
 
     @ViewBuilder
     private var statusValue: some View {
-        if tone.usesBadge {
+        if showsBadge ?? tone.usesBadge {
             Text(value)
                 .fontWeight(.medium)
                 .foregroundStyle(resolvedForeground)
@@ -293,15 +319,18 @@ public struct KikiSettingsDebugPreviewRow<Item: Hashable>: View {
 public struct KikiSettingsValueRow<Content: View>: View {
     private let title: String
     private let systemImage: String?
+    private let iconColor: Color?
     private let content: Content
 
     public init(
         _ title: String,
         systemImage: String? = nil,
+        iconColor: Color? = nil,
         @ViewBuilder content: () -> Content
     ) {
         self.title = title
         self.systemImage = systemImage
+        self.iconColor = iconColor
         self.content = content()
     }
 
@@ -311,7 +340,7 @@ public struct KikiSettingsValueRow<Content: View>: View {
                 content
             }
         } label: {
-            KikiSettingsRowLabel(title: title, systemImage: systemImage)
+            KikiSettingsRowLabel(title: title, systemImage: systemImage, iconColor: iconColor)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
@@ -468,7 +497,6 @@ public struct KikiSettingsLinkRow: View {
             )
         }
         .buttonStyle(.plain)
-        .focusable(false)
     }
 }
 
@@ -503,7 +531,6 @@ public struct KikiSettingsCopyRow: View {
             )
         }
         .buttonStyle(.plain)
-        .focusable(false)
     }
 }
 
@@ -528,12 +555,14 @@ private struct KikiSettingsNavigationRowContent: View {
 private struct KikiSettingsRowLabel: View {
     let title: String
     let systemImage: String?
+    var iconColor: Color? = nil
 
     var body: some View {
         HStack(spacing: KikiSettingsSpacing.sm) {
             if let systemImage {
                 Image(systemName: systemImage)
                     .font(.body)
+                    .foregroundStyle(iconColor ?? .primary)
                     .frame(width: 22, alignment: .leading)
             }
             Text(title)

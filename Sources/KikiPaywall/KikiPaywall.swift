@@ -6,8 +6,8 @@ import SwiftUI
 public enum KikiPaywallDefaults {
     public static let sheetWidth: CGFloat = 500
     public static let sheetHeight: CGFloat = 520
-    public static let onboardingSheetWidth: CGFloat = 560
-    public static let onboardingSheetHeight: CGFloat = 620
+    public static let onboardingSheetWidth: CGFloat = 520
+    public static let onboardingSheetHeight: CGFloat = 520
     public static let windowWidth: CGFloat = 520
     public static let windowHeight: CGFloat = 620
     public static let sheetPadding: CGFloat = 28
@@ -135,7 +135,20 @@ public struct KikiPaywallActionConfig: Identifiable {
     public let action: @MainActor () -> Void
 
     public init(
-        id: UUID = UUID(),
+        title: String,
+        isLoading: Bool = false,
+        isEnabled: Bool = true,
+        action: @escaping @MainActor () -> Void
+    ) {
+        self.id = UUID()
+        self.title = title
+        self.isLoading = isLoading
+        self.isEnabled = isEnabled
+        self.action = action
+    }
+
+    public init(
+        id: UUID,
         title: String,
         isLoading: Bool = false,
         isEnabled: Bool = true,
@@ -162,6 +175,66 @@ public struct KikiPaywallSheet<Footer: View>: View {
     private let showsCloseButton: Bool
     private let onClose: (() -> Void)?
     private let footer: Footer
+
+    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation")
+    public init(
+        header: KikiPaywallHeaderConfig,
+        stats: [KikiPaywallStatConfig] = [],
+        features: [String] = [],
+        plans: [KikiPaywallPlan],
+        selectedPlanID: Binding<String>,
+        primary: KikiPaywallActionConfig,
+        secondary: KikiPaywallActionConfig? = nil,
+        tint: Color = .accentColor,
+        showsCloseButton: Bool = false,
+        onClose: (() -> Void)? = nil,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.init(
+            header: header,
+            stats: stats,
+            features: features,
+            plans: plans,
+            selectedPlanID: selectedPlanID,
+            primary: primary,
+            secondary: secondary,
+            tint: tint,
+            size: .compact,
+            showsCloseButton: showsCloseButton,
+            onClose: onClose,
+            footer: footer
+        )
+    }
+
+    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation")
+    public init(
+        header: KikiPaywallHeaderConfig,
+        stats: [KikiPaywallStatConfig] = [],
+        features: [String] = [],
+        plans: [KikiPaywallPlan],
+        selectedPlanID: Binding<String>,
+        primary: KikiPaywallActionConfig,
+        secondaryActions: [KikiPaywallActionConfig],
+        tint: Color = .accentColor,
+        showsCloseButton: Bool = false,
+        onClose: (() -> Void)? = nil,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.init(
+            header: header,
+            stats: stats,
+            features: features,
+            plans: plans,
+            selectedPlanID: selectedPlanID,
+            primary: primary,
+            secondaryActions: secondaryActions,
+            tint: tint,
+            size: .compact,
+            showsCloseButton: showsCloseButton,
+            onClose: onClose,
+            footer: footer
+        )
+    }
 
     public init(
         header: KikiPaywallHeaderConfig,
@@ -304,6 +377,64 @@ public struct KikiPaywallSheet<Footer: View>: View {
 }
 
 public extension KikiPaywallSheet where Footer == EmptyView {
+    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation")
+    init(
+        header: KikiPaywallHeaderConfig,
+        stats: [KikiPaywallStatConfig] = [],
+        features: [String] = [],
+        plans: [KikiPaywallPlan],
+        selectedPlanID: Binding<String>,
+        primary: KikiPaywallActionConfig,
+        secondary: KikiPaywallActionConfig? = nil,
+        tint: Color = .accentColor,
+        showsCloseButton: Bool = false,
+        onClose: (() -> Void)? = nil
+    ) {
+        self.init(
+            header: header,
+            stats: stats,
+            features: features,
+            plans: plans,
+            selectedPlanID: selectedPlanID,
+            primary: primary,
+            secondary: secondary,
+            tint: tint,
+            size: .compact,
+            showsCloseButton: showsCloseButton,
+            onClose: onClose,
+            footer: { EmptyView() }
+        )
+    }
+
+    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation")
+    init(
+        header: KikiPaywallHeaderConfig,
+        stats: [KikiPaywallStatConfig] = [],
+        features: [String] = [],
+        plans: [KikiPaywallPlan],
+        selectedPlanID: Binding<String>,
+        primary: KikiPaywallActionConfig,
+        secondaryActions: [KikiPaywallActionConfig],
+        tint: Color = .accentColor,
+        showsCloseButton: Bool = false,
+        onClose: (() -> Void)? = nil
+    ) {
+        self.init(
+            header: header,
+            stats: stats,
+            features: features,
+            plans: plans,
+            selectedPlanID: selectedPlanID,
+            primary: primary,
+            secondaryActions: secondaryActions,
+            tint: tint,
+            size: .compact,
+            showsCloseButton: showsCloseButton,
+            onClose: onClose,
+            footer: { EmptyView() }
+        )
+    }
+
     init(
         header: KikiPaywallHeaderConfig,
         stats: [KikiPaywallStatConfig] = [],

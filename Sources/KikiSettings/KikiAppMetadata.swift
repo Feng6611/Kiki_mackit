@@ -57,14 +57,28 @@ public struct KikiStandardAboutLink: Identifiable, Equatable, Sendable {
     public let title: String
     public let url: URL
     public let value: String
-    public let systemImage: String
+    public let systemImage: String?
     public let kind: KikiStandardAboutLinkKind
 
     public init(
         id: String,
         title: String,
         url: URL,
-        value: String? = nil,
+        systemImage: String? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.url = url
+        self.kind = .link
+        self.value = Self.deriveValue(from: url, kind: .link)
+        self.systemImage = systemImage
+    }
+
+    public init(
+        id: String,
+        title: String,
+        url: URL,
+        value: String?,
         systemImage: String? = nil,
         kind: KikiStandardAboutLinkKind = .link
     ) {
@@ -96,15 +110,36 @@ public struct KikiStandardAboutLink: Identifiable, Equatable, Sendable {
 }
 
 public struct KikiStandardAboutLinks: Equatable, Sendable {
+    public let terms: URL?
+    public let privacy: URL?
+    public let support: URL?
     public let website: URL?
     public let feedback: URL?
     public let github: URL?
 
     public init(
+        terms: URL? = nil,
+        privacy: URL? = nil,
+        support: URL? = nil,
+        feedback: URL? = nil,
+        website: URL? = nil
+    ) {
+        self.terms = terms
+        self.privacy = privacy
+        self.support = support
+        self.website = website
+        self.feedback = feedback
+        self.github = nil
+    }
+
+    public init(
         website: URL? = nil,
         feedback: URL? = nil,
-        github: URL? = nil
+        github: URL?
     ) {
+        self.terms = nil
+        self.privacy = nil
+        self.support = nil
         self.website = website
         self.feedback = feedback
         self.github = github
@@ -115,16 +150,27 @@ public struct KikiStandardAboutLinks: Equatable, Sendable {
         if let website {
             result.append(KikiStandardAboutLink(
                 id: "website",
-                title: "Website",
+                title: "Official",
                 url: website,
+                value: nil,
                 systemImage: "globe"
             ))
         }
         if let feedback {
             result.append(KikiStandardAboutLink(
                 id: "feedback",
-                title: "Send feedback",
-                url: feedback
+                title: "Email",
+                url: feedback,
+                value: nil
+            ))
+        }
+        if let support {
+            result.append(KikiStandardAboutLink(
+                id: "support",
+                title: "Support",
+                url: support,
+                value: nil,
+                systemImage: "lifepreserver"
             ))
         }
         if let github {
@@ -132,7 +178,26 @@ public struct KikiStandardAboutLinks: Equatable, Sendable {
                 id: "github",
                 title: "GitHub",
                 url: github,
+                value: nil,
                 systemImage: "chevron.left.forwardslash.chevron.right"
+            ))
+        }
+        if let terms {
+            result.append(KikiStandardAboutLink(
+                id: "terms",
+                title: "Terms of use",
+                url: terms,
+                value: nil,
+                systemImage: "doc.text"
+            ))
+        }
+        if let privacy {
+            result.append(KikiStandardAboutLink(
+                id: "privacy",
+                title: "Privacy policy",
+                url: privacy,
+                value: nil,
+                systemImage: "lock.shield"
             ))
         }
         return result

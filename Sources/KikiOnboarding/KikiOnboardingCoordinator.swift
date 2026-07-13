@@ -3,12 +3,18 @@ import SwiftUI
 
 @MainActor
 public final class KikiOnboardingCoordinator: ObservableObject {
+    enum NavigationDirection {
+        case forward
+        case backward
+    }
+
     public let configuration: KikiOnboardingConfiguration
     public let completionStore: KikiOnboardingCompletionStore
     private let onPaywallHandoff: (@MainActor () -> Void)?
     private let onFinished: (@MainActor () -> Void)?
 
     @Published public private(set) var currentStepIndex: Int = 0
+    @Published private(set) var navigationDirection: NavigationDirection = .forward
     private var windowController: KikiOnboardingWindowController?
     private var isClosingAfterFinish = false
     private var hasFinishedCurrentPresentation = false
@@ -40,6 +46,10 @@ public final class KikiOnboardingCoordinator: ObservableObject {
 
     public var isVisible: Bool { windowController?.isVisible == true }
 
+    /// Escape hatch for App-owned window sessions (activation policy,
+    /// miniaturize-and-return flows). Nil while the window is not presented.
+    public var window: NSWindow? { windowController?.window }
+
     public func startIfNeeded() {
         guard isCompleted == false else { return }
         start()
@@ -47,6 +57,7 @@ public final class KikiOnboardingCoordinator: ObservableObject {
 
     public func start() {
         hasFinishedCurrentPresentation = false
+        navigationDirection = .forward
         currentStepIndex = 0
         guard configuration.steps.isEmpty == false else {
             finish()
@@ -62,12 +73,14 @@ public final class KikiOnboardingCoordinator: ObservableObject {
             finish()
             return
         }
+        navigationDirection = .forward
         currentStepIndex = nextIndex
         handleCurrentStepIfNonInteractive()
     }
 
     public func back() {
         guard canGoBack else { return }
+        navigationDirection = .backward
         currentStepIndex -= 1
         handleCurrentStepIfNonInteractive()
     }
@@ -149,29 +162,45 @@ private struct KikiOnboardingFlowContainer: View {
     @ObservedObject var coordinator: KikiOnboardingCoordinator
 
     var body: some View {
-        Group {
-            switch coordinator.currentStep {
-            case .welcome(let content):
-                welcomeView(content: content)
-            case .features(let content):
-                featureView(content: content)
-            case .permission(let content):
-                permissionView(content: content)
-            case .success(let content):
-                successView(content: content)
-            case .paywallHandoff:
-                paywallHandoffPlaceholder
-            case .custom(_, let viewBuilder):
-                viewBuilder(navigation)
-            case .none:
-                EmptyView()
+        ZStack {
+            Group {
+                switch coordinator.currentStep {
+                case .welcome(let content):
+                    welcomeView(content: content)
+                case .features(let content):
+                    featureView(content: content)
+                case .permission(let content):
+                    permissionView(content: content)
+                case .success(let content):
+                    successView(content: content)
+                case .paywallHandoff:
+                    paywallHandoffPlaceholder
+                case .custom(_, let viewBuilder):
+                    viewBuilder(navigation)
+                case .none:
+                    EmptyView()
+                }
             }
+            // A stable per-page identity is required for custom/AnyView steps.
+            // Without it SwiftUI updates the existing hierarchy in place, so
+            // only the text changes and the transition never runs.
+            .id(coordinator.currentStepIndex)
+            .transition(pageTransition)
         }
-        .transition(.opacity.combined(with: .move(edge: .trailing)))
         .animation(.easeInOut(duration: 0.22), value: coordinator.currentStepIndex)
         .frame(
             width: coordinator.configuration.windowSize.width,
             height: coordinator.configuration.windowSize.height
+        )
+        .clipped()
+    }
+
+    private var pageTransition: AnyTransition {
+        let insertionEdge: Edge = coordinator.navigationDirection == .forward ? .trailing : .leading
+        let removalEdge: Edge = coordinator.navigationDirection == .forward ? .leading : .trailing
+        return .asymmetric(
+            insertion: .move(edge: insertionEdge).combined(with: .opacity),
+            removal: .move(edge: removalEdge).combined(with: .opacity)
         )
     }
 
@@ -182,6 +211,10 @@ private struct KikiOnboardingFlowContainer: View {
             skip: { coordinator.skip() },
             finish: { coordinator.finish() }
         )
+    }
+
+    private var stepCount: Int {
+        coordinator.configuration.steps.count
     }
 
     private func welcomeView(content: KikiOnboardingWelcomeContent) -> some View {
@@ -195,13 +228,15 @@ private struct KikiOnboardingFlowContainer: View {
                 title: content.continueTitle,
                 action: { coordinator.advance() }
             ),
-            secondaryAction: coordinator.canSkip
+            skipAction: coordinator.canSkip
                 ? content.skipTitle.map { title in
                     KikiOnboardingAction(title: title, action: { coordinator.skip() })
                 }
                 : nil,
             tint: coordinator.configuration.tint,
-            size: coordinator.configuration.windowSize
+            size: coordinator.configuration.windowSize,
+            stepIndex: coordinator.currentStepIndex,
+            stepCount: stepCount
         )
     }
 
@@ -216,13 +251,15 @@ private struct KikiOnboardingFlowContainer: View {
                 title: content.continueTitle,
                 action: { coordinator.advance() }
             ),
-            secondaryAction: content.backTitle.flatMap { title in
+            backAction: content.backTitle.flatMap { title in
                 coordinator.canGoBack
                     ? KikiOnboardingAction(title: title, action: { coordinator.back() })
                     : nil
             },
             tint: coordinator.configuration.tint,
-            size: coordinator.configuration.windowSize
+            size: coordinator.configuration.windowSize,
+            stepIndex: coordinator.currentStepIndex,
+            stepCount: stepCount
         )
     }
 
@@ -238,13 +275,15 @@ private struct KikiOnboardingFlowContainer: View {
                 title: content.continueTitle,
                 action: { coordinator.advance() }
             ),
-            secondaryAction: content.backTitle.flatMap { title in
+            backAction: content.backTitle.flatMap { title in
                 coordinator.canGoBack
                     ? KikiOnboardingAction(title: title, action: { coordinator.back() })
                     : nil
             },
             tint: coordinator.configuration.tint,
-            size: coordinator.configuration.windowSize
+            size: coordinator.configuration.windowSize,
+            stepIndex: coordinator.currentStepIndex,
+            stepCount: stepCount
         )
     }
 
@@ -260,7 +299,9 @@ private struct KikiOnboardingFlowContainer: View {
                 action: { coordinator.advance() }
             ),
             tint: coordinator.configuration.tint,
-            size: coordinator.configuration.windowSize
+            size: coordinator.configuration.windowSize,
+            stepIndex: coordinator.currentStepIndex,
+            stepCount: stepCount
         )
     }
 

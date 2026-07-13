@@ -7,6 +7,7 @@ final class KikiAuthorizationAppDragSourceView: NSView, NSPasteboardItemDataProv
     private let rowView = NSView()
     private let iconBackgroundView = NSView()
     private let label = NSTextField(labelWithString: "")
+    private let detailLabel = NSTextField(labelWithString: "Drag to the list above")
 
     init(hostApp: KikiAuthorizationHostApp) {
         self.hostApp = hostApp
@@ -99,6 +100,18 @@ final class KikiAuthorizationAppDragSourceView: NSView, NSPasteboardItemDataProv
         label.translatesAutoresizingMaskIntoConstraints = false
         rowView.addSubview(label)
 
+        detailLabel.font = .systemFont(ofSize: 11.5)
+        detailLabel.textColor = .secondaryLabelColor
+        detailLabel.translatesAutoresizingMaskIntoConstraints = false
+        rowView.addSubview(detailLabel)
+
+        let dragIndicator = NSImageView()
+        dragIndicator.translatesAutoresizingMaskIntoConstraints = false
+        dragIndicator.image = NSImage(systemSymbolName: "arrow.up.circle.fill", accessibilityDescription: "Drag upward")
+        dragIndicator.symbolConfiguration = .init(pointSize: 16, weight: .medium)
+        dragIndicator.contentTintColor = .controlAccentColor
+        rowView.addSubview(dragIndicator)
+
         NSLayoutConstraint.activate([
             rowView.leadingAnchor.constraint(equalTo: leadingAnchor),
             rowView.trailingAnchor.constraint(equalTo: trailingAnchor),
@@ -116,8 +129,17 @@ final class KikiAuthorizationAppDragSourceView: NSView, NSPasteboardItemDataProv
             iconView.heightAnchor.constraint(equalToConstant: 22),
 
             label.leadingAnchor.constraint(equalTo: iconBackgroundView.trailingAnchor, constant: 11),
-            label.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-            label.trailingAnchor.constraint(lessThanOrEqualTo: rowView.trailingAnchor, constant: -12),
+            label.topAnchor.constraint(equalTo: rowView.topAnchor, constant: 7),
+            label.trailingAnchor.constraint(lessThanOrEqualTo: dragIndicator.leadingAnchor, constant: -10),
+
+            detailLabel.leadingAnchor.constraint(equalTo: label.leadingAnchor),
+            detailLabel.topAnchor.constraint(equalTo: label.bottomAnchor),
+            detailLabel.trailingAnchor.constraint(lessThanOrEqualTo: dragIndicator.leadingAnchor, constant: -10),
+
+            dragIndicator.trailingAnchor.constraint(equalTo: rowView.trailingAnchor, constant: -12),
+            dragIndicator.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
+            dragIndicator.widthAnchor.constraint(equalToConstant: 20),
+            dragIndicator.heightAnchor.constraint(equalToConstant: 20),
         ])
     }
 

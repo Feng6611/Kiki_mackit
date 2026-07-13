@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Onboarding custom steps now receive distinct page identities and direction-aware slide transitions, preventing stale text/image remnants during navigation.
+- A lone onboarding action now stays centered at the Command Reopen `200pt` width instead of expanding across the window when Skip is disabled.
+- Transparent onboarding utilities now use a borderless, non-opaque window with a draggable background, preserving material transparency without the detached title-bar shadow line.
+- Transparent utilities now clip their hosted content to a continuous 20pt corner radius while retaining the native window shadow.
+- Onboarding actions can be disabled for event-driven steps such as waiting for a trigger-corner gesture.
+- Onboarding paywall sheets now fit inside the welcome-window envelope at `520×520` instead of expanding to `560×620`.
+
+- Resolve the host app icon from `CFBundleIconFile` / `CFBundleIconName` in the
+  main bundle before falling back to `NSApp.applicationIconImage`, so standard
+  About panes do not display AppKit's generic placeholder.
+- Restore the onboarding welcome-window default to `560×520`; taller paywall
+  sheets remain a separate presentation instead of defining welcome geometry.
+- Restored the source-compatible `windowTitle` parameter on
+  `KikiSettingsWindowController.init`. The parameter remains a no-op, but Starter was a real 0.7 caller and
+  proved that repository-local usage search was not a safe compatibility gate.
+
+### Documentation
+
+- Defined Feature presets as the default App integration layer and Atoms as the
+  advanced escape layer for Settings, Onboarding, and Paywall.
+- Added a cross-repository public API compatibility rule.
+
 ## 0.7.3 - 2026-07-05
 
 ### Changed
@@ -111,8 +137,8 @@
   regression that made it `private` broke callers that constructed their
   own assistant and blocked testability of the new AX-observer logic.
 - Removed the no-op `windowTitle` parameter from
-  `KikiSettingsWindowController.init`. Exact view registration makes
-  title-based window discovery unnecessary; no callers passed it.
+  `KikiSettingsWindowController.init`. This was later restored as a deprecated
+  overload after the workspace Starter proved it was still a source caller.
 
 ### Documentation
 

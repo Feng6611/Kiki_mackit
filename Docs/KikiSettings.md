@@ -5,6 +5,19 @@ small macOS apps. The host owns settings tabs, settings state, permission
 meaning, and About content. Kiki owns chrome, row visuals, opener
 mechanics, and window helpers.
 
+## Recommended Adoption
+
+Start with the Feature layer:
+
+- `KikiSettingsCoordinator` owns selection, opener, exact-window registration,
+  visibility, and close behavior.
+- `KikiSettingsCoordinatorView` renders app-provided tab content.
+- `KikiStandardAboutPane` renders the common About identity/status/link shape.
+
+Use `KikiSettingsShell`, panes, and rows directly only when an App has a proven
+layout or interaction requirement the Feature layer cannot express. SwiftUI's
+native `Settings {}` scene remains in the host App.
+
 ## Public API
 
 - `KikiSettingsShell`: top-tab SwiftUI shell that lives inside a native
@@ -49,6 +62,10 @@ minimum size when AppKit attaches it to the native Settings window.
 but it must be invoked from a SwiftUI view tree. `KikiSettingsOpener` is
 AppKit-side and therefore prefers the main-menu route; hosts that already
 sit inside SwiftUI should call `openSettings` from there directly.
+
+The compatibility initializer parameter `windowTitle` remains available for
+0.6/0.7 hosts. The value is ignored because exact view registration replaced
+title-based discovery.
 
 ## Pane Chrome
 

@@ -12,7 +12,7 @@ final class KikiAuthorizationOverlayView: NSView {
         onDismiss: @escaping () -> Void
     ) {
         self.onDismiss = onDismiss
-        super.init(frame: NSRect(x: 0, y: 0, width: 520, height: 112))
+        super.init(frame: NSRect(x: 0, y: 0, width: 440, height: 138))
         translatesAutoresizingMaskIntoConstraints = false
         buildView(hostApp: hostApp, panel: panel, instruction: instruction)
     }
@@ -39,27 +39,35 @@ final class KikiAuthorizationOverlayView: NSView {
         materialView.layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.18).cgColor
         addSubview(materialView)
 
-        let tintView = NSView()
-        tintView.translatesAutoresizingMaskIntoConstraints = false
-        tintView.wantsLayer = true
-        tintView.layer?.backgroundColor = NSColor.windowBackgroundColor.withAlphaComponent(0.76).cgColor
-        materialView.addSubview(tintView)
+        let closeButton = NSButton()
+        closeButton.translatesAutoresizingMaskIntoConstraints = false
+        closeButton.isBordered = false
+        closeButton.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: "Close")
+        closeButton.symbolConfiguration = .init(pointSize: 13, weight: .semibold)
+        closeButton.contentTintColor = .tertiaryLabelColor
+        closeButton.target = self
+        closeButton.action = #selector(dismissPressed)
+        materialView.addSubview(closeButton)
 
-        let backButton = NSButton()
-        backButton.translatesAutoresizingMaskIntoConstraints = false
-        backButton.isBordered = false
-        backButton.image = NSImage(systemSymbolName: "chevron.left", accessibilityDescription: "Back")
-        backButton.contentTintColor = .secondaryLabelColor
-        backButton.target = self
-        backButton.action = #selector(dismissPressed)
-        materialView.addSubview(backButton)
+        let symbolBackground = NSView()
+        symbolBackground.translatesAutoresizingMaskIntoConstraints = false
+        symbolBackground.wantsLayer = true
+        symbolBackground.layer?.cornerRadius = 9
+        symbolBackground.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.14).cgColor
+        materialView.addSubview(symbolBackground)
 
-        let arrowView = NSImageView()
-        arrowView.translatesAutoresizingMaskIntoConstraints = false
-        arrowView.image = NSImage(systemSymbolName: "arrow.up", accessibilityDescription: nil)
-        arrowView.symbolConfiguration = .init(pointSize: 27, weight: .bold)
-        arrowView.contentTintColor = .controlAccentColor
-        materialView.addSubview(arrowView)
+        let symbolView = NSImageView()
+        symbolView.translatesAutoresizingMaskIntoConstraints = false
+        symbolView.image = NSImage(systemSymbolName: panel.systemImage, accessibilityDescription: panel.title)
+        symbolView.symbolConfiguration = .init(pointSize: 17, weight: .medium)
+        symbolView.contentTintColor = .controlAccentColor
+        symbolBackground.addSubview(symbolView)
+
+        let headingLabel = NSTextField(labelWithString: "Allow \(panel.title)")
+        headingLabel.translatesAutoresizingMaskIntoConstraints = false
+        headingLabel.font = .systemFont(ofSize: 14, weight: .semibold)
+        headingLabel.textColor = .labelColor
+        materialView.addSubview(headingLabel)
 
         let titleLabel = NSTextField(labelWithString: instructionText(
             hostApp: hostApp,
@@ -67,47 +75,51 @@ final class KikiAuthorizationOverlayView: NSView {
             override: instruction
         ))
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = .systemFont(ofSize: 14, weight: .medium)
-        titleLabel.textColor = NSColor.labelColor.withAlphaComponent(0.84)
-        titleLabel.lineBreakMode = .byTruncatingTail
-        titleLabel.maximumNumberOfLines = 1
+        titleLabel.font = .systemFont(ofSize: 12.5, weight: .regular)
+        titleLabel.textColor = .secondaryLabelColor
+        titleLabel.lineBreakMode = .byWordWrapping
+        titleLabel.maximumNumberOfLines = 2
         materialView.addSubview(titleLabel)
 
         let dragSource = KikiAuthorizationAppDragSourceView(hostApp: hostApp)
         materialView.addSubview(dragSource)
 
         NSLayoutConstraint.activate([
-            widthAnchor.constraint(equalToConstant: 520),
-            heightAnchor.constraint(equalToConstant: 112),
+            widthAnchor.constraint(equalToConstant: 440),
+            heightAnchor.constraint(equalToConstant: 138),
 
             materialView.leadingAnchor.constraint(equalTo: leadingAnchor),
             materialView.trailingAnchor.constraint(equalTo: trailingAnchor),
             materialView.topAnchor.constraint(equalTo: topAnchor),
             materialView.bottomAnchor.constraint(equalTo: bottomAnchor),
 
-            tintView.leadingAnchor.constraint(equalTo: materialView.leadingAnchor),
-            tintView.trailingAnchor.constraint(equalTo: materialView.trailingAnchor),
-            tintView.topAnchor.constraint(equalTo: materialView.topAnchor),
-            tintView.bottomAnchor.constraint(equalTo: materialView.bottomAnchor),
+            closeButton.trailingAnchor.constraint(equalTo: materialView.trailingAnchor, constant: -10),
+            closeButton.topAnchor.constraint(equalTo: materialView.topAnchor, constant: 10),
+            closeButton.widthAnchor.constraint(equalToConstant: 20),
+            closeButton.heightAnchor.constraint(equalToConstant: 20),
 
-            backButton.leadingAnchor.constraint(equalTo: materialView.leadingAnchor, constant: 18),
-            backButton.bottomAnchor.constraint(equalTo: materialView.bottomAnchor, constant: -18),
-            backButton.widthAnchor.constraint(equalToConstant: 28),
-            backButton.heightAnchor.constraint(equalToConstant: 28),
+            symbolBackground.leadingAnchor.constraint(equalTo: materialView.leadingAnchor, constant: 16),
+            symbolBackground.topAnchor.constraint(equalTo: materialView.topAnchor, constant: 15),
+            symbolBackground.widthAnchor.constraint(equalToConstant: 34),
+            symbolBackground.heightAnchor.constraint(equalToConstant: 34),
 
-            arrowView.leadingAnchor.constraint(equalTo: materialView.leadingAnchor, constant: 34),
-            arrowView.topAnchor.constraint(equalTo: materialView.topAnchor, constant: 12),
-            arrowView.widthAnchor.constraint(equalToConstant: 28),
-            arrowView.heightAnchor.constraint(equalToConstant: 28),
+            symbolView.centerXAnchor.constraint(equalTo: symbolBackground.centerXAnchor),
+            symbolView.centerYAnchor.constraint(equalTo: symbolBackground.centerYAnchor),
+            symbolView.widthAnchor.constraint(equalToConstant: 20),
+            symbolView.heightAnchor.constraint(equalToConstant: 20),
 
-            titleLabel.leadingAnchor.constraint(equalTo: arrowView.trailingAnchor, constant: 10),
-            titleLabel.centerYAnchor.constraint(equalTo: arrowView.centerYAnchor),
-            titleLabel.trailingAnchor.constraint(equalTo: materialView.trailingAnchor, constant: -22),
+            headingLabel.leadingAnchor.constraint(equalTo: symbolBackground.trailingAnchor, constant: 11),
+            headingLabel.topAnchor.constraint(equalTo: materialView.topAnchor, constant: 14),
+            headingLabel.trailingAnchor.constraint(lessThanOrEqualTo: closeButton.leadingAnchor, constant: -8),
 
-            dragSource.leadingAnchor.constraint(equalTo: materialView.leadingAnchor, constant: 62),
-            dragSource.trailingAnchor.constraint(equalTo: materialView.trailingAnchor, constant: -22),
-            dragSource.bottomAnchor.constraint(equalTo: materialView.bottomAnchor, constant: -16),
-            dragSource.heightAnchor.constraint(equalToConstant: 44),
+            titleLabel.leadingAnchor.constraint(equalTo: headingLabel.leadingAnchor),
+            titleLabel.topAnchor.constraint(equalTo: headingLabel.bottomAnchor, constant: 2),
+            titleLabel.trailingAnchor.constraint(equalTo: materialView.trailingAnchor, constant: -34),
+
+            dragSource.leadingAnchor.constraint(equalTo: materialView.leadingAnchor, constant: 16),
+            dragSource.trailingAnchor.constraint(equalTo: materialView.trailingAnchor, constant: -16),
+            dragSource.bottomAnchor.constraint(equalTo: materialView.bottomAnchor, constant: -14),
+            dragSource.heightAnchor.constraint(equalToConstant: 48),
         ])
     }
 
@@ -116,7 +128,7 @@ final class KikiAuthorizationOverlayView: NSView {
         panel: KikiAuthorizationPanel,
         override: String?
     ) -> String {
-        override ?? "Drag \(hostApp.displayName) to the list above to allow \(panel.title)"
+        override ?? "Drag the app below into the list in System Settings, then turn it on."
     }
 
     @objc private func dismissPressed() {

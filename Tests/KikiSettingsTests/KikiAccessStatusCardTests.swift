@@ -36,4 +36,10 @@ struct KikiAccessStatusPresentationTests {
         _ = withAction.body
         _ = withoutAction.body
     }
+
+    @Test("Lifetime status uses a crown and brand tone")
+    func lifetimeUsesBrandPresentation() {
+        #expect(KikiAccessStatusTone.lifetime.systemImage == "crown.fill")
+        #expect(KikiAccessStatusTone.lifetime.settingsTone == .accent)
+    }
 }

@@ -18,6 +18,45 @@ public enum KikiDesignColor {
     }
 }
 
+/// Resolves the icon emitted into the host app bundle before falling back to
+/// AppKit's process-wide application icon.
+public enum KikiApplicationIcon {
+    public static var current: NSImage {
+        let bundle = Bundle.main
+
+        for key in ["CFBundleIconFile", "CFBundleIconName"] {
+            guard let value = bundle.object(forInfoDictionaryKey: key) as? String else {
+                continue
+            }
+
+            let location = resourceLocation(for: value)
+            guard
+                let url = bundle.url(
+                    forResource: location.name,
+                    withExtension: location.extension
+                ),
+                let image = NSImage(contentsOf: url) else {
+                continue
+            }
+
+            return image
+        }
+
+        return NSApp.applicationIconImage
+    }
+
+    static func resourceLocation(for iconValue: String) -> (name: String, extension: String) {
+        let path = iconValue as NSString
+        let pathExtension = path.pathExtension
+
+        if pathExtension.isEmpty {
+            return (iconValue, "icns")
+        }
+
+        return (path.deletingPathExtension, pathExtension)
+    }
+}
+
 public struct KikiMaterialSurface<S: Shape>: View {
     private let shape: S
     private let material: Material

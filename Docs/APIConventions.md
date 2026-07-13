@@ -74,20 +74,41 @@ should never have to choose between Kiki and a system API for the same job.
   (`KikiActivationPolicyCoordinator.begin(reason:)`) rather than mechanism
   (`setActivationPolicy(.regular)`).
 
-## Two API Layers
+## Feature-First API Layers
 
 Every Kiki module exposes two layers:
 
-- Atoms: small, composable views, controllers, and types that hosts can
-  rearrange. Examples: `KikiSettingsToggleRow`, `KikiPaywallFeatureRow`,
-  `KikiOnboardingRow`.
-- Presets: one-call scaffolds and sheets built on top of atoms for the most
-  common host shape. Examples: `KikiSettingsPane`, `KikiOnboardingScaffold`,
-  `KikiPaywallSheet`, `KikiScreenEdgeOverlayController.show(.lockStarted(...))`.
+- Feature presets are the default product-facing entry points. A normal App
+  should begin with `KikiSettingsCoordinatorView`,
+  `KikiOnboardingCoordinator`, `KikiCompactPaywall`, or
+  `KikiOnboardingPaywall` rather than rebuilding their window, navigation,
+  and action mechanics.
+- Atoms are the advanced composition and escape layer. Examples include
+  `KikiSettingsToggleRow`, `KikiPaywallFeatureRow`,
+  `KikiOnboardingScaffold`, and `KikiOnboardingRow`.
 
-Hosts that follow the default product shape only see presets. Hosts with
-custom needs compose atoms. Presets must be implemented in terms of atoms in
-the same module so the two layers stay consistent.
+Hosts following the default product shape should need only Feature presets plus
+product content/configuration. Hosts with proven custom interaction or platform
+requirements may compose Atoms. Feature presets must be implemented in terms of
+Atoms in the same module so the two layers stay visually and behaviorally
+consistent.
+
+Kiki does not add a third, whole-App framework layer. App lifecycle,
+`AppComposition`, routing, product Core, and product policy stay in the host.
+
+## Compatibility Rule
+
+Kiki is consumed by multiple independent App repositories. Before removing or
+narrowing a public API:
+
+- run package tests and API compatibility diagnostics;
+- compile the Starter against the current checkout;
+- compile the managed Product App matrix;
+- deprecate an API before removal when a compatibility overload is cheap;
+- record the migration path in the changelog.
+
+Repository-local search is not proof that a public API has no callers. The
+workspace matrix is the evidence source.
 
 ## Private API Fallback Rule
 
