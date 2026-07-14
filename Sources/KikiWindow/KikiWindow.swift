@@ -171,6 +171,45 @@ public extension View {
     }
 }
 
+private final class KikiWindowContentView: NSView {
+    private let cornerRadius: CGFloat?
+
+    init(cornerRadius: CGFloat?) {
+        self.cornerRadius = cornerRadius
+        super.init(frame: .zero)
+
+        if cornerRadius != nil {
+            wantsLayer = true
+            applyCornerRadius()
+        }
+    }
+
+    required init?(coder: NSCoder) {
+        cornerRadius = nil
+        super.init(coder: coder)
+    }
+
+    override func layout() {
+        super.layout()
+        // AppKit can rebuild the backing layer when a transparent utility
+        // window becomes the parent of a sheet. Reapply the clip after that
+        // transition so the parent onboarding surface cannot expose square
+        // corners around the sheet.
+        applyCornerRadius()
+    }
+
+    private func applyCornerRadius() {
+        guard let cornerRadius else {
+            return
+        }
+
+        wantsLayer = true
+        layer?.cornerRadius = cornerRadius
+        layer?.cornerCurve = .continuous
+        layer?.masksToBounds = true
+    }
+}
+
 @MainActor
 public final class KikiSingleWindowController<Content: View>: NSObject, NSWindowDelegate {
     private let configuration: KikiWindowConfiguration
@@ -211,8 +250,26 @@ public final class KikiSingleWindowController<Content: View>: NSObject, NSWindow
     }
 
     private func makeWindow() -> NSWindow {
-        let hostingController = NSHostingController(rootView: content())
-        let window = NSWindow(contentViewController: hostingController)
+        let hostingView = NSHostingView(rootView: content())
+        let contentView = KikiWindowContentView(
+            cornerRadius: configuration.contentCornerRadius
+        )
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(hostingView)
+        NSLayoutConstraint.activate([
+            hostingView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            hostingView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            hostingView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            hostingView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+        ])
+
+        let window = NSWindow(
+            contentRect: NSRect(origin: .zero, size: configuration.size),
+            styleMask: configuration.styleMask,
+            backing: .buffered,
+            defer: false
+        )
+        window.contentView = contentView
         configure(window)
         return window
     }
@@ -228,10 +285,7 @@ public final class KikiSingleWindowController<Content: View>: NSObject, NSWindow
         window.isOpaque = configuration.backgroundColor.alphaComponent >= 1
         window.hasShadow = true
         if let cornerRadius = configuration.contentCornerRadius {
-            window.contentView?.wantsLayer = true
-            window.contentView?.layer?.cornerRadius = cornerRadius
-            window.contentView?.layer?.cornerCurve = .continuous
-            window.contentView?.layer?.masksToBounds = true
+            applyWindowSurface(to: window, cornerRadius: cornerRadius)
         }
         window.isReleasedWhenClosed = configuration.isReleasedWhenClosed
         window.setContentSize(configuration.size)
@@ -247,6 +301,23 @@ public final class KikiSingleWindowController<Content: View>: NSObject, NSWindow
         setButton(.closeButton, hidden: configuration.hiddenButtons.contains(.close), in: window)
         setButton(.miniaturizeButton, hidden: configuration.hiddenButtons.contains(.miniaturize), in: window)
         setButton(.zoomButton, hidden: configuration.hiddenButtons.contains(.zoom), in: window)
+    }
+
+    private func applyWindowSurface(to window: NSWindow, cornerRadius: CGFloat) {
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        window.contentView?.wantsLayer = true
+        window.contentView?.layer?.cornerRadius = cornerRadius
+        window.contentView?.layer?.cornerCurve = .continuous
+        window.contentView?.layer?.masksToBounds = true
+    }
+
+    private func repairWindowSurface() {
+        guard let window, let cornerRadius = configuration.contentCornerRadius else {
+            return
+        }
+
+        applyWindowSurface(to: window, cornerRadius: cornerRadius)
     }
 
     private func setButton(_ button: NSWindow.ButtonType, hidden: Bool, in window: NSWindow) {
@@ -269,5 +340,25 @@ public final class KikiSingleWindowController<Content: View>: NSObject, NSWindow
     public func windowWillClose(_ notification: Notification) {
         window = nil
         onClose?()
+    }
+
+    public func windowDidBecomeKey(_ notification: Notification) {
+        repairWindowSurface()
+    }
+
+    public func windowDidResignKey(_ notification: Notification) {
+        repairWindowSurface()
+    }
+
+    public func windowDidResize(_ notification: Notification) {
+        repairWindowSurface()
+    }
+
+    public func windowWillBeginSheet(_ notification: Notification) {
+        repairWindowSurface()
+    }
+
+    public func windowDidEndSheet(_ notification: Notification) {
+        repairWindowSurface()
     }
 }

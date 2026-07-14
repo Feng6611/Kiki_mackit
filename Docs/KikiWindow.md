@@ -15,7 +15,12 @@ scene modifiers are not enough.
 - `View.kikiTransparentWindowBackground(...)`: convenience wrapper for the
   bridge.
 - `KikiSingleWindowController`: single-instance `NSWindow` presenter that hosts
-  SwiftUI content through `NSHostingController`.
+  SwiftUI content through `NSHostingView`.
+
+Transparent utility windows use a dedicated rounded content container and
+reapply their non-opaque surface after sheet, focus, and resize transitions.
+This keeps the parent window's corners clipped while a SwiftUI sheet is
+presented above it.
 
 ## Boundary
 

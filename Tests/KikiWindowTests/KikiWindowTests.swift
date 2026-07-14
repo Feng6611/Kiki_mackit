@@ -69,4 +69,28 @@ struct KikiWindowTests {
         #expect(controller.window?.contentView?.layer?.cornerRadius == 20)
         #expect(controller.window?.contentView?.layer?.masksToBounds == true)
     }
+
+    @MainActor
+    @Test("Transparent utility repairs its clip when a sheet starts")
+    func transparentUtilityRepairsItsClipWhenSheetStarts() {
+        let controller = KikiSingleWindowController(
+            configuration: .transparentUtility(
+                title: "Rounded Welcome",
+                size: CGSize(width: 320, height: 240)
+            )
+        ) {
+            Color.clear
+        }
+
+        controller.show()
+        defer { controller.close() }
+
+        controller.window?.contentView?.layer?.cornerRadius = 0
+        controller.windowWillBeginSheet(
+            Notification(name: Notification.Name("KikiWindowTests.sheet"))
+        )
+
+        #expect(controller.window?.contentView?.layer?.cornerRadius == 20)
+        #expect(controller.window?.contentView?.layer?.masksToBounds == true)
+    }
 }

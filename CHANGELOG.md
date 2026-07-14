@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.8.1 - 2026-07-14
+
+### Fixed
+
+- Transparent utility windows now keep their non-opaque rounded content clip
+  through sheet presentation and focus/resize transitions, so an onboarding
+  window stays rounded behind an attached paywall sheet.
+
 ## 0.8.0 - 2026-07-14
 
 ### Fixed
