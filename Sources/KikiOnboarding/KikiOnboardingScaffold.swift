@@ -40,7 +40,7 @@ public struct KikiOnboardingScaffold<Content: View>: View {
     private let appIcon: NSImage?
     private let iconSystemName: String
     private let content: Content
-    private let primaryAction: KikiOnboardingAction
+    private let primaryAction: KikiOnboardingAction?
     private let secondaryAction: KikiOnboardingAction?
     private let backAction: KikiOnboardingAction?
     private let skipAction: KikiOnboardingAction?
@@ -55,7 +55,7 @@ public struct KikiOnboardingScaffold<Content: View>: View {
         bodyText: String? = nil,
         appIcon: NSImage? = nil,
         iconSystemName: String = "sparkles",
-        primaryAction: KikiOnboardingAction,
+        primaryAction: KikiOnboardingAction?,
         secondaryAction: KikiOnboardingAction? = nil,
         backAction: KikiOnboardingAction? = nil,
         skipAction: KikiOnboardingAction? = nil,
@@ -176,28 +176,32 @@ public struct KikiOnboardingScaffold<Content: View>: View {
                     .controlSize(.large)
             }
 
-            Button(primaryAction.title, action: primaryAction.action)
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .tint(tint)
-                .disabled(!primaryAction.isEnabled)
-                .keyboardShortcut(.defaultAction)
+            if let primaryAction {
+                Button(primaryAction.title, action: primaryAction.action)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .tint(tint)
+                    .disabled(!primaryAction.isEnabled)
+                    .keyboardShortcut(.defaultAction)
+            }
         }
     }
 
     private var stackedActions: some View {
         VStack(spacing: 10) {
-            Button {
-                primaryAction.action()
-            } label: {
-                Text(primaryAction.title)
-                    .frame(width: KikiOnboardingDefaults.primaryActionWidth)
+            if let primaryAction {
+                Button {
+                    primaryAction.action()
+                } label: {
+                    Text(primaryAction.title)
+                        .frame(width: KikiOnboardingDefaults.primaryActionWidth)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .tint(tint)
+                .disabled(!primaryAction.isEnabled)
+                .keyboardShortcut(.defaultAction)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .tint(tint)
-            .disabled(!primaryAction.isEnabled)
-            .keyboardShortcut(.defaultAction)
 
             if let secondaryAction {
                 Button {

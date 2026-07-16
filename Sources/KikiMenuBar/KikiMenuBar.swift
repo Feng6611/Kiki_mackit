@@ -36,7 +36,7 @@ public enum KikiMenuItem {
     )
     case status(title: String)
     case settings(
-        title: String = "Settings...",
+        title: String = "Settings…",
         action: @MainActor () -> Void
     )
     case about(

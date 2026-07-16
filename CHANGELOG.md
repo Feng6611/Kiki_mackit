@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Fixed
+
+- Paywall plan cards always show the plan name, including cards with badges,
+  and expose their full label and selected state to accessibility clients.
+- The standard Settings menu title now uses the native ellipsis character.
+- Onboarding scaffolds can omit the primary action for event-driven steps that
+  advance automatically.
+
 ## 0.8.1 - 2026-07-14
 
 ### Fixed

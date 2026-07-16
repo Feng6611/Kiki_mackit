@@ -79,6 +79,22 @@ struct KikiOnboardingTests {
     }
 
     @MainActor
+    @Test("Scaffold can present an event-driven step without a primary button")
+    func scaffoldSupportsEventDrivenStepWithoutPrimaryButton() {
+        let scaffold = KikiOnboardingScaffold(
+            appName: "Test App",
+            title: "Move to the corner",
+            bodyText: "The next step starts automatically.",
+            primaryAction: nil,
+            skipAction: .init(title: "Set Up Later") {}
+        ) {
+            Text("Waiting for a system event")
+        }
+
+        _ = scaffold.body
+    }
+
+    @MainActor
     @Test("Rows initializer accepts back and skip actions")
     func rowsInitializerAcceptsBackAndSkipActions() {
         let scaffold = KikiOnboardingScaffold(

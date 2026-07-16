@@ -48,7 +48,7 @@ struct KikiMenuBarTests {
         let link = try #require(menu.item(at: 2))
         let status = try #require(menu.item(at: 3))
 
-        #expect(settings.title == "Settings...")
+        #expect(settings.title == "Settings…")
         #expect(settings.keyEquivalent == ",")
         #expect(settings.keyEquivalentModifierMask == .command)
         #expect(settings.isEnabled)

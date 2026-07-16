@@ -754,11 +754,11 @@ public struct KikiPaywallPlanCard: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
                         .background(Capsule().fill(tint))
-                } else {
-                    Text(plan.title)
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.secondary)
                 }
+
+                Text(plan.title)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
 
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     if let originalPrice = plan.originalPrice {
@@ -795,6 +795,10 @@ public struct KikiPaywallPlanCard: View {
         .disabled(!plan.isAvailable)
         .opacity(plan.isAvailable ? 1 : 0.45)
         .animation(.easeInOut(duration: 0.15), value: isSelected)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(plan.title), \(plan.displayPrice), \(plan.billingDetail)")
+        .accessibilityValue(isSelected ? "Selected" : "Not selected")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
