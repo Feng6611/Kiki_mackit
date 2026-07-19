@@ -28,6 +28,14 @@ struct KikiSettingsTests {
         #expect(spec.systemImage == "gearshape")
     }
 
+    @Test("Settings defaults bound adaptation around the ideal window size")
+    func settingsDefaultsAllowPaneAdaptation() {
+        #expect(KikiSettingsDefaults.windowHeight > KikiSettingsDefaults.minimumWindowHeight)
+        #expect(KikiSettingsDefaults.maximumWindowHeight > KikiSettingsDefaults.windowHeight)
+        #expect(KikiSettingsDefaults.minimumWindowWidth == KikiSettingsDefaults.windowWidth)
+        #expect(KikiSettingsDefaults.maximumWindowWidth > KikiSettingsDefaults.windowWidth)
+    }
+
     @MainActor
     @Test("Settings shell and rows are constructible")
     func settingsShellAndRowsAreConstructible() {

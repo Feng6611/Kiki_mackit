@@ -326,12 +326,12 @@ public struct KikiScreenEdgeOverlayPresentation {
 }
 
 private enum KikiOverlayPaletteValues {
-    static let orange = Color(red: 1.0, green: 0.49, blue: 0.12)
-    static let brightOrange = Color(red: 1.0, green: 0.68, blue: 0.28)
-    static let deepOrange = Color(red: 0.86, green: 0.25, blue: 0.03)
-    static let success = Color(red: 0.0, green: 0.62, blue: 0.34)
-    static let deepSuccess = Color(red: 0.0, green: 0.42, blue: 0.26)
-    static let warning = Color(red: 1.0, green: 0.34, blue: 0.12)
+    static let orange = Color(nsColor: .systemOrange)
+    static let brightOrange = Color(nsColor: .systemYellow)
+    static let deepOrange = Color(nsColor: .systemRed)
+    static let success = Color(nsColor: .systemGreen)
+    static let deepSuccess = Color(nsColor: .systemTeal)
+    static let warning = Color(nsColor: .systemOrange)
 }
 
 @available(*, deprecated, message: "Use KikiOverlayTone or explicit tint parameters instead.")
@@ -696,26 +696,22 @@ private struct KikiEdgeFeedbackToast: View {
         HStack(spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: style.toastIconCornerRadius, style: .continuous)
-                    .fill(tint)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: style.toastIconCornerRadius, style: .continuous)
-                            .fill(.white.opacity(0.12))
-                    }
+                    .fill(tint.opacity(0.14))
                 Image(systemName: systemImage)
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(.white)
+                    .font(.headline)
+                    .foregroundStyle(tint)
             }
             .frame(width: 30, height: 30)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.headline)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.system(size: 12.5, weight: .medium))
+                        .font(.callout)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .fixedSize(horizontal: false, vertical: true)

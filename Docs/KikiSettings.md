@@ -30,8 +30,9 @@ native `Settings {}` scene remains in the host App.
   manages the exact Settings window registered by the SwiftUI scene.
 - `KikiSettingsOpener`: imperative opener that triggers SwiftUI Settings
   through native paths first and a private selector only as a last resort.
-- `KikiSettingsDefaults`: stable defaults for width, height, and minimum
-  size.
+- `KikiSettingsDefaults`: stable ideal, minimum, and maximum geometry. Defaults
+  are `540×560` ideal, `540×320` minimum, and `640×720` maximum, so localized
+  content can adapt without allowing an autosaved frame to become unbounded.
 - Rows:
   `KikiSettingsValueRow`, `KikiSettingsToggleRow`,
   `KikiSettingsSegmentedPickerRow`, `KikiSettingsMenuPickerRow`,
@@ -55,8 +56,10 @@ native `Settings {}` scene remains in the host App.
    path is visible in Console.
 
 Menu bar hosts call `openForMenuBarApp()` so the window controller prepares
-the app activation state. The registered SwiftUI view configures autosave and
-minimum size when AppKit attaches it to the native Settings window.
+the app activation state. The registered SwiftUI view configures autosave plus
+ideal/minimum/maximum size when AppKit attaches it to the native Settings
+window. A saved frame outside the maximum resets to the ideal size; saved user
+adjustments inside the supported range remain intact.
 
 `EnvironmentValues.openSettings` is the most native way to open Settings,
 but it must be invoked from a SwiftUI view tree. `KikiSettingsOpener` is
@@ -93,7 +96,10 @@ Two picker rows ship with `KikiSettings`:
 
 Hosts pick the row by option count and copy length per macOS HIG. Both
 rows take a `Binding<Value>` and an `optionTitle` mapper, so the value type
-stays app-owned.
+stays app-owned. Segmented rows reserve the caller-provided control width and
+align the native control to its trailing edge, keeping controls with different
+intrinsic label widths aligned across a settings section. The width is a
+minimum rather than a fixed frame, so localized labels can expand it.
 
 ## Window Controller
 
@@ -129,12 +135,19 @@ hand-wiring the most common Settings shapes.
   ordered Website / Support / Feedback / Terms / Privacy rows.
 - `KikiAccessStatusPresentation` + `KikiAccessStatusCard`: a small,
   Commerce-agnostic status card with a tone (`neutral | trial | active |
-  expired`), title, optional subtitle, optional action title, and an
+  lifetime | expired`), title, optional subtitle, optional action title, and an
   in-flight flag. The host derives the presentation; the card stays
   unaware of RevenueCat or trial math.
 - `KikiStandardAboutPane`: composes `KikiAboutPane` with an optional
   `KikiAccessStatusCard` and the ordered links from
-  `KikiStandardAboutLinks`. One call covers the standard About pane.
+  `KikiStandardAboutLinks`. One call covers the standard About pane. Its
+  status row keeps the leading label/icon neutral and renders active, trial,
+  lifetime, or expired symbols beside the trailing value. The inactive value
+  stays text-only to avoid repeating the row's information icon.
+  Inactive/expired map to warning; trial/active/lifetime map to the caller's
+  tint. Without an explicit tint, the positive access states use
+  `KikiDesignColor.proAccent` (Kiki purple), while inactive/expired remain
+  orange by deliberate product request.
 - `KikiSettingsCoordinator<Tab>`: owns the
   `KikiSettingsNavigationModel`, the tab specs, an optional
   `KikiSettingsWindowController`, and a `KikiSettingsOpener`. Exposes

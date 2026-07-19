@@ -28,7 +28,7 @@ public struct KikiOnboardingPermissionRow: View {
         } label: {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: panel.systemImage)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.title3.weight(.semibold))
                     .foregroundStyle(tint)
                     .frame(width: 24, height: 24)
 

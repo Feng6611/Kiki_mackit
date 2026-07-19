@@ -11,6 +11,31 @@ struct KikiOnboardingTests {
         #expect(KikiOnboardingDefaults.primaryActionWidth == 200)
     }
 
+    @Test("Onboarding rows derive stable value identity")
+    func onboardingRowsUseStableIdentity() {
+        let first = KikiOnboardingRow(
+            systemImage: "sparkles",
+            title: "Fast setup",
+            detail: "Use the default flow."
+        )
+        let second = KikiOnboardingRow(
+            systemImage: "sparkles",
+            title: "Fast setup",
+            detail: "Use the default flow."
+        )
+        let explicitID = UUID(uuidString: "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE")!
+        let explicit = KikiOnboardingRow(
+            id: explicitID,
+            systemImage: "sparkles",
+            title: "Fast setup",
+            detail: "Use the default flow."
+        )
+
+        #expect(first == second)
+        #expect(first.id == second.id)
+        #expect(explicit.id == explicitID)
+    }
+
     @MainActor
     @Test("Coordinator advances and returns whole onboarding pages")
     func coordinatorAdvancesAndReturnsWholePages() {

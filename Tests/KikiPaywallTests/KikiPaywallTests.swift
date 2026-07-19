@@ -27,6 +27,18 @@ struct KikiPaywallTests {
         #expect(plan.isAvailable)
     }
 
+    @Test("Paywall stats derive stable value identity")
+    func paywallStatsUseStableIdentity() {
+        let first = KikiPaywallStatConfig(value: "3", label: "kits")
+        let second = KikiPaywallStatConfig(value: "3", label: "kits")
+        let explicitID = UUID(uuidString: "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE")!
+        let explicit = KikiPaywallStatConfig(id: explicitID, value: "3", label: "kits")
+
+        #expect(first == second)
+        #expect(first.id == second.id)
+        #expect(explicit.id == explicitID)
+    }
+
     @MainActor
     @Test("Paywall shell and header are constructible")
     func paywallShellAndHeaderAreConstructible() {
@@ -69,7 +81,8 @@ struct KikiPaywallTests {
             plans: plans,
             selectedPlanID: .constant("lifetime"),
             primary: .init(title: "Unlock") {},
-            secondary: .init(title: "Restore") {}
+            secondaryActions: [.init(title: "Restore") {}],
+            size: .compact
         )
 
         _ = sheet.body

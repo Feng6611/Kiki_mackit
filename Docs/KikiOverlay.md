@@ -21,6 +21,8 @@ Kiki owns:
 - Reusable motion rhythm, intensity, breathing expansion, and sizing defaults.
 - Composite style mapping for a single host-facing maximum intensity control.
 - Presets for common mode feedback such as lock started, lock ended, and warning.
+- Adaptive macOS system colors for the built-in alert/success/warning palettes;
+  these are intentional full-screen feedback roles, not product brand colors.
 
 Host apps own:
 
@@ -37,7 +39,7 @@ Host apps own:
   through the `.lockStarted(...)`, `.lockEnded(...)`, and `.warning(...)`
   factories.
 - `KikiOverlayTone`: tone-driven palette (`.alert`, `.success`, `.warning`)
-  that maps to the previously hand-tuned color pairs. Hosts that want a
+  that maps to adaptive macOS system color pairs. Hosts that want a
   custom color pass `tint:` and `companionTint:` directly to the factory.
 - `KikiScreenEdgeOverlayStyle`: tunable defaults. v1 of this module exposed
   ~25 init parameters; 0.6.0 narrows the public surface to four knobs:

@@ -2,13 +2,37 @@
 
 ## Unreleased
 
+## 0.8.2 - 2026-07-19
+
 ### Fixed
 
+- Paywall actions now use native bordered button styles, Return/Escape keyboard
+  roles, stable action/stat identities, semantic typography, and tint-safe badge
+  treatments.
+- Settings uses bounded ideal/minimum/maximum geometry instead of forcing every
+  pane to `540×560` or restoring an unbounded oversized frame; onboarding
+  content scrolls when copy or localization exceeds the welcome-window envelope.
+- Settings, Onboarding, Paywall, and Overlay replace hardcoded text point sizes
+  with semantic styles. Overlay palettes now use adaptive macOS system colors.
+- About access status intentionally uses orange for inactive/expired states and
+  the Kiki purple accent for trial/Pro/lifetime states unless the host supplies
+  an explicit tint.
+- Onboarding rows derive stable value identities instead of allocating a new
+  UUID each time a view model is rebuilt.
 - Paywall plan cards always show the plan name, including cards with badges,
   and expose their full label and selected state to accessibility clients.
 - The standard Settings menu title now uses the native ellipsis character.
 - Onboarding scaffolds can omit the primary action for event-driven steps that
   advance automatically.
+
+### Deprecated
+
+- `KikiDesignColor.brandAccent`, `brand_accent`, and `system_accent` remain
+  source-compatible aliases but are scheduled for removal in `0.9.0`; use
+  `proAccent` for Pro status and `systemAccent` for the macOS accent color.
+- The four width/height-based `KikiPaywallSheet` compatibility initializers are
+  scheduled for removal in `0.9.0` after the downstream app matrix migrates to
+  `KikiPaywallSheetSize`.
 
 ## 0.8.1 - 2026-07-14
 

@@ -4,7 +4,9 @@ public enum KikiSettingsDefaults {
     public static let windowWidth: CGFloat = 540
     public static let windowHeight: CGFloat = 560
     public static let minimumWindowWidth: CGFloat = 540
-    public static let minimumWindowHeight: CGFloat = 560
+    public static let minimumWindowHeight: CGFloat = 320
+    public static let maximumWindowWidth: CGFloat = 640
+    public static let maximumWindowHeight: CGFloat = 720
 }
 
 public struct KikiSettingsTabSpec<Tab: Hashable>: Identifiable {
@@ -35,6 +37,10 @@ public struct KikiSettingsShell<Tab: Hashable, Content: View>: View {
     private let tabs: [KikiSettingsTabSpec<Tab>]
     private let width: CGFloat
     private let height: CGFloat
+    private let minimumWidth: CGFloat
+    private let minimumHeight: CGFloat
+    private let maximumWidth: CGFloat
+    private let maximumHeight: CGFloat
     private let content: (Tab) -> Content
 
     public init(
@@ -42,12 +48,20 @@ public struct KikiSettingsShell<Tab: Hashable, Content: View>: View {
         tabs: [KikiSettingsTabSpec<Tab>],
         width: CGFloat = KikiSettingsDefaults.windowWidth,
         height: CGFloat = KikiSettingsDefaults.windowHeight,
+        minimumWidth: CGFloat = KikiSettingsDefaults.minimumWindowWidth,
+        minimumHeight: CGFloat = KikiSettingsDefaults.minimumWindowHeight,
+        maximumWidth: CGFloat = KikiSettingsDefaults.maximumWindowWidth,
+        maximumHeight: CGFloat = KikiSettingsDefaults.maximumWindowHeight,
         @ViewBuilder content: @escaping (Tab) -> Content
     ) {
         self._selection = selection
         self.tabs = tabs
         self.width = width
         self.height = height
+        self.minimumWidth = minimumWidth
+        self.minimumHeight = minimumHeight
+        self.maximumWidth = maximumWidth
+        self.maximumHeight = maximumHeight
         self.content = content
     }
 
@@ -61,6 +75,13 @@ public struct KikiSettingsShell<Tab: Hashable, Content: View>: View {
                 .tag(tabSpec.tab)
             }
         }
-        .frame(width: width, height: height)
+        .frame(
+            minWidth: minimumWidth,
+            idealWidth: width,
+            maxWidth: maximumWidth,
+            minHeight: minimumHeight,
+            idealHeight: height,
+            maxHeight: maximumHeight
+        )
     }
 }

@@ -26,6 +26,13 @@ post-success routing remain outside Base Kit in both cases.
 - `KikiPaywallShell` extracts a stable small-app paywall sheet structure:
   scrollable header/content, fixed action/footer area, optional close button,
   default sheet sizes, and subtle native material background.
+- Preset primary/secondary actions use native
+  `.borderedProminent`/`.bordered` buttons. Return activates the primary action;
+  Escape activates an available close action.
+- Stats and ordered actions require stable identities so a refreshed
+  presentation does not reset SwiftUI diffing, focus, or animation state.
+- Accent pills and plan badges use a tinted foreground on a low-opacity tinted
+  background instead of assuming white is legible on every host tint.
 - `KikiPaywallWindowController` is only a presentation adapter. It uses
   `KikiWindow` to host app-provided paywall content in a standalone `NSWindow`
   when a sheet is not the right product surface.
@@ -90,7 +97,8 @@ embedding RevenueCat types or trial math.
   `KikiPaywallPlan` atom via `paywallPlan`.
 - `KikiPaywallActionPresentation`: caller-owned title, loading state,
   plan-aware enabled predicate, and action. There is no purchase-specific action
-  enum in Base Kit.
+  enum in Base Kit. Supply an explicit stable `id` when the host rebuilds the
+  presentation from computed state.
 - `KikiPaywallPresentation`: full snapshot — access state, header copy,
   plans, features, stats, typed feedback, footnote, footer links, interaction
   state, one primary action, ordered secondary actions, and optional dismiss.
@@ -151,6 +159,9 @@ KikiPaywallSheet(
 
 The sheet builds on top of `KikiPaywallShell`, so hosts that need custom
 sections can drop down to the shell and atoms without losing visual parity.
+
+The legacy width/height initializers remain only for source compatibility and
+are scheduled for removal in `0.9.0`; new code selects `KikiPaywallSheetSize`.
 
 ## TODO & Checklist
 

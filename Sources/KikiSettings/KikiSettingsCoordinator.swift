@@ -52,6 +52,8 @@ public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
     private let tabs: [KikiSettingsTabSpec<Tab>]
     private let width: CGFloat
     private let height: CGFloat
+    private let minimumWidth: CGFloat
+    private let minimumHeight: CGFloat
     private let windowController: KikiSettingsWindowController?
     private let content: (Tab) -> Content
 
@@ -59,12 +61,16 @@ public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
         coordinator: KikiSettingsCoordinator<Tab>,
         width: CGFloat = KikiSettingsDefaults.windowWidth,
         height: CGFloat = KikiSettingsDefaults.windowHeight,
+        minimumWidth: CGFloat = KikiSettingsDefaults.minimumWindowWidth,
+        minimumHeight: CGFloat = KikiSettingsDefaults.minimumWindowHeight,
         @ViewBuilder content: @escaping (Tab) -> Content
     ) {
         self.navigation = coordinator.navigation
         self.tabs = coordinator.tabs
         self.width = width
         self.height = height
+        self.minimumWidth = minimumWidth
+        self.minimumHeight = minimumHeight
         self.windowController = coordinator.windowController
         self.content = content
     }
@@ -75,6 +81,8 @@ public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
             tabs: tabs,
             width: width,
             height: height,
+            minimumWidth: minimumWidth,
+            minimumHeight: minimumHeight,
             content: content
         )
         .kikiSettingsWindow(windowController)

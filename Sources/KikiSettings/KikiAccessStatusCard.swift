@@ -1,3 +1,4 @@
+import KikiDesign
 import SwiftUI
 
 public enum KikiAccessStatusTone: Equatable, Sendable {
@@ -19,8 +20,8 @@ public enum KikiAccessStatusTone: Equatable, Sendable {
 
     public var settingsTone: KikiSettingsStatusTone {
         switch self {
-        case .neutral: return .neutral
-        case .trial: return .info
+        case .neutral: return .warning
+        case .trial: return .accent
         case .active: return .accent
         case .lifetime: return .accent
         case .expired: return .warning
@@ -29,8 +30,8 @@ public enum KikiAccessStatusTone: Equatable, Sendable {
 
     public func foregroundColor(tint: Color = .accentColor) -> Color {
         switch self {
-        case .neutral: return .secondary
-        case .trial: return .blue
+        case .neutral: return .orange
+        case .trial: return tint
         case .active: return tint
         case .lifetime: return tint
         case .expired: return .orange
@@ -70,7 +71,7 @@ public struct KikiAccessStatusCard: View {
         action: (@MainActor () -> Void)? = nil
     ) {
         self.presentation = presentation
-        self.tint = .accentColor
+        self.tint = KikiDesignColor.proAccent
         self.action = action
     }
 
@@ -90,7 +91,7 @@ public struct KikiAccessStatusCard: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(presentation.title)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.headline)
                 if let subtitle = presentation.subtitle {
                     Text(subtitle)
                         .font(.caption)
@@ -120,12 +121,12 @@ public struct KikiAccessStatusCard: View {
 
     private var badge: some View {
         Image(systemName: presentation.tone.systemImage)
-            .font(.system(size: 18, weight: .semibold))
-            .foregroundStyle(.white)
+            .font(.title3.weight(.semibold))
+            .foregroundStyle(presentation.tone.foregroundColor(tint: tint))
             .frame(width: 36, height: 36)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(presentation.tone.foregroundColor(tint: tint))
+                    .fill(presentation.tone.foregroundColor(tint: tint).opacity(0.14))
             )
     }
 }

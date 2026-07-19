@@ -5,8 +5,8 @@ popovers, Paywall, sheets, and standalone windows.
 
 ## Public API
 
-- `KikiDesignColor.brandAccent`: Kiki brand purple for product-owned brand
-  highlights with a modern native macOS accent direction.
+- `KikiDesignColor.proAccent`: Kiki purple for the default
+  Pro/access-positive status treatment.
 - `KikiDesignColor.systemAccent`: the current macOS system accent color from
   `NSColor.controlAccentColor`.
 - `KikiSurfaceDefaults`: stable default corner radius and tint opacity.
@@ -25,5 +25,8 @@ popovers, Paywall, sheets, and standalone windows.
 This target provides visual treatment only. It does not own app layout, product
 copy, state, purchase logic, settings tabs, menu content, or window lifecycle.
 
-Use `brandAccent` when the UI needs the Kiki product family color. Use
+Use `proAccent` for Kiki's default positive access treatment. Use
 `systemAccent` when the UI should respect the user's macOS accent color.
+The Pro token is an opt-in visual default, not access policy: apps still own
+what Pro means and may pass an explicit tint. `brandAccent` and the snake-case
+aliases are deprecated and scheduled for removal in `0.9.0`.

@@ -7,12 +7,20 @@ public enum KikiSurfaceDefaults {
 }
 
 public enum KikiDesignColor {
-    public static let brandAccent = Color(red: 0.58, green: 0.20, blue: 0.62)
+    /// The default Kiki purple used for Pro and access-positive status UI.
+    /// Apps remain free to pass their own product tint explicitly.
+    public static let proAccent = Color(red: 0.58, green: 0.20, blue: 0.62)
     public static var systemAccent: Color {
         Color(nsColor: .controlAccentColor)
     }
 
-    public static let brand_accent = brandAccent
+    @available(*, deprecated, renamed: "proAccent")
+    public static let brandAccent = proAccent
+
+    @available(*, deprecated, renamed: "proAccent")
+    public static let brand_accent = proAccent
+
+    @available(*, deprecated, renamed: "systemAccent")
     public static var system_accent: Color {
         systemAccent
     }

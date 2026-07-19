@@ -23,22 +23,25 @@ public struct KikiOnboardingLoadingScaffold: View {
     }
 
     public var body: some View {
-        VStack(spacing: 12) {
-            ProgressView()
-                .controlSize(.large)
+        ScrollView {
+            VStack(spacing: 12) {
+                ProgressView()
+                    .controlSize(.large)
 
-            Text(title)
-                .font(.system(size: 20, weight: .semibold))
+                Text(title)
+                    .font(.title2.weight(.semibold))
 
-            if let bodyText {
-                Text(bodyText)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+                if let bodyText {
+                    Text(bodyText)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
+            .frame(maxWidth: .infinity, minHeight: size.height)
+            .padding(.horizontal, 28)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .frame(width: size.width, height: size.height)
         .background {
             ZStack {

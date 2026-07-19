@@ -117,14 +117,44 @@ public struct KikiPaywallHeaderConfig {
 }
 
 public struct KikiPaywallStatConfig: Identifiable, Equatable {
-    public let id = UUID()
+    public let id: UUID
     public let value: String
     public let label: String
 
-    public init(value: String, label: String) {
+    public init(id: UUID? = nil, value: String, label: String) {
+        self.id = id ?? kikiPaywallStableUUID(for: "\(value)\u{1F}\(label)")
         self.value = value
         self.label = label
     }
+}
+
+private func kikiPaywallStableUUID(for value: String) -> UUID {
+    var high: UInt64 = 0xcbf29ce484222325
+    var low: UInt64 = 0x84222325cbf29ce4
+
+    for byte in value.utf8 {
+        high = (high ^ UInt64(byte)) &* 0x100000001b3
+        low = (low ^ UInt64(byte)) &* 0x9e3779b185ebca87
+    }
+
+    return UUID(uuid: (
+        UInt8(truncatingIfNeeded: high >> 56),
+        UInt8(truncatingIfNeeded: high >> 48),
+        UInt8(truncatingIfNeeded: high >> 40),
+        UInt8(truncatingIfNeeded: high >> 32),
+        UInt8(truncatingIfNeeded: high >> 24),
+        UInt8(truncatingIfNeeded: high >> 16),
+        UInt8(truncatingIfNeeded: high >> 8),
+        UInt8(truncatingIfNeeded: high),
+        UInt8(truncatingIfNeeded: low >> 56),
+        UInt8(truncatingIfNeeded: low >> 48),
+        UInt8(truncatingIfNeeded: low >> 40),
+        UInt8(truncatingIfNeeded: low >> 32),
+        UInt8(truncatingIfNeeded: low >> 24),
+        UInt8(truncatingIfNeeded: low >> 16),
+        UInt8(truncatingIfNeeded: low >> 8),
+        UInt8(truncatingIfNeeded: low)
+    ))
 }
 
 public struct KikiPaywallActionConfig: Identifiable {
@@ -176,7 +206,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
     private let onClose: (() -> Void)?
     private let footer: Footer
 
-    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation")
+    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation; this compatibility initializer will be removed in Kiki 0.9.0")
     public init(
         header: KikiPaywallHeaderConfig,
         stats: [KikiPaywallStatConfig] = [],
@@ -206,7 +236,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
         )
     }
 
-    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation")
+    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation; this compatibility initializer will be removed in Kiki 0.9.0")
     public init(
         header: KikiPaywallHeaderConfig,
         stats: [KikiPaywallStatConfig] = [],
@@ -350,9 +380,12 @@ public struct KikiPaywallSheet<Footer: View>: View {
                         tint: tint
                     )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .tint(tint)
                 .disabled(!primary.isEnabled)
                 .opacity(primary.isEnabled ? 1 : 0.45)
+                .keyboardShortcut(.defaultAction)
 
                 ForEach(secondaryActions) { secondary in
                     Button {
@@ -365,7 +398,8 @@ public struct KikiPaywallSheet<Footer: View>: View {
                             tint: tint
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
                     .disabled(!secondary.isEnabled)
                     .opacity(secondary.isEnabled ? 1 : 0.45)
                 }
@@ -377,7 +411,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
 }
 
 public extension KikiPaywallSheet where Footer == EmptyView {
-    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation")
+    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation; this compatibility initializer will be removed in Kiki 0.9.0")
     init(
         header: KikiPaywallHeaderConfig,
         stats: [KikiPaywallStatConfig] = [],
@@ -406,7 +440,7 @@ public extension KikiPaywallSheet where Footer == EmptyView {
         )
     }
 
-    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation")
+    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation; this compatibility initializer will be removed in Kiki 0.9.0")
     init(
         header: KikiPaywallHeaderConfig,
         stats: [KikiPaywallStatConfig] = [],
@@ -556,12 +590,13 @@ public struct KikiPaywallShell<Header: View, Content: View, Actions: View, Foote
                     onClose?()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 20, weight: .medium))
+                        .font(.title2.weight(.medium))
                         .symbolRenderingMode(.hierarchical)
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
                 .padding(20)
+                .keyboardShortcut(.cancelAction)
                 .accessibilityLabel("Close")
             }
         }
@@ -635,7 +670,7 @@ public struct KikiPaywallHeader: View {
             }
 
             Text(title)
-                .font(.system(size: 24, weight: .bold))
+                .font(.title.bold())
                 .multilineTextAlignment(.center)
 
             Text(subtitle)
@@ -661,7 +696,7 @@ public struct KikiPaywallStatItem: View {
     public var body: some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .font(.title2.bold())
                 .foregroundStyle(tint)
                 .lineLimit(1)
             Text(label)
@@ -749,15 +784,15 @@ public struct KikiPaywallPlanCard: View {
             VStack(spacing: 8) {
                 if let badge = plan.badge {
                     Text(badge)
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(tint)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
-                        .background(Capsule().fill(tint))
+                        .background(Capsule().fill(tint.opacity(0.14)))
                 }
 
                 Text(plan.title)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.secondary)
 
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -768,7 +803,7 @@ public struct KikiPaywallPlanCard: View {
                             .foregroundStyle(.secondary)
                     }
                     Text(plan.displayPrice)
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.title2.bold())
                         .foregroundStyle(.primary)
                 }
 
@@ -805,8 +840,6 @@ public struct KikiPaywallPlanCard: View {
 public struct KikiPaywallActionLabel: View {
     private let title: String
     private let isLoading: Bool
-    private let isProminent: Bool
-    private let tint: Color
 
     public init(
         title: String,
@@ -816,8 +849,8 @@ public struct KikiPaywallActionLabel: View {
     ) {
         self.title = title
         self.isLoading = isLoading
-        self.isProminent = isProminent
-        self.tint = tint
+        _ = isProminent
+        _ = tint
     }
 
     public var body: some View {
@@ -830,20 +863,8 @@ public struct KikiPaywallActionLabel: View {
             Text(title)
                 .font(.headline)
         }
-        .foregroundStyle(isProminent ? .white : .primary)
         .frame(maxWidth: .infinity)
-        .frame(height: 44)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(isProminent ? tint : Color(nsColor: .controlBackgroundColor))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(
-                    isProminent ? Color.clear : Color(nsColor: .separatorColor).opacity(0.4),
-                    lineWidth: 0.5
-                )
-        )
+        .padding(.vertical, 4)
     }
 }
 
@@ -878,7 +899,7 @@ public struct KikiPaywallIconBadge: View {
 
     public var body: some View {
         Image(systemName: systemName)
-            .font(.system(size: size * iconScale, weight: .semibold))
+            .font(.title3.weight(.semibold))
             .symbolRenderingMode(.hierarchical)
             .foregroundStyle(iconColor)
             .frame(width: size, height: size)
@@ -913,7 +934,7 @@ public struct KikiPaywallPill: View {
     private var foregroundColor: Color {
         switch tone {
         case .accent:
-            return .white
+            return tint
         case .neutral, .warning, .success, .danger:
             return color
         }
@@ -922,7 +943,7 @@ public struct KikiPaywallPill: View {
     private var backgroundColor: Color {
         switch tone {
         case .accent:
-            return tint
+            return tint.opacity(0.14)
         case .neutral, .warning, .success, .danger:
             return color.opacity(0.12)
         }

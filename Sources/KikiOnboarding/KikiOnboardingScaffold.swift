@@ -83,33 +83,34 @@ public struct KikiOnboardingScaffold<Content: View>: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 18) {
-                VStack(spacing: 12) {
-                    hero
+            ScrollView {
+                VStack(spacing: 18) {
+                    VStack(spacing: 12) {
+                        hero
 
-                    VStack(spacing: 6) {
-                        Text(title)
-                            .font(.title.bold())
-                            .multilineTextAlignment(.center)
-
-                        if let bodyText {
-                            Text(bodyText)
-                                .font(.body)
-                                .foregroundStyle(.secondary)
+                        VStack(spacing: 6) {
+                            Text(title)
+                                .font(.title.bold())
                                 .multilineTextAlignment(.center)
-                                .fixedSize(horizontal: false, vertical: true)
+
+                            if let bodyText {
+                                Text(bodyText)
+                                    .font(.body)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                         }
                     }
-                }
 
-                content
+                    content
+                }
+                .frame(maxWidth: .infinity, alignment: .top)
+                .padding(.horizontal, 28)
+                .padding(.top, 28)
+                .padding(.bottom, 14)
             }
-            // Keep the header and page content together near the top. The
-            // footer owns the bottom edge; centering sparse steps makes the
-            // hero drift too far down in a fixed welcome window.
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .padding(.horizontal, 28)
-            .padding(.top, 28)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             if let stepIndex, let stepCount, stepCount > 1 {
                 KikiOnboardingProgressDots(
@@ -227,12 +228,12 @@ public struct KikiOnboardingScaffold<Content: View>: View {
                 .shadow(color: .black.opacity(0.12), radius: 12, y: 6)
         } else {
             Image(systemName: iconSystemName)
-                .font(.system(size: 28, weight: .semibold))
-                .foregroundStyle(.white)
+                .font(.largeTitle.weight(.semibold))
+                .foregroundStyle(tint)
                 .frame(width: 68, height: 68)
                 .background(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(tint)
+                        .fill(tint.opacity(0.14))
                 )
         }
     }

@@ -7,7 +7,9 @@ protocol KikiSettingsWindowManaging: AnyObject {
     var isVisible: Bool { get }
     func configure(
         frameAutosaveName: NSWindow.FrameAutosaveName,
-        minimumContentSize: CGSize
+        idealContentSize: CGSize,
+        minimumContentSize: CGSize,
+        maximumContentSize: CGSize
     )
     func close()
 }
@@ -15,23 +17,48 @@ protocol KikiSettingsWindowManaging: AnyObject {
 extension NSWindow: KikiSettingsWindowManaging {
     func configure(
         frameAutosaveName: NSWindow.FrameAutosaveName,
-        minimumContentSize: CGSize
+        idealContentSize: CGSize,
+        minimumContentSize: CGSize,
+        maximumContentSize: CGSize
     ) {
-        contentMinSize = minimumContentSize
+        let savedWindowSize = kikiSavedWindowFrameSize(for: frameAutosaveName)
+        let maximumWindowSize = frameRect(
+            forContentRect: CGRect(origin: .zero, size: maximumContentSize)
+        ).size
+        let savedFrameExceedsMaximum = savedWindowSize.map {
+            $0.width > maximumWindowSize.width || $0.height > maximumWindowSize.height
+        } ?? false
+
         setFrameUsingName(frameAutosaveName)
         setFrameAutosaveName(frameAutosaveName)
 
+        let restoredContentSize = contentLayoutRect.size
+        contentMinSize = minimumContentSize
+        contentMaxSize = maximumContentSize
+
         let currentContentSize = contentLayoutRect.size
-        guard currentContentSize.width < minimumContentSize.width
-                || currentContentSize.height < minimumContentSize.height else {
+        let exceedsMaximum = savedFrameExceedsMaximum
+            || restoredContentSize.width > maximumContentSize.width
+            || restoredContentSize.height > maximumContentSize.height
+        let targetContentSize: CGSize
+
+        if exceedsMaximum {
+            // Older Kit versions allowed Settings to expand without a bound.
+            // Reset those distorted saved frames as a whole instead of keeping
+            // an awkward aspect ratio after clamping just one dimension.
+            targetContentSize = idealContentSize
+        } else {
+            targetContentSize = CGSize(
+                width: max(currentContentSize.width, minimumContentSize.width),
+                height: max(currentContentSize.height, minimumContentSize.height)
+            )
+        }
+
+        guard targetContentSize != currentContentSize else {
             return
         }
 
         var targetWindowFrame = frame
-        let targetContentSize = CGSize(
-            width: max(currentContentSize.width, minimumContentSize.width),
-            height: max(currentContentSize.height, minimumContentSize.height)
-        )
         let targetFrameSize = frameRect(
             forContentRect: CGRect(origin: .zero, size: targetContentSize)
         ).size
@@ -40,22 +67,52 @@ extension NSWindow: KikiSettingsWindowManaging {
     }
 }
 
+private func kikiSavedWindowFrameSize(
+    for autosaveName: NSWindow.FrameAutosaveName,
+    defaults: UserDefaults = .standard
+) -> CGSize? {
+    guard let value = defaults.string(forKey: "NSWindow Frame \(autosaveName)") else {
+        return nil
+    }
+
+    let components = value
+        .split(whereSeparator: { $0.isWhitespace })
+        .compactMap { Double($0) }
+    guard components.count >= 4 else {
+        return nil
+    }
+
+    return CGSize(width: components[2], height: components[3])
+}
+
 @MainActor
 public final class KikiSettingsWindowController {
     private let frameAutosaveName: NSWindow.FrameAutosaveName
+    private let idealContentSize: CGSize
     private let minimumContentSize: CGSize
+    private let maximumContentSize: CGSize
     private weak var settingsWindow: (any KikiSettingsWindowManaging)?
 
     public init(
         frameAutosaveName: String,
+        idealContentSize: CGSize = CGSize(
+            width: KikiSettingsDefaults.windowWidth,
+            height: KikiSettingsDefaults.windowHeight
+        ),
         minimumContentSize: CGSize = CGSize(
             width: KikiSettingsDefaults.minimumWindowWidth,
             height: KikiSettingsDefaults.minimumWindowHeight
         ),
+        maximumContentSize: CGSize = CGSize(
+            width: KikiSettingsDefaults.maximumWindowWidth,
+            height: KikiSettingsDefaults.maximumWindowHeight
+        ),
         windowTitle: String = "Settings"
     ) {
         self.frameAutosaveName = NSWindow.FrameAutosaveName(frameAutosaveName)
+        self.idealContentSize = idealContentSize
         self.minimumContentSize = minimumContentSize
+        self.maximumContentSize = maximumContentSize
         // Retained for source compatibility. Exact view registration makes
         // title-based window discovery unnecessary.
         _ = windowTitle
@@ -89,7 +146,9 @@ public final class KikiSettingsWindowController {
         settingsWindow = managedWindow
         managedWindow.configure(
             frameAutosaveName: frameAutosaveName,
-            minimumContentSize: minimumContentSize
+            idealContentSize: idealContentSize,
+            minimumContentSize: minimumContentSize,
+            maximumContentSize: maximumContentSize
         )
     }
 }

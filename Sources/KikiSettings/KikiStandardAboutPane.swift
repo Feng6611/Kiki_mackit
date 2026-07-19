@@ -28,7 +28,7 @@ public struct KikiStandardAboutPane: View {
         self.accessStatus = accessStatus
         self.onAccessAction = onAccessAction
         self.links = links
-        self.tint = .accentColor
+        self.tint = KikiDesignColor.proAccent
         self.onOpenLink = onOpenLink
     }
 
@@ -79,7 +79,8 @@ public struct KikiStandardAboutPane: View {
         KikiSettingsStatusRow(
             title: "Status",
             value: presentation.title,
-            systemImage: presentation.tone.systemImage,
+            systemImage: "info.circle",
+            valueSystemImage: presentation.tone == .neutral ? nil : presentation.tone.systemImage,
             tone: presentation.tone.settingsTone,
             tint: tint,
             showsBadge: false,

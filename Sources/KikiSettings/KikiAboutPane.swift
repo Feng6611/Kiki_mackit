@@ -29,7 +29,7 @@ public struct KikiAppIdentityView: View {
                 .shadow(color: .black.opacity(0.10), radius: 8, y: 4)
 
             Text(appName)
-                .font(.system(size: 20, weight: .semibold))
+                .font(.title2.weight(.semibold))
 
             Text(versionText)
                 .font(.callout)

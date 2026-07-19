@@ -36,10 +36,8 @@ struct KikiDesignTests {
     @MainActor
     @Test("Design color tokens are constructible")
     func designColorTokensAreConstructible() {
-        _ = KikiDesignColor.brandAccent
+        _ = KikiDesignColor.proAccent
         _ = KikiDesignColor.systemAccent
-        _ = KikiDesignColor.brand_accent
-        _ = KikiDesignColor.system_accent
     }
 
     @Test("Application icon resource names support Icon Composer output")

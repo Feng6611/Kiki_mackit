@@ -15,7 +15,18 @@ final class KikiSettingsWindowControllerTests: XCTestCase {
         controller.register(managedWindow: window)
 
         XCTAssertEqual(window.configuredAutosaveName, "KikiSettingsTests.LegacyWindow")
+        XCTAssertEqual(
+            window.configuredIdealSize,
+            CGSize(width: KikiSettingsDefaults.windowWidth, height: KikiSettingsDefaults.windowHeight)
+        )
         XCTAssertEqual(window.configuredMinimumSize, CGSize(width: 440, height: 330))
+        XCTAssertEqual(
+            window.configuredMaximumSize,
+            CGSize(
+                width: KikiSettingsDefaults.maximumWindowWidth,
+                height: KikiSettingsDefaults.maximumWindowHeight
+            )
+        )
     }
 
     func testRegisteredWindowOwnsConfigurationVisibilityAndClose() {
@@ -28,7 +39,18 @@ final class KikiSettingsWindowControllerTests: XCTestCase {
         controller.register(managedWindow: window)
 
         XCTAssertEqual(window.configuredAutosaveName, "KikiSettingsTests.Window")
+        XCTAssertEqual(
+            window.configuredIdealSize,
+            CGSize(width: KikiSettingsDefaults.windowWidth, height: KikiSettingsDefaults.windowHeight)
+        )
         XCTAssertEqual(window.configuredMinimumSize, CGSize(width: 420, height: 320))
+        XCTAssertEqual(
+            window.configuredMaximumSize,
+            CGSize(
+                width: KikiSettingsDefaults.maximumWindowWidth,
+                height: KikiSettingsDefaults.maximumWindowHeight
+            )
+        )
         XCTAssertTrue(controller.isVisible)
 
         controller.close()
@@ -41,15 +63,21 @@ final class KikiSettingsWindowControllerTests: XCTestCase {
 private final class FakeSettingsWindow: KikiSettingsWindowManaging {
     var isVisible = true
     private(set) var configuredAutosaveName: String?
+    private(set) var configuredIdealSize: CGSize?
     private(set) var configuredMinimumSize: CGSize?
+    private(set) var configuredMaximumSize: CGSize?
     private(set) var didClose = false
 
     func configure(
         frameAutosaveName: String,
-        minimumContentSize: CGSize
+        idealContentSize: CGSize,
+        minimumContentSize: CGSize,
+        maximumContentSize: CGSize
     ) {
         configuredAutosaveName = frameAutosaveName
+        configuredIdealSize = idealContentSize
         configuredMinimumSize = minimumContentSize
+        configuredMaximumSize = maximumContentSize
     }
 
     func close() {

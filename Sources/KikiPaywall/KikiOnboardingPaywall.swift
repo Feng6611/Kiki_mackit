@@ -39,6 +39,7 @@ public struct KikiOnboardingPaywall: View {
     private var primaryAction: KikiPaywallActionConfig {
         let planID = selectedPlanID
         return KikiPaywallActionConfig(
+            id: presentation.primaryAction.id,
             title: presentation.primaryAction.title,
             isLoading: presentation.primaryAction.isLoading,
             isEnabled: presentation.isInteractionDisabled == false
@@ -51,6 +52,7 @@ public struct KikiOnboardingPaywall: View {
         let planID = selectedPlanID
         return presentation.secondaryActions.map { action in
             KikiPaywallActionConfig(
+                id: action.id,
                 title: action.title,
                 isLoading: action.isLoading,
                 isEnabled: presentation.isInteractionDisabled == false

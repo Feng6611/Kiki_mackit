@@ -41,6 +41,10 @@ navigation.
 - Header and body content stay together near the top of the flexible body
   region; progress and actions remain anchored to the bottom edge. This avoids
   a large empty band above sparse first-run content.
+- Header/body content scrolls inside the fixed welcome envelope when localized
+  copy or product-specific content grows; navigation and actions remain visible.
+- Text uses semantic macOS styles. The SF Symbol hero uses a tinted symbol on a
+  low-opacity tint surface instead of assuming white contrasts with every tint.
 - The permission row uses `KikiAuthorization` for state and routing; it
   never hardcodes the System Settings URL.
 

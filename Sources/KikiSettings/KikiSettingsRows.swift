@@ -42,6 +42,7 @@ public struct KikiSettingsStatusRow: View {
     private let title: String
     private let value: String
     private let systemImage: String?
+    private let valueSystemImage: String?
     private let tone: KikiSettingsStatusTone
     private let tint: Color
     private let valueColor: Color?
@@ -53,6 +54,7 @@ public struct KikiSettingsStatusRow: View {
         title: String,
         value: String,
         systemImage: String? = nil,
+        valueSystemImage: String? = nil,
         tone: KikiSettingsStatusTone = .neutral,
         valueColor: Color? = nil,
         showsBadge: Bool? = nil,
@@ -62,6 +64,7 @@ public struct KikiSettingsStatusRow: View {
         self.title = title
         self.value = value
         self.systemImage = systemImage
+        self.valueSystemImage = valueSystemImage
         self.tone = tone
         self.tint = .accentColor
         self.valueColor = valueColor
@@ -74,6 +77,7 @@ public struct KikiSettingsStatusRow: View {
         title: String,
         value: String,
         systemImage: String? = nil,
+        valueSystemImage: String? = nil,
         tone: KikiSettingsStatusTone = .neutral,
         tint: Color,
         valueColor: Color? = nil,
@@ -84,6 +88,7 @@ public struct KikiSettingsStatusRow: View {
         self.title = title
         self.value = value
         self.systemImage = systemImage
+        self.valueSystemImage = valueSystemImage
         self.tone = tone
         self.tint = tint
         self.valueColor = valueColor
@@ -110,7 +115,7 @@ public struct KikiSettingsStatusRow: View {
     }
 
     private var rowContent: some View {
-        KikiSettingsValueRow(title, systemImage: systemImage, iconColor: resolvedForeground) {
+        KikiSettingsValueRow(title, systemImage: systemImage, iconColor: .secondary) {
             statusValue
             if let trailingSystemImage {
                 Image(systemName: trailingSystemImage)
@@ -123,20 +128,29 @@ public struct KikiSettingsStatusRow: View {
     @ViewBuilder
     private var statusValue: some View {
         if showsBadge ?? tone.usesBadge {
-            Text(value)
+            statusLabel
                 .fontWeight(.medium)
-                .foregroundStyle(resolvedForeground)
-                .lineLimit(1)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(
                     Capsule().fill(resolvedForeground.opacity(0.12))
                 )
         } else {
+            statusLabel
+        }
+    }
+
+    private var statusLabel: some View {
+        HStack(spacing: 5) {
+            if let valueSystemImage {
+                Image(systemName: valueSystemImage)
+                    .accessibilityHidden(true)
+            }
             Text(value)
-                .foregroundStyle(valueColor ?? resolvedForeground)
                 .lineLimit(1)
         }
+        .foregroundStyle(valueColor ?? resolvedForeground)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -223,7 +237,7 @@ public struct KikiSettingsSegmentedPickerRow<Value: Hashable>: View {
             }
             .labelsHidden()
             .pickerStyle(.segmented)
-            .frame(width: controlWidth)
+            .frame(minWidth: controlWidth, alignment: .trailing)
 
             if let trailingCaption {
                 caption(trailingCaption)
@@ -310,7 +324,7 @@ public struct KikiSettingsDebugPreviewRow<Item: Hashable>: View {
             }
             .labelsHidden()
             .pickerStyle(.segmented)
-            .frame(width: controlWidth)
+            .frame(minWidth: controlWidth, alignment: .trailing)
             .foregroundStyle(isOverrideActive ? .orange : .secondary)
         }
     }
