@@ -1,11 +1,19 @@
 import SwiftUI
 
 public enum KikiSettingsDefaults {
-    public static let windowWidth: CGFloat = 540
-    public static let windowHeight: CGFloat = 560
-    public static let minimumWindowWidth: CGFloat = 540
+    /// Ideal Settings content width. Sized for menu-bar utility Settings —
+    /// wider than SwiftUI's default `Settings {}` scene, narrower than the
+    /// old 540 that left every row of a sparse pane looking half-empty.
+    /// Apps with dense Settings content can pass explicit larger values.
+    public static let windowWidth: CGFloat = 460
+    public static let windowHeight: CGFloat = 520
+    /// Lets the user drag the window narrower than ideal when their content
+    /// fits. Kept above SwiftUI Form(.grouped)'s comfortable reading width.
+    public static let minimumWindowWidth: CGFloat = 420
     public static let minimumWindowHeight: CGFloat = 320
-    public static let maximumWindowWidth: CGFloat = 640
+    /// Caps the width so a legacy autosave frame or an aggressive drag
+    /// doesn't leave narrow settings looking stranded in whitespace.
+    public static let maximumWindowWidth: CGFloat = 560
     public static let maximumWindowHeight: CGFloat = 720
 }
 

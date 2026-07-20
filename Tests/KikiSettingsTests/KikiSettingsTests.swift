@@ -32,7 +32,7 @@ struct KikiSettingsTests {
     func settingsDefaultsAllowPaneAdaptation() {
         #expect(KikiSettingsDefaults.windowHeight > KikiSettingsDefaults.minimumWindowHeight)
         #expect(KikiSettingsDefaults.maximumWindowHeight > KikiSettingsDefaults.windowHeight)
-        #expect(KikiSettingsDefaults.minimumWindowWidth == KikiSettingsDefaults.windowWidth)
+        #expect(KikiSettingsDefaults.minimumWindowWidth < KikiSettingsDefaults.windowWidth)
         #expect(KikiSettingsDefaults.maximumWindowWidth > KikiSettingsDefaults.windowWidth)
     }
 
