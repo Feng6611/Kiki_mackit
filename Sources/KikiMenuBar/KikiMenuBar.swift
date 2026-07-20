@@ -157,6 +157,8 @@ public enum KikiMenuBuilder {
             keyEquivalent: shortcut?.key ?? ""
         )
         item.target = target
+        // NSMenuItem only weakly references its target; representedObject
+        // keeps the KikiMenuActionTarget alive for the menu's lifetime.
         item.representedObject = target
         item.keyEquivalentModifierMask = shortcut?.modifiers ?? []
         item.isEnabled = isEnabled
@@ -392,6 +394,9 @@ private final class KikiMenuActionTarget: NSObject {
 private extension NSStatusItem {
     func kikiShowMenu(_ menu: NSMenu) {
         let originalMenu = self.menu
+        // Restoring via defer relies on performClick(nil) presenting the menu
+        // synchronously. If this ever moves to an asynchronous presentation
+        // (e.g. popUpMenu), restore from menuDidClose instead.
         defer {
             self.menu = originalMenu
         }

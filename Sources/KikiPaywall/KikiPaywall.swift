@@ -116,45 +116,19 @@ public struct KikiPaywallHeaderConfig {
     }
 }
 
+/// Two configs with the same `value` and `label` derive the same `id` and
+/// are treated as one element by `ForEach`. Pass an explicit `id` when the
+/// same stat must appear more than once.
 public struct KikiPaywallStatConfig: Identifiable, Equatable {
-    public let id: UUID
+    public let id: String
     public let value: String
     public let label: String
 
-    public init(id: UUID? = nil, value: String, label: String) {
-        self.id = id ?? kikiPaywallStableUUID(for: "\(value)\u{1F}\(label)")
+    public init(id: String? = nil, value: String, label: String) {
+        self.id = id ?? "\(value)\u{1F}\(label)"
         self.value = value
         self.label = label
     }
-}
-
-private func kikiPaywallStableUUID(for value: String) -> UUID {
-    var high: UInt64 = 0xcbf29ce484222325
-    var low: UInt64 = 0x84222325cbf29ce4
-
-    for byte in value.utf8 {
-        high = (high ^ UInt64(byte)) &* 0x100000001b3
-        low = (low ^ UInt64(byte)) &* 0x9e3779b185ebca87
-    }
-
-    return UUID(uuid: (
-        UInt8(truncatingIfNeeded: high >> 56),
-        UInt8(truncatingIfNeeded: high >> 48),
-        UInt8(truncatingIfNeeded: high >> 40),
-        UInt8(truncatingIfNeeded: high >> 32),
-        UInt8(truncatingIfNeeded: high >> 24),
-        UInt8(truncatingIfNeeded: high >> 16),
-        UInt8(truncatingIfNeeded: high >> 8),
-        UInt8(truncatingIfNeeded: high),
-        UInt8(truncatingIfNeeded: low >> 56),
-        UInt8(truncatingIfNeeded: low >> 48),
-        UInt8(truncatingIfNeeded: low >> 40),
-        UInt8(truncatingIfNeeded: low >> 32),
-        UInt8(truncatingIfNeeded: low >> 24),
-        UInt8(truncatingIfNeeded: low >> 16),
-        UInt8(truncatingIfNeeded: low >> 8),
-        UInt8(truncatingIfNeeded: low)
-    ))
 }
 
 public struct KikiPaywallActionConfig: Identifiable {
@@ -205,66 +179,6 @@ public struct KikiPaywallSheet<Footer: View>: View {
     private let showsCloseButton: Bool
     private let onClose: (() -> Void)?
     private let footer: Footer
-
-    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation; this compatibility initializer will be removed in Kiki 0.9.0")
-    public init(
-        header: KikiPaywallHeaderConfig,
-        stats: [KikiPaywallStatConfig] = [],
-        features: [String] = [],
-        plans: [KikiPaywallPlan],
-        selectedPlanID: Binding<String>,
-        primary: KikiPaywallActionConfig,
-        secondary: KikiPaywallActionConfig? = nil,
-        tint: Color = .accentColor,
-        showsCloseButton: Bool = false,
-        onClose: (() -> Void)? = nil,
-        @ViewBuilder footer: () -> Footer
-    ) {
-        self.init(
-            header: header,
-            stats: stats,
-            features: features,
-            plans: plans,
-            selectedPlanID: selectedPlanID,
-            primary: primary,
-            secondary: secondary,
-            tint: tint,
-            size: .compact,
-            showsCloseButton: showsCloseButton,
-            onClose: onClose,
-            footer: footer
-        )
-    }
-
-    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation; this compatibility initializer will be removed in Kiki 0.9.0")
-    public init(
-        header: KikiPaywallHeaderConfig,
-        stats: [KikiPaywallStatConfig] = [],
-        features: [String] = [],
-        plans: [KikiPaywallPlan],
-        selectedPlanID: Binding<String>,
-        primary: KikiPaywallActionConfig,
-        secondaryActions: [KikiPaywallActionConfig],
-        tint: Color = .accentColor,
-        showsCloseButton: Bool = false,
-        onClose: (() -> Void)? = nil,
-        @ViewBuilder footer: () -> Footer
-    ) {
-        self.init(
-            header: header,
-            stats: stats,
-            features: features,
-            plans: plans,
-            selectedPlanID: selectedPlanID,
-            primary: primary,
-            secondaryActions: secondaryActions,
-            tint: tint,
-            size: .compact,
-            showsCloseButton: showsCloseButton,
-            onClose: onClose,
-            footer: footer
-        )
-    }
 
     public init(
         header: KikiPaywallHeaderConfig,
@@ -376,7 +290,6 @@ public struct KikiPaywallSheet<Footer: View>: View {
                     KikiPaywallActionLabel(
                         title: primary.title,
                         isLoading: primary.isLoading,
-                        isProminent: true,
                         tint: tint
                     )
                 }
@@ -384,7 +297,6 @@ public struct KikiPaywallSheet<Footer: View>: View {
                 .controlSize(.large)
                 .tint(tint)
                 .disabled(!primary.isEnabled)
-                .opacity(primary.isEnabled ? 1 : 0.45)
                 .keyboardShortcut(.defaultAction)
 
                 ForEach(secondaryActions) { secondary in
@@ -394,14 +306,12 @@ public struct KikiPaywallSheet<Footer: View>: View {
                         KikiPaywallActionLabel(
                             title: secondary.title,
                             isLoading: secondary.isLoading,
-                            isProminent: false,
                             tint: tint
                         )
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.large)
                     .disabled(!secondary.isEnabled)
-                    .opacity(secondary.isEnabled ? 1 : 0.45)
                 }
             }
         } footer: {
@@ -411,64 +321,6 @@ public struct KikiPaywallSheet<Footer: View>: View {
 }
 
 public extension KikiPaywallSheet where Footer == EmptyView {
-    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation; this compatibility initializer will be removed in Kiki 0.9.0")
-    init(
-        header: KikiPaywallHeaderConfig,
-        stats: [KikiPaywallStatConfig] = [],
-        features: [String] = [],
-        plans: [KikiPaywallPlan],
-        selectedPlanID: Binding<String>,
-        primary: KikiPaywallActionConfig,
-        secondary: KikiPaywallActionConfig? = nil,
-        tint: Color = .accentColor,
-        showsCloseButton: Bool = false,
-        onClose: (() -> Void)? = nil
-    ) {
-        self.init(
-            header: header,
-            stats: stats,
-            features: features,
-            plans: plans,
-            selectedPlanID: selectedPlanID,
-            primary: primary,
-            secondary: secondary,
-            tint: tint,
-            size: .compact,
-            showsCloseButton: showsCloseButton,
-            onClose: onClose,
-            footer: { EmptyView() }
-        )
-    }
-
-    @available(*, deprecated, message: "Use size: when selecting compact or onboarding presentation; this compatibility initializer will be removed in Kiki 0.9.0")
-    init(
-        header: KikiPaywallHeaderConfig,
-        stats: [KikiPaywallStatConfig] = [],
-        features: [String] = [],
-        plans: [KikiPaywallPlan],
-        selectedPlanID: Binding<String>,
-        primary: KikiPaywallActionConfig,
-        secondaryActions: [KikiPaywallActionConfig],
-        tint: Color = .accentColor,
-        showsCloseButton: Bool = false,
-        onClose: (() -> Void)? = nil
-    ) {
-        self.init(
-            header: header,
-            stats: stats,
-            features: features,
-            plans: plans,
-            selectedPlanID: selectedPlanID,
-            primary: primary,
-            secondaryActions: secondaryActions,
-            tint: tint,
-            size: .compact,
-            showsCloseButton: showsCloseButton,
-            onClose: onClose,
-            footer: { EmptyView() }
-        )
-    }
-
     init(
         header: KikiPaywallHeaderConfig,
         stats: [KikiPaywallStatConfig] = [],
@@ -665,7 +517,7 @@ public struct KikiPaywallHeader: View {
                 Image(nsImage: icon)
                     .resizable()
                     .frame(width: iconSize, height: iconSize)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.iconLarge, style: .continuous))
                     .shadow(color: .black.opacity(0.10), radius: 10, y: 5)
             }
 
@@ -731,8 +583,8 @@ public struct KikiPaywallStatsCard: View {
         .padding(.horizontal, 16)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(tint.opacity(0.08))
+            RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.panel, style: .continuous)
+                .fill(tint.opacity(KikiDesignTokens.Opacity.mediumFill))
         )
     }
 }
@@ -788,7 +640,7 @@ public struct KikiPaywallPlanCard: View {
                         .foregroundStyle(tint)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
-                        .background(Capsule().fill(tint.opacity(0.14)))
+                        .background(Capsule().fill(tint.opacity(KikiDesignTokens.Opacity.strongFill)))
                 }
 
                 Text(plan.title)
@@ -815,20 +667,20 @@ public struct KikiPaywallPlanCard: View {
             .padding(.vertical, 12)
             .padding(.horizontal, 8)
             .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isSelected ? tint.opacity(0.06) : Color(nsColor: .controlBackgroundColor))
+                RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.card, style: .continuous)
+                    .fill(isSelected ? tint.opacity(KikiDesignTokens.Opacity.subtleFill) : Color(nsColor: .controlBackgroundColor))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.card, style: .continuous)
                     .strokeBorder(
-                        isSelected ? tint : Color(nsColor: .separatorColor).opacity(0.4),
+                        isSelected ? tint : Color(nsColor: .separatorColor).opacity(KikiDesignTokens.Separator.mutedOpacity),
                         lineWidth: isSelected ? 1.5 : 0.5
                     )
             )
         }
         .buttonStyle(.plain)
         .disabled(!plan.isAvailable)
-        .opacity(plan.isAvailable ? 1 : 0.45)
+        .opacity(plan.isAvailable ? 1 : KikiDesignTokens.Opacity.disabledContent)
         .animation(.easeInOut(duration: 0.15), value: isSelected)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(plan.title), \(plan.displayPrice), \(plan.billingDetail)")
@@ -840,17 +692,16 @@ public struct KikiPaywallPlanCard: View {
 public struct KikiPaywallActionLabel: View {
     private let title: String
     private let isLoading: Bool
+    private let tint: Color
 
     public init(
         title: String,
         isLoading: Bool,
-        isProminent: Bool,
         tint: Color = .accentColor
     ) {
         self.title = title
         self.isLoading = isLoading
-        _ = isProminent
-        _ = tint
+        self.tint = tint
     }
 
     public var body: some View {
@@ -858,6 +709,7 @@ public struct KikiPaywallActionLabel: View {
             if isLoading {
                 ProgressView()
                     .controlSize(.small)
+                    .tint(tint)
             }
 
             Text(title)
@@ -886,7 +738,7 @@ public struct KikiPaywallIconBadge: View {
     public init(
         systemName: String,
         iconColor: Color = .accentColor,
-        backgroundColor: Color = .accentColor.opacity(0.14),
+        backgroundColor: Color = .accentColor.opacity(KikiDesignTokens.Opacity.strongFill),
         size: CGFloat = 46,
         iconScale: CGFloat = 0.42
     ) {
@@ -943,9 +795,9 @@ public struct KikiPaywallPill: View {
     private var backgroundColor: Color {
         switch tone {
         case .accent:
-            return tint.opacity(0.14)
+            return tint.opacity(KikiDesignTokens.Opacity.strongFill)
         case .neutral, .warning, .success, .danger:
-            return color.opacity(0.12)
+            return color.opacity(KikiDesignTokens.Opacity.badgeFill)
         }
     }
 
@@ -1063,7 +915,7 @@ public struct KikiPaywallStatusHeader<Accessory: View>: View {
         subtitle: String,
         systemName: String,
         iconColor: Color = .accentColor,
-        backgroundColor: Color = .accentColor.opacity(0.14),
+        backgroundColor: Color = .accentColor.opacity(KikiDesignTokens.Opacity.strongFill),
         iconSize: CGFloat = 46,
         @ViewBuilder accessory: () -> Accessory
     ) {
@@ -1110,7 +962,7 @@ public extension KikiPaywallStatusHeader where Accessory == EmptyView {
         subtitle: String,
         systemName: String,
         iconColor: Color = .accentColor,
-        backgroundColor: Color = .accentColor.opacity(0.14),
+        backgroundColor: Color = .accentColor.opacity(KikiDesignTokens.Opacity.strongFill),
         iconSize: CGFloat = 46
     ) {
         self.init(
@@ -1194,17 +1046,17 @@ public struct KikiPaywallPlanRow: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isSelected ? tint.opacity(0.06) : Color(nsColor: .controlBackgroundColor))
+                RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.card, style: .continuous)
+                    .fill(isSelected ? tint.opacity(KikiDesignTokens.Opacity.subtleFill) : Color(nsColor: .controlBackgroundColor))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.card, style: .continuous)
                     .strokeBorder(
-                        isSelected ? tint.opacity(0.50) : Color(nsColor: .separatorColor).opacity(0.45),
+                        isSelected ? tint.opacity(KikiDesignTokens.Opacity.selectedStrokeOpacity) : Color(nsColor: .separatorColor).opacity(KikiDesignTokens.Separator.mutedOpacity),
                         lineWidth: isSelected ? 1.25 : 0.75
                     )
             )
-            .opacity(plan.isAvailable ? 1 : 0.52)
+            .opacity(plan.isAvailable ? 1 : KikiDesignTokens.Opacity.disabledContent)
         }
         .buttonStyle(.plain)
         .disabled(!plan.isAvailable || isDisabled)
@@ -1230,7 +1082,7 @@ public struct KikiPaywallPlanRow: View {
 
 public extension View {
     func kikiPaywallCard(
-        cornerRadius: CGFloat = 14,
+        cornerRadius: CGFloat = KikiDesignTokens.CornerRadius.elevatedCard,
         shadowColor: Color = .black.opacity(0.05),
         shadowRadius: CGFloat = 18,
         shadowY: CGFloat = 8
@@ -1241,7 +1093,7 @@ public extension View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .strokeBorder(Color(nsColor: .separatorColor).opacity(0.35), lineWidth: 0.75)
+                .strokeBorder(Color(nsColor: .separatorColor).opacity(KikiDesignTokens.Separator.mutedOpacity), lineWidth: 0.75)
         )
         .shadow(color: shadowColor, radius: shadowRadius, y: shadowY)
     }

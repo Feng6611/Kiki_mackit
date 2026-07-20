@@ -15,7 +15,12 @@ public struct KikiOnboardingRowsContent: View {
         permissionRow: KikiOnboardingPermissionRow? = nil,
         tint: Color = .accentColor
     ) {
-        self.rows = Array(rows.prefix(3))
+        if rows.count > KikiOnboardingDefaults.maxRowsPerStep {
+            assertionFailure(
+                "KikiOnboardingRowsContent renders at most \(KikiOnboardingDefaults.maxRowsPerStep) rows; got \(rows.count). Extra rows are dropped."
+            )
+        }
+        self.rows = Array(rows.prefix(KikiOnboardingDefaults.maxRowsPerStep))
         self.permissionRow = permissionRow
         self.tint = tint
     }
@@ -130,7 +135,7 @@ public struct KikiOnboardingScaffold<Content: View>: View {
             ZStack {
                 KikiMaterialSurface(in: Rectangle(), material: .regularMaterial, tint: tint, tintOpacity: 0.02)
                 RadialGradient(
-                    colors: [tint.opacity(0.08), .clear],
+                    colors: [tint.opacity(KikiDesignTokens.Opacity.mediumFill), .clear],
                     center: .top,
                     startRadius: 0,
                     endRadius: 280
@@ -224,7 +229,7 @@ public struct KikiOnboardingScaffold<Content: View>: View {
                 .resizable()
                 .interpolation(.high)
                 .frame(width: 88, height: 88)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.heroIcon, style: .continuous))
                 .shadow(color: .black.opacity(0.12), radius: 12, y: 6)
         } else {
             Image(systemName: iconSystemName)
@@ -232,8 +237,8 @@ public struct KikiOnboardingScaffold<Content: View>: View {
                 .foregroundStyle(tint)
                 .frame(width: 68, height: 68)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(tint.opacity(0.14))
+                    RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.iconLarge, style: .continuous)
+                        .fill(tint.opacity(KikiDesignTokens.Opacity.strongFill))
                 )
         }
     }

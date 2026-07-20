@@ -2,6 +2,37 @@
 
 ## Unreleased
 
+### Removed
+
+- The four size-less `KikiPaywallSheet` compatibility initializers scheduled
+  for removal in 0.9.0; pass `size:` instead. The downstream app matrix no
+  longer calls them.
+- `KikiDesignColor.brandAccent`, `brand_accent`, and `system_accent` aliases
+  scheduled for removal in 0.9.0; use `proAccent` and `systemAccent`.
+- `KikiPaywallActionLabel`'s `isProminent` parameter, which was accepted but
+  never applied.
+
+### Changed
+
+- `KikiPaywallStatConfig.id` is now a `String` derived from `value` + `label`
+  (pass `id:` to override), replacing the hand-rolled FNV UUID derivation.
+- Opacity and corner-radius values for custom chrome (plan cards, stats
+  panels, pills, badges, hero surfaces, permission rows) now come from
+  `KikiDesignTokens` instead of per-component literals. Selected-card tint
+  stroke is unified at 50% and muted separator strokes at 40%.
+- `KikiSettingsStatusRow` collapses its two initializers into one with
+  `tint: Color = .accentColor`.
+
+### Fixed
+
+- `KikiPaywallActionLabel`'s loading spinner now tints with the passed
+  `tint` instead of the system default accent.
+- Paywall primary/secondary buttons no longer apply a manual disabled
+  opacity on top of the native bordered disabled treatment.
+- `KikiOnboardingRowsContent` asserts in debug when more than
+  `KikiOnboardingDefaults.maxRowsPerStep` (3) rows are passed, instead of
+  silently dropping them.
+
 ## 0.8.2 - 2026-07-19
 
 ### Fixed

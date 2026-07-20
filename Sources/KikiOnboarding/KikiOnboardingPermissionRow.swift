@@ -44,7 +44,7 @@ public struct KikiOnboardingPermissionRow: View {
                             .padding(.vertical, 3)
                             .background(
                                 Capsule()
-                                    .fill((panel.isAuthorized ? Color(nsColor: .systemGreen) : .orange).opacity(0.12))
+                                    .fill((panel.isAuthorized ? Color(nsColor: .systemGreen) : .orange).opacity(KikiDesignTokens.Opacity.badgeFill))
                             )
                     }
 
@@ -62,7 +62,7 @@ public struct KikiOnboardingPermissionRow: View {
             }
             .padding(14)
             .background {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.panel, style: .continuous)
                     .fill(Color(nsColor: .controlBackgroundColor))
             }
         }

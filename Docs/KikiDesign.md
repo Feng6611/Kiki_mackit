@@ -10,6 +10,9 @@ popovers, Paywall, sheets, and standalone windows.
 - `KikiDesignColor.systemAccent`: the current macOS system accent color from
   `NSColor.controlAccentColor`.
 - `KikiSurfaceDefaults`: stable default corner radius and tint opacity.
+- `KikiDesignTokens`: shared opacity, corner-radius, and separator tokens for
+  custom chrome (cards, badges, hero surfaces) that system controls don't
+  cover. Features should use these instead of per-component magic numbers.
 - `KikiMaterialSurface`: reusable material plus tint background.
 - `View.kikiAdaptiveGlass(in:)`: Liquid Glass on macOS 26+, `.ultraThinMaterial`
   fallback on older systems.
@@ -28,5 +31,4 @@ copy, state, purchase logic, settings tabs, menu content, or window lifecycle.
 Use `proAccent` for Kiki's default positive access treatment. Use
 `systemAccent` when the UI should respect the user's macOS accent color.
 The Pro token is an opt-in visual default, not access policy: apps still own
-what Pro means and may pass an explicit tint. `brandAccent` and the snake-case
-aliases are deprecated and scheduled for removal in `0.9.0`.
+what Pro means and may pass an explicit tint.

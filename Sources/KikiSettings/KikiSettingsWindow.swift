@@ -67,6 +67,10 @@ extension NSWindow: KikiSettingsWindowManaging {
     }
 }
 
+// Best-effort parse of AppKit's private "NSWindow Frame <name>" UserDefaults
+// format, used only to decide whether the autosaved frame exceeds the maximum
+// before setFrameUsingName restores it. Not an authoritative API: parse
+// failure degrades to nil, which skips the reset rather than forcing one.
 private func kikiSavedWindowFrameSize(
     for autosaveName: NSWindow.FrameAutosaveName,
     defaults: UserDefaults = .standard
@@ -227,6 +231,9 @@ public final class KikiSettingsOpener {
             return true
         }
 
+        // Best-effort English fallback for non-SwiftUI menus whose Settings
+        // item uses a custom action selector. Localized menus are expected to
+        // match via the selector or key equivalent above.
         let normalizedTitle = item.title
             .replacingOccurrences(of: "…", with: "...")
             .trimmingCharacters(in: .whitespacesAndNewlines)

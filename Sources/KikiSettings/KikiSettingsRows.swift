@@ -25,7 +25,7 @@ public enum KikiSettingsStatusTone: Equatable, Sendable {
     }
 
     var backgroundStyle: Color {
-        foregroundStyle.opacity(0.12)
+        foregroundStyle.opacity(KikiDesignTokens.Opacity.badgeFill)
     }
 
     var usesBadge: Bool {
@@ -56,30 +56,7 @@ public struct KikiSettingsStatusRow: View {
         systemImage: String? = nil,
         valueSystemImage: String? = nil,
         tone: KikiSettingsStatusTone = .neutral,
-        valueColor: Color? = nil,
-        showsBadge: Bool? = nil,
-        trailingSystemImage: String? = nil,
-        action: (() -> Void)? = nil
-    ) {
-        self.title = title
-        self.value = value
-        self.systemImage = systemImage
-        self.valueSystemImage = valueSystemImage
-        self.tone = tone
-        self.tint = .accentColor
-        self.valueColor = valueColor
-        self.showsBadge = showsBadge
-        self.trailingSystemImage = trailingSystemImage
-        self.action = action
-    }
-
-    public init(
-        title: String,
-        value: String,
-        systemImage: String? = nil,
-        valueSystemImage: String? = nil,
-        tone: KikiSettingsStatusTone = .neutral,
-        tint: Color,
+        tint: Color = .accentColor,
         valueColor: Color? = nil,
         showsBadge: Bool? = nil,
         trailingSystemImage: String? = nil,
@@ -133,7 +110,7 @@ public struct KikiSettingsStatusRow: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(
-                    Capsule().fill(resolvedForeground.opacity(0.12))
+                    Capsule().fill(resolvedForeground.opacity(KikiDesignTokens.Opacity.badgeFill))
                 )
         } else {
             statusLabel

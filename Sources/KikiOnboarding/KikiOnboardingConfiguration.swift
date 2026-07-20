@@ -5,6 +5,10 @@ public enum KikiOnboardingDefaults {
     /// Matches the focused primary action used by the Command Reopen
     /// onboarding instead of stretching a lone action across the window.
     public static let primaryActionWidth: CGFloat = 200
+    /// Hard cap on feature rows rendered by `KikiOnboardingRowsContent` —
+    /// not an overridable default. Rows beyond this cap are dropped (with a
+    /// debug assertion); pass at most this many.
+    public static let maxRowsPerStep = 3
 }
 
 public enum KikiOnboardingCloseDisposition: Equatable, Sendable {

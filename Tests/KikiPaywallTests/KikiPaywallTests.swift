@@ -31,12 +31,12 @@ struct KikiPaywallTests {
     func paywallStatsUseStableIdentity() {
         let first = KikiPaywallStatConfig(value: "3", label: "kits")
         let second = KikiPaywallStatConfig(value: "3", label: "kits")
-        let explicitID = UUID(uuidString: "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE")!
-        let explicit = KikiPaywallStatConfig(id: explicitID, value: "3", label: "kits")
+        let explicit = KikiPaywallStatConfig(id: "custom", value: "3", label: "kits")
 
         #expect(first == second)
         #expect(first.id == second.id)
-        #expect(explicit.id == explicitID)
+        #expect(explicit.id == "custom")
+        #expect(explicit != first)
     }
 
     @MainActor
@@ -52,8 +52,7 @@ struct KikiPaywallTests {
         } actions: {
             KikiPaywallActionLabel(
                 title: "Unlock",
-                isLoading: false,
-                isProminent: true
+                isLoading: false
             )
         } footer: {
             Text("Terms")

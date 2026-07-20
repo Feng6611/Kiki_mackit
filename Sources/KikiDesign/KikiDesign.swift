@@ -13,17 +13,6 @@ public enum KikiDesignColor {
     public static var systemAccent: Color {
         Color(nsColor: .controlAccentColor)
     }
-
-    @available(*, deprecated, renamed: "proAccent")
-    public static let brandAccent = proAccent
-
-    @available(*, deprecated, renamed: "proAccent")
-    public static let brand_accent = proAccent
-
-    @available(*, deprecated, renamed: "systemAccent")
-    public static var system_accent: Color {
-        systemAccent
-    }
 }
 
 /// Resolves the icon emitted into the host app bundle before falling back to
