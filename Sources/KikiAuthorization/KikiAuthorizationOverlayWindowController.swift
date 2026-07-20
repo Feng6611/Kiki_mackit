@@ -4,8 +4,8 @@ import QuartzCore
 
 @MainActor
 final class KikiAuthorizationOverlayWindowController: NSWindowController {
-    private static let baseWindowSize = NSSize(width: 440, height: 138)
-    private static let trustNoteAdditionalHeight: CGFloat = 26
+    private static let baseWindowSize = NSSize(width: 380, height: 132)
+    private static let trustNoteAdditionalHeight: CGFloat = 22
 
     private let windowSize: NSSize
 
@@ -14,7 +14,7 @@ final class KikiAuthorizationOverlayWindowController: NSWindowController {
         panel: KikiAuthorizationPanel,
         instruction: String?,
         trustNote: String?,
-        onDismiss: @escaping () -> Void
+        tint: NSColor
     ) {
         let size: NSSize
         if trustNote?.isEmpty == false {
@@ -42,7 +42,7 @@ final class KikiAuthorizationOverlayWindowController: NSWindowController {
             panel: panel,
             instruction: instruction,
             trustNote: trustNote,
-            onDismiss: onDismiss
+            tint: tint
         )
     }
 

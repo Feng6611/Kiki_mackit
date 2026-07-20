@@ -1,21 +1,34 @@
 import AppKit
 import Foundation
+import QuartzCore
 
 @MainActor
-final class KikiAuthorizationOverlayView: NSView {
-    private let onDismiss: () -> Void
+final class KikiAuthorizationOverlayView: NSView, NSPasteboardItemDataProvider, NSDraggingSource {
+    private let hostApp: KikiAuthorizationHostApp
+    private let bundleURLData: Data
+    private let tint: NSColor
+    private var chipView: KikiAuthorizationAppDragSourceView?
+    private var trackingArea: NSTrackingArea?
 
     init(
         hostApp: KikiAuthorizationHostApp,
         panel: KikiAuthorizationPanel,
         instruction: String?,
         trustNote: String?,
-        onDismiss: @escaping () -> Void
+        tint: NSColor
     ) {
-        self.onDismiss = onDismiss
-        super.init(frame: NSRect(x: 0, y: 0, width: 440, height: 138))
+        self.hostApp = hostApp
+        self.bundleURLData = hostApp.bundleURL.dataRepresentation
+        self.tint = tint
+        super.init(frame: NSRect(x: 0, y: 0, width: 380, height: 132))
         autoresizingMask = [.width, .height]
-        buildView(hostApp: hostApp, panel: panel, instruction: instruction, trustNote: trustNote)
+        buildView(
+            hostApp: hostApp,
+            panel: panel,
+            instruction: instruction,
+            trustNote: trustNote,
+            tint: tint
+        )
     }
 
     @available(*, unavailable)
@@ -27,7 +40,8 @@ final class KikiAuthorizationOverlayView: NSView {
         hostApp: KikiAuthorizationHostApp,
         panel: KikiAuthorizationPanel,
         instruction: String?,
-        trustNote: String?
+        trustNote: String?,
+        tint: NSColor
     ) {
         let materialView = NSVisualEffectView()
         materialView.translatesAutoresizingMaskIntoConstraints = false
@@ -35,53 +49,92 @@ final class KikiAuthorizationOverlayView: NSView {
         materialView.blendingMode = .behindWindow
         materialView.state = .active
         materialView.wantsLayer = true
-        materialView.layer?.cornerRadius = 18
+        materialView.layer?.cornerRadius = 12
         materialView.layer?.masksToBounds = true
-        materialView.layer?.borderWidth = 0.5
-        materialView.layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.18).cgColor
+        // No border: NSPanel's own drop shadow (window.hasShadow = true)
+        // grounds the popover. A visible border here read as a dark ring
+        // against the material — the previous separatorColor.35 was picking
+        // up a "dirty" edge in both light and dark appearances.
         addSubview(materialView)
 
-        let closeButton = NSButton()
-        closeButton.translatesAutoresizingMaskIntoConstraints = false
-        closeButton.isBordered = false
-        closeButton.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: "Close")
-        closeButton.symbolConfiguration = .init(pointSize: 13, weight: .semibold)
-        closeButton.contentTintColor = .tertiaryLabelColor
-        closeButton.target = self
-        closeButton.action = #selector(dismissPressed)
-        materialView.addSubview(closeButton)
+        // Radial tint wash at the top gives the popover a subtle "glow from
+        // the accent color" feel without adding a full colored surface. Same
+        // pattern used in KikiPaywallShell so Kiki chrome shares one visual
+        // vocabulary across features.
+        let tintGlowLayer = CAGradientLayer()
+        tintGlowLayer.type = .radial
+        tintGlowLayer.colors = [
+            tint.withAlphaComponent(0.10).cgColor,
+            tint.withAlphaComponent(0.0).cgColor,
+        ]
+        tintGlowLayer.locations = [0.0, 1.0]
+        tintGlowLayer.startPoint = CGPoint(x: 0.5, y: 1.0)
+        tintGlowLayer.endPoint = CGPoint(x: 1.05, y: 0.0)
+        let glowHost = NSView()
+        glowHost.translatesAutoresizingMaskIntoConstraints = false
+        glowHost.wantsLayer = true
+        glowHost.layer?.addSublayer(tintGlowLayer)
+        glowHost.layer?.masksToBounds = true
+        materialView.addSubview(glowHost)
 
-        let symbolBackground = NSView()
-        symbolBackground.translatesAutoresizingMaskIntoConstraints = false
-        symbolBackground.wantsLayer = true
-        symbolBackground.layer?.cornerRadius = 9
-        symbolBackground.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.14).cgColor
-        materialView.addSubview(symbolBackground)
+        // Track the glow layer to match host bounds on layout.
+        let glowTrackingCoordinator = KikiOverlayGlowLayoutBridge(
+            host: glowHost,
+            layer: tintGlowLayer
+        )
+        objc_setAssociatedObject(
+            glowHost,
+            &Self.glowBridgeKey,
+            glowTrackingCoordinator,
+            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
+        )
 
-        let symbolView = NSImageView()
-        symbolView.translatesAutoresizingMaskIntoConstraints = false
-        symbolView.image = NSImage(systemSymbolName: panel.systemImage, accessibilityDescription: panel.title)
-        symbolView.symbolConfiguration = .init(pointSize: 17, weight: .medium)
-        symbolView.contentTintColor = .controlAccentColor
-        symbolBackground.addSubview(symbolView)
+        // Small upward chevron in the tint color communicates "the setting
+        // you want is above this overlay" and threads the accent color
+        // through the top of the chrome. Not a full NSPopover attachment
+        // (which would require walking System Settings' AX tree to find
+        // the list-header rect — brittle across macOS versions).
+        let directionIndicator = NSImageView()
+        directionIndicator.translatesAutoresizingMaskIntoConstraints = false
+        directionIndicator.image = NSImage(systemSymbolName: "chevron.up", accessibilityDescription: nil)
+        directionIndicator.symbolConfiguration = .init(pointSize: 10, weight: .semibold)
+        directionIndicator.contentTintColor = tint.withAlphaComponent(0.65)
+        materialView.addSubview(directionIndicator)
+
+        // Small tinted disc behind the permission icon — one color moment
+        // that tells users which permission this overlay is about without
+        // dominating the layout the way the previous 34pt block did.
+        let iconDisc = NSView()
+        iconDisc.translatesAutoresizingMaskIntoConstraints = false
+        iconDisc.wantsLayer = true
+        iconDisc.layer?.cornerRadius = 11
+        iconDisc.layer?.backgroundColor = tint.withAlphaComponent(0.14).cgColor
+        materialView.addSubview(iconDisc)
+
+        let iconGlyph = NSImageView()
+        iconGlyph.translatesAutoresizingMaskIntoConstraints = false
+        iconGlyph.image = NSImage(systemSymbolName: panel.systemImage, accessibilityDescription: panel.title)
+        iconGlyph.symbolConfiguration = .init(pointSize: 12, weight: .semibold)
+        iconGlyph.contentTintColor = tint
+        iconDisc.addSubview(iconGlyph)
 
         let headingLabel = NSTextField(labelWithString: "Allow \(panel.title)")
         headingLabel.translatesAutoresizingMaskIntoConstraints = false
-        headingLabel.font = .systemFont(ofSize: 14, weight: .semibold)
+        headingLabel.font = .systemFont(ofSize: 13, weight: .semibold)
         headingLabel.textColor = .labelColor
         materialView.addSubview(headingLabel)
 
-        let titleLabel = NSTextField(labelWithString: instructionText(
+        let bodyLabel = NSTextField(labelWithString: instructionText(
             hostApp: hostApp,
             panel: panel,
             override: instruction
         ))
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = .systemFont(ofSize: 12.5, weight: .regular)
-        titleLabel.textColor = .secondaryLabelColor
-        titleLabel.lineBreakMode = .byWordWrapping
-        titleLabel.maximumNumberOfLines = 2
-        materialView.addSubview(titleLabel)
+        bodyLabel.translatesAutoresizingMaskIntoConstraints = false
+        bodyLabel.font = .systemFont(ofSize: 12, weight: .regular)
+        bodyLabel.textColor = .secondaryLabelColor
+        bodyLabel.lineBreakMode = .byWordWrapping
+        bodyLabel.maximumNumberOfLines = 2
+        materialView.addSubview(bodyLabel)
 
         let trustNoteLabel: NSTextField?
         if let trustNote, trustNote.isEmpty == false {
@@ -97,8 +150,9 @@ final class KikiAuthorizationOverlayView: NSView {
             trustNoteLabel = nil
         }
 
-        let dragSource = KikiAuthorizationAppDragSourceView(hostApp: hostApp)
+        let dragSource = KikiAuthorizationAppDragSourceView(hostApp: hostApp, tint: tint)
         materialView.addSubview(dragSource)
+        chipView = dragSource
 
         var constraints: [NSLayoutConstraint] = [
             materialView.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -106,40 +160,43 @@ final class KikiAuthorizationOverlayView: NSView {
             materialView.topAnchor.constraint(equalTo: topAnchor),
             materialView.bottomAnchor.constraint(equalTo: bottomAnchor),
 
-            closeButton.trailingAnchor.constraint(equalTo: materialView.trailingAnchor, constant: -10),
-            closeButton.topAnchor.constraint(equalTo: materialView.topAnchor, constant: 10),
-            closeButton.widthAnchor.constraint(equalToConstant: 20),
-            closeButton.heightAnchor.constraint(equalToConstant: 20),
+            glowHost.leadingAnchor.constraint(equalTo: materialView.leadingAnchor),
+            glowHost.trailingAnchor.constraint(equalTo: materialView.trailingAnchor),
+            glowHost.topAnchor.constraint(equalTo: materialView.topAnchor),
+            glowHost.bottomAnchor.constraint(equalTo: materialView.bottomAnchor),
 
-            symbolBackground.leadingAnchor.constraint(equalTo: materialView.leadingAnchor, constant: 16),
-            symbolBackground.topAnchor.constraint(equalTo: materialView.topAnchor, constant: 15),
-            symbolBackground.widthAnchor.constraint(equalToConstant: 34),
-            symbolBackground.heightAnchor.constraint(equalToConstant: 34),
+            directionIndicator.centerXAnchor.constraint(equalTo: materialView.centerXAnchor),
+            directionIndicator.topAnchor.constraint(equalTo: materialView.topAnchor, constant: 6),
 
-            symbolView.centerXAnchor.constraint(equalTo: symbolBackground.centerXAnchor),
-            symbolView.centerYAnchor.constraint(equalTo: symbolBackground.centerYAnchor),
-            symbolView.widthAnchor.constraint(equalToConstant: 20),
-            symbolView.heightAnchor.constraint(equalToConstant: 20),
+            iconDisc.leadingAnchor.constraint(equalTo: materialView.leadingAnchor, constant: 14),
+            iconDisc.centerYAnchor.constraint(equalTo: headingLabel.centerYAnchor),
+            iconDisc.widthAnchor.constraint(equalToConstant: 22),
+            iconDisc.heightAnchor.constraint(equalToConstant: 22),
 
-            headingLabel.leadingAnchor.constraint(equalTo: symbolBackground.trailingAnchor, constant: 11),
-            headingLabel.topAnchor.constraint(equalTo: materialView.topAnchor, constant: 14),
-            headingLabel.trailingAnchor.constraint(lessThanOrEqualTo: closeButton.leadingAnchor, constant: -8),
+            iconGlyph.centerXAnchor.constraint(equalTo: iconDisc.centerXAnchor),
+            iconGlyph.centerYAnchor.constraint(equalTo: iconDisc.centerYAnchor),
+            iconGlyph.widthAnchor.constraint(equalToConstant: 14),
+            iconGlyph.heightAnchor.constraint(equalToConstant: 14),
 
-            titleLabel.leadingAnchor.constraint(equalTo: headingLabel.leadingAnchor),
-            titleLabel.topAnchor.constraint(equalTo: headingLabel.bottomAnchor, constant: 2),
-            titleLabel.trailingAnchor.constraint(equalTo: materialView.trailingAnchor, constant: -34),
+            headingLabel.leadingAnchor.constraint(equalTo: iconDisc.trailingAnchor, constant: 9),
+            headingLabel.topAnchor.constraint(equalTo: materialView.topAnchor, constant: 18),
+            headingLabel.trailingAnchor.constraint(lessThanOrEqualTo: materialView.trailingAnchor, constant: -14),
 
-            dragSource.leadingAnchor.constraint(equalTo: materialView.leadingAnchor, constant: 16),
-            dragSource.trailingAnchor.constraint(equalTo: materialView.trailingAnchor, constant: -16),
-            dragSource.bottomAnchor.constraint(equalTo: materialView.bottomAnchor, constant: -14),
-            dragSource.heightAnchor.constraint(equalToConstant: 48),
+            bodyLabel.leadingAnchor.constraint(equalTo: iconDisc.leadingAnchor),
+            bodyLabel.topAnchor.constraint(equalTo: headingLabel.bottomAnchor, constant: 4),
+            bodyLabel.trailingAnchor.constraint(equalTo: materialView.trailingAnchor, constant: -14),
+
+            dragSource.leadingAnchor.constraint(equalTo: materialView.leadingAnchor, constant: 14),
+            dragSource.trailingAnchor.constraint(equalTo: materialView.trailingAnchor, constant: -14),
+            dragSource.bottomAnchor.constraint(equalTo: materialView.bottomAnchor, constant: -12),
+            dragSource.heightAnchor.constraint(equalToConstant: 40),
         ]
 
         if let trustNoteLabel {
             constraints.append(contentsOf: [
-                trustNoteLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-                trustNoteLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-                trustNoteLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
+                trustNoteLabel.leadingAnchor.constraint(equalTo: bodyLabel.leadingAnchor),
+                trustNoteLabel.topAnchor.constraint(equalTo: bodyLabel.bottomAnchor, constant: 4),
+                trustNoteLabel.trailingAnchor.constraint(equalTo: bodyLabel.trailingAnchor),
             ])
         }
 
@@ -157,7 +214,133 @@ final class KikiAuthorizationOverlayView: NSView {
         override ?? "Turn on \(hostApp.displayName) in the list — drag it in from below if it's not there yet."
     }
 
-    @objc private func dismissPressed() {
-        onDismiss()
+    // MARK: - Whole-overlay drag source
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        true
+    }
+
+    override func resetCursorRects() {
+        super.resetCursorRects()
+        addCursorRect(bounds, cursor: .openHand)
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let trackingArea {
+            removeTrackingArea(trackingArea)
+        }
+        let area = NSTrackingArea(
+            rect: bounds,
+            options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(area)
+        trackingArea = area
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        chipView?.setHovering(true)
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        chipView?.setHovering(false)
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        guard let chipView else {
+            return
+        }
+
+        let pasteboardItem = NSPasteboardItem()
+        pasteboardItem.setDataProvider(self, forTypes: [.fileURL])
+
+        let draggingItem = NSDraggingItem(pasteboardWriter: pasteboardItem)
+        // Preview shows the chip visual because it is what represents the
+        // dragged file (the app bundle URL); the wider hit target is a
+        // convenience so users don't have to aim for a small chip.
+        let previewFrameInSelf = convert(chipView.bounds, from: chipView)
+        draggingItem.setDraggingFrame(previewFrameInSelf, contents: chipView.draggingPreviewImage())
+
+        let session = beginDraggingSession(with: [draggingItem], event: event, source: self)
+        session.animatesToStartingPositionsOnCancelOrFail = true
+    }
+
+    func pasteboard(
+        _ pasteboard: NSPasteboard?,
+        item: NSPasteboardItem,
+        provideDataForType type: NSPasteboard.PasteboardType
+    ) {
+        guard type == .fileURL else {
+            return
+        }
+        item.setData(bundleURLData, forType: .fileURL)
+    }
+
+    func draggingSession(
+        _ session: NSDraggingSession,
+        sourceOperationMaskFor context: NSDraggingContext
+    ) -> NSDragOperation {
+        .copy
+    }
+
+    func draggingSession(_ session: NSDraggingSession, willBeginAt screenPoint: NSPoint) {
+        chipView?.setHiddenDuringDrag(true)
+    }
+
+    func draggingSession(
+        _ session: NSDraggingSession,
+        endedAt screenPoint: NSPoint,
+        operation: NSDragOperation
+    ) {
+        chipView?.setHiddenDuringDrag(false)
+    }
+
+    private static var glowBridgeKey: UInt8 = 0
+}
+
+/// Keeps a CAGradientLayer's frame in sync with its host NSView's bounds.
+/// Constraint-based layout does not resize sublayers automatically, and
+/// resizing the layer inside layout() would require subclassing the host
+/// view — this coordinator observes bounds instead.
+@MainActor
+private final class KikiOverlayGlowLayoutBridge: NSObject {
+    private weak var host: NSView?
+    private weak var layer: CAGradientLayer?
+    private var observation: NSKeyValueObservation?
+
+    init(host: NSView, layer: CAGradientLayer) {
+        self.host = host
+        self.layer = layer
+        super.init()
+        host.postsFrameChangedNotifications = true
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(hostFrameDidChange(_:)),
+            name: NSView.frameDidChangeNotification,
+            object: host
+        )
+        sync()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc nonisolated private func hostFrameDidChange(_ notification: Notification) {
+        Task { @MainActor in
+            self.sync()
+        }
+    }
+
+    private func sync() {
+        guard let host, let layer else {
+            return
+        }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        layer.frame = host.bounds
+        CATransaction.commit()
     }
 }

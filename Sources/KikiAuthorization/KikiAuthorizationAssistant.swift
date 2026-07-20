@@ -16,6 +16,8 @@ public final class KikiAuthorizationAssistant {
     private var observedSettingsProcessID: pid_t?
     private var pendingSourceFrameInScreen: CGRect?
     private var didPresentOverlay = false
+    private var authorizationPollTimer: Timer?
+    private var presentedPanel: KikiAuthorizationPanel?
 
     public init() {}
 
@@ -23,14 +25,16 @@ public final class KikiAuthorizationAssistant {
         panel: KikiAuthorizationPanel,
         sourceFrameInScreen: CGRect? = nil,
         instruction: String? = nil,
-        trustNote: String? = nil
+        trustNote: String? = nil,
+        tint: NSColor = .controlAccentColor
     ) {
         present(
             panel: panel,
             hostApp: .current(),
             sourceFrameInScreen: sourceFrameInScreen,
             instruction: instruction,
-            trustNote: trustNote
+            trustNote: trustNote,
+            tint: tint
         )
     }
 
@@ -39,23 +43,24 @@ public final class KikiAuthorizationAssistant {
         hostApp: KikiAuthorizationHostApp,
         sourceFrameInScreen: CGRect? = nil,
         instruction: String? = nil,
-        trustNote: String? = nil
+        trustNote: String? = nil,
+        tint: NSColor = .controlAccentColor
     ) {
         dismiss()
 
         pendingSourceFrameInScreen = sourceFrameInScreen
+        presentedPanel = panel
         overlayController = KikiAuthorizationOverlayWindowController(
             hostApp: hostApp,
             panel: panel,
             instruction: instruction,
             trustNote: trustNote,
-            onDismiss: { [weak self] in
-                self?.dismiss()
-            }
+            tint: tint
         )
 
         openSettings(for: panel)
         startTrackingSystemSettings()
+        startAuthorizationPolling(panel: panel)
     }
 
     public func openSettings(for panel: KikiAuthorizationPanel) {
@@ -83,11 +88,36 @@ public final class KikiAuthorizationAssistant {
             self.terminateObserver = nil
         }
 
+        stopAuthorizationPolling()
         tearDownAXObserver()
         overlayController?.close()
         overlayController = nil
         pendingSourceFrameInScreen = nil
+        presentedPanel = nil
         didPresentOverlay = false
+    }
+
+    private func startAuthorizationPolling(panel: KikiAuthorizationPanel) {
+        stopAuthorizationPolling()
+        // Poll rather than observe: the accessibility and screen-recording
+        // APIs don't emit a change notification when the user flips their
+        // switch in System Settings. 1s is unobtrusive and matches the
+        // interaction speed of a person clicking a toggle.
+        authorizationPollTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, self.presentedPanel == panel else {
+                    return
+                }
+                if panel.isAuthorized {
+                    self.dismiss()
+                }
+            }
+        }
+    }
+
+    private func stopAuthorizationPolling() {
+        authorizationPollTimer?.invalidate()
+        authorizationPollTimer = nil
     }
 
     private func startTrackingSystemSettings() {
