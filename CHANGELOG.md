@@ -2,43 +2,89 @@
 
 ## Unreleased
 
+## 0.9.0 - 2026-07-20
+
+Focus: paywall CTA hierarchy, Settings sizing that fits menu-bar
+utilities, and an authorization overlay that reads as native macOS
+chrome. Six of the seven commits landed after Cat Lock and Clipboard
+Drop shipped on 0.8.2, driven by design review against those apps.
+
 ### Added
 
 - `KikiPaywallActionStyle` (`.bordered` / `.footerLink`) plus a `style`
   field on `KikiPaywallActionConfig` and `KikiPaywallActionPresentation`.
   Actions marked `.footerLink` render as dot-separated `.link`-style
   buttons inside the paywall footer instead of stacking under the primary
-  CTA. Commerce Kit should tag Restore, Retry, and "Manage Subscription"
-  style actions as `.footerLink`; apps automatically stop showing them as
+  CTA. Commerce Kit tags Restore, Retry, and "Manage Subscription" style
+  actions as `.footerLink`; apps automatically stop showing them as
   full-width bordered buttons.
 - `KikiPaywallLinkActionButton` atom for hand-composed paywall footers.
 - `KikiSettingsPickerLayoutPreference` (`.segmented` / `.menu` /
   `.adaptive`) plus a `preferredStyle:` parameter on
-  `KikiSettingsSegmentedPickerRow`. Default is `.adaptive`, which keeps
-  the segmented control for 2–4 options and falls back to a menu popup
-  for 5+, so wide segmented rows no longer push Settings past its max
+  `KikiSettingsSegmentedPickerRow`. Default `.adaptive` keeps the
+  segmented control for 2–4 options and falls back to a menu popup for
+  5+, so wide segmented rows no longer push Settings past its max
   content width.
+- `KikiDesignTokens` namespace (`Opacity`, `CornerRadius`, `Separator`)
+  for shared magic numbers across custom chrome. Adopted by paywall
+  atoms, onboarding scaffolds, and the permission row.
+- `KikiOnboardingDefaults.maxRowsPerStep` constant (previously a hard-
+  coded `3`) plus a debug assertion when callers exceed it.
+- `KikiOnboardingPermissionRow` gains optional `trustNote:`,
+  `authorizedLabel:`, and `unauthorizedLabel:` parameters. Apps
+  requesting sensitive permissions (keystroke interception, screen
+  recording) can render a short privacy assurance under the instruction
+  without laying out custom chrome.
+- `KikiAuthorizationAssistant.present(...)` accepts optional
+  `trustNote:` and `tint:` parameters, propagated through the overlay
+  chrome (icon disc, chevron.up, chip hover color). `tint` defaults to
+  `.controlAccentColor` so existing callers see no behavior change.
 
 ### Removed
 
-- The four size-less `KikiPaywallSheet` compatibility initializers scheduled
-  for removal in 0.9.0; pass `size:` instead. The downstream app matrix no
-  longer calls them.
-- `KikiDesignColor.brandAccent`, `brand_accent`, and `system_accent` aliases
-  scheduled for removal in 0.9.0; use `proAccent` and `systemAccent`.
-- `KikiPaywallActionLabel`'s `isProminent` parameter, which was accepted but
-  never applied.
+- The four size-less `KikiPaywallSheet` compatibility initializers
+  scheduled for removal in 0.9.0; pass `size:` instead. The downstream
+  app matrix no longer calls them.
+- `KikiDesignColor.brandAccent`, `brand_accent`, and `system_accent`
+  aliases scheduled for removal in 0.9.0; use `proAccent` and
+  `systemAccent`.
+- `KikiPaywallActionLabel`'s `isProminent` parameter, which was accepted
+  but never applied.
 
 ### Changed
 
-- `KikiPaywallStatConfig.id` is now a `String` derived from `value` + `label`
-  (pass `id:` to override), replacing the hand-rolled FNV UUID derivation.
+- `KikiPaywallStatConfig.id` is now a `String` derived from `value` +
+  `label` (pass `id:` to override), replacing the hand-rolled FNV UUID
+  derivation.
 - Opacity and corner-radius values for custom chrome (plan cards, stats
   panels, pills, badges, hero surfaces, permission rows) now come from
-  `KikiDesignTokens` instead of per-component literals. Selected-card tint
-  stroke is unified at 50% and muted separator strokes at 40%.
+  `KikiDesignTokens` instead of per-component literals. Selected-card
+  tint stroke is unified at 50% and muted separator strokes at 40%.
 - `KikiSettingsStatusRow` collapses its two initializers into one with
   `tint: Color = .accentColor`.
+- Settings default sizing changed to fit menu-bar utility Settings:
+  width fixed at 500, height min 480 / ideal 620 / max 780 (was 540 /
+  540 / 640 / 720). Fresh windows now open at ideal height so the
+  busiest expected tab (Cat Lock's Lock pane) fits without clipping the
+  trailing section — the previous `max(current, minimum)` flow let
+  AppKit clamp fresh windows to 480 and stopped growing.
+- `KikiPaywall.swift` split into seven focused files
+  (`KikiPaywallTypes` / `Sheet` / `Shell` / `PlanViews` / `Atoms` /
+  `StatusHeader` / `WindowController`). No public API change; incremental
+  edits get scoped diffs.
+- `KikiOnboardingPermissionRow` visual polish: dropped the trailing
+  chevron (misled users into thinking the card had a detail view), the
+  loud orange "Needs Permission" pill (a first-launch state doesn't
+  warrant a warning tone), and moved the authorized label to a soft
+  systemGreen pill.
+- `KikiAuthorizationAssistant` overlay redesigned for a more native
+  popover feel — corner radius 18 → 12, dirty separator border removed,
+  chip shadow removed (both were reading as grit against the material),
+  and a subtle tint radial-gradient wash added at the top for depth.
+  The bottom drag chip is now a passive visual anchor; the entire
+  overlay is a drag source, so users don't have to aim for a 40pt
+  strip. The overlay auto-dismisses when the permission is granted
+  (1s poll) — no need for a manual close button.
 
 ### Fixed
 
@@ -47,8 +93,13 @@
 - Paywall primary/secondary buttons no longer apply a manual disabled
   opacity on top of the native bordered disabled treatment.
 - `KikiOnboardingRowsContent` asserts in debug when more than
-  `KikiOnboardingDefaults.maxRowsPerStep` (3) rows are passed, instead of
-  silently dropping them.
+  `KikiOnboardingDefaults.maxRowsPerStep` (3) rows are passed, instead
+  of silently dropping them.
+- Authorization overlay drag hint switched from `arrow.up.circle.fill`
+  (read as an upload button, invited clicks on a non-interactive glyph)
+  to `hand.point.up.left`, and the chip detail copy from "Drag to the
+  list above" to "Drag me into the list". Hover deepens the chip fill
+  and swaps the cursor to `openHand`.
 
 ## 0.8.2 - 2026-07-19
 
