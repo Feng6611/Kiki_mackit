@@ -22,13 +22,15 @@ public final class KikiAuthorizationAssistant {
     public func present(
         panel: KikiAuthorizationPanel,
         sourceFrameInScreen: CGRect? = nil,
-        instruction: String? = nil
+        instruction: String? = nil,
+        trustNote: String? = nil
     ) {
         present(
             panel: panel,
             hostApp: .current(),
             sourceFrameInScreen: sourceFrameInScreen,
-            instruction: instruction
+            instruction: instruction,
+            trustNote: trustNote
         )
     }
 
@@ -36,7 +38,8 @@ public final class KikiAuthorizationAssistant {
         panel: KikiAuthorizationPanel,
         hostApp: KikiAuthorizationHostApp,
         sourceFrameInScreen: CGRect? = nil,
-        instruction: String? = nil
+        instruction: String? = nil,
+        trustNote: String? = nil
     ) {
         dismiss()
 
@@ -45,6 +48,7 @@ public final class KikiAuthorizationAssistant {
             hostApp: hostApp,
             panel: panel,
             instruction: instruction,
+            trustNote: trustNote,
             onDismiss: { [weak self] in
                 self?.dismiss()
             }

@@ -4,16 +4,31 @@ import QuartzCore
 
 @MainActor
 final class KikiAuthorizationOverlayWindowController: NSWindowController {
-    private static let windowSize = NSSize(width: 440, height: 138)
+    private static let baseWindowSize = NSSize(width: 440, height: 138)
+    private static let trustNoteAdditionalHeight: CGFloat = 26
+
+    private let windowSize: NSSize
 
     init(
         hostApp: KikiAuthorizationHostApp,
         panel: KikiAuthorizationPanel,
         instruction: String?,
+        trustNote: String?,
         onDismiss: @escaping () -> Void
     ) {
+        let size: NSSize
+        if trustNote?.isEmpty == false {
+            size = NSSize(
+                width: Self.baseWindowSize.width,
+                height: Self.baseWindowSize.height + Self.trustNoteAdditionalHeight
+            )
+        } else {
+            size = Self.baseWindowSize
+        }
+        self.windowSize = size
+
         let window = KikiAuthorizationPanelWindow(
-            contentRect: NSRect(origin: .zero, size: Self.windowSize),
+            contentRect: NSRect(origin: .zero, size: size),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -26,6 +41,7 @@ final class KikiAuthorizationOverlayWindowController: NSWindowController {
             hostApp: hostApp,
             panel: panel,
             instruction: instruction,
+            trustNote: trustNote,
             onDismiss: onDismiss
         )
     }
@@ -51,7 +67,7 @@ final class KikiAuthorizationOverlayWindowController: NSWindowController {
 
         let targetFrame = NSRect(
             origin: anchoredOrigin(settingsFrame: settingsFrame, visibleFrame: visibleFrame),
-            size: Self.windowSize
+            size: windowSize
         )
 
         guard let sourceFrameInScreen, sourceFrameInScreen.width > 1, sourceFrameInScreen.height > 1 else {
@@ -105,14 +121,14 @@ final class KikiAuthorizationOverlayWindowController: NSWindowController {
         let sidebarWidth: CGFloat = 170
         let margin: CGFloat = 10
         let contentMinX = settingsFrame.minX + sidebarWidth
-        let contentWidth = max(settingsFrame.width - sidebarWidth, Self.windowSize.width)
-        let preferredX = contentMinX + ((contentWidth - Self.windowSize.width) / 2)
+        let contentWidth = max(settingsFrame.width - sidebarWidth, windowSize.width)
+        let preferredX = contentMinX + ((contentWidth - windowSize.width) / 2)
         let preferredY = settingsFrame.minY + 14
 
         let minX = visibleFrame.minX + margin
-        let maxX = visibleFrame.maxX - Self.windowSize.width - margin
+        let maxX = visibleFrame.maxX - windowSize.width - margin
         let minY = visibleFrame.minY + margin
-        let maxY = visibleFrame.maxY - Self.windowSize.height - margin
+        let maxY = visibleFrame.maxY - windowSize.height - margin
 
         return NSPoint(
             x: min(max(preferredX, minX), maxX),

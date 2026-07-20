@@ -7,7 +7,10 @@ final class KikiAuthorizationAppDragSourceView: NSView, NSPasteboardItemDataProv
     private let rowView = NSView()
     private let iconBackgroundView = NSView()
     private let label = NSTextField(labelWithString: "")
-    private let detailLabel = NSTextField(labelWithString: "Drag to the list above")
+    private let detailLabel = NSTextField(labelWithString: "Drag me into the list")
+    private let dragIndicator = NSImageView()
+    private var isHovering = false
+    private var trackingArea: NSTrackingArea?
 
     init(hostApp: KikiAuthorizationHostApp) {
         self.hostApp = hostApp
@@ -25,6 +28,36 @@ final class KikiAuthorizationAppDragSourceView: NSView, NSPasteboardItemDataProv
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
         true
+    }
+
+    override func resetCursorRects() {
+        super.resetCursorRects()
+        addCursorRect(rowView.frame, cursor: .openHand)
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let trackingArea {
+            removeTrackingArea(trackingArea)
+        }
+        let area = NSTrackingArea(
+            rect: rowView.frame,
+            options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(area)
+        trackingArea = area
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        isHovering = true
+        updateColors()
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        isHovering = false
+        updateColors()
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -105,11 +138,13 @@ final class KikiAuthorizationAppDragSourceView: NSView, NSPasteboardItemDataProv
         detailLabel.translatesAutoresizingMaskIntoConstraints = false
         rowView.addSubview(detailLabel)
 
-        let dragIndicator = NSImageView()
         dragIndicator.translatesAutoresizingMaskIntoConstraints = false
-        dragIndicator.image = NSImage(systemSymbolName: "arrow.up.circle.fill", accessibilityDescription: "Drag upward")
-        dragIndicator.symbolConfiguration = .init(pointSize: 16, weight: .medium)
-        dragIndicator.contentTintColor = .controlAccentColor
+        // hand.point.up.left signals "drag with pointer" instead of
+        // arrow.up.circle.fill, which read as an "upload" button and
+        // invited clicks on a non-interactive glyph.
+        dragIndicator.image = NSImage(systemSymbolName: "hand.point.up.left", accessibilityDescription: "Drag upward")
+        dragIndicator.symbolConfiguration = .init(pointSize: 15, weight: .medium)
+        dragIndicator.contentTintColor = .secondaryLabelColor
         rowView.addSubview(dragIndicator)
 
         NSLayoutConstraint.activate([
@@ -146,13 +181,24 @@ final class KikiAuthorizationAppDragSourceView: NSView, NSPasteboardItemDataProv
     private func updateColors() {
         let isDark = effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
 
-        if isDark {
-            rowView.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.07).cgColor
-            rowView.layer?.borderColor = NSColor.white.withAlphaComponent(0.10).cgColor
-        } else {
-            rowView.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.68).cgColor
-            rowView.layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.22).cgColor
-        }
+        let baseBackgroundAlpha: CGFloat = isDark ? 0.07 : 0.68
+        let baseBorderAlpha: CGFloat = isDark ? 0.10 : 0.22
+        let hoverBackgroundAlpha: CGFloat = isDark ? 0.12 : 0.85
+        let hoverBorderAlpha: CGFloat = isDark ? 0.22 : 0.40
+
+        let backgroundBase: NSColor = isDark ? .white : .white
+        let borderBase: NSColor = isDark ? .white : .separatorColor
+
+        rowView.layer?.backgroundColor = backgroundBase
+            .withAlphaComponent(isHovering ? hoverBackgroundAlpha : baseBackgroundAlpha)
+            .cgColor
+        rowView.layer?.borderColor = borderBase
+            .withAlphaComponent(isHovering ? hoverBorderAlpha : baseBorderAlpha)
+            .cgColor
+
+        // Give the drag hint a small color lift on hover so the affordance
+        // matches the highlighted row.
+        dragIndicator.contentTintColor = isHovering ? .labelColor : .secondaryLabelColor
     }
 
     private func draggingImage() -> NSImage {

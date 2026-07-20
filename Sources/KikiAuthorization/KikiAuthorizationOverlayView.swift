@@ -9,12 +9,13 @@ final class KikiAuthorizationOverlayView: NSView {
         hostApp: KikiAuthorizationHostApp,
         panel: KikiAuthorizationPanel,
         instruction: String?,
+        trustNote: String?,
         onDismiss: @escaping () -> Void
     ) {
         self.onDismiss = onDismiss
         super.init(frame: NSRect(x: 0, y: 0, width: 440, height: 138))
-        translatesAutoresizingMaskIntoConstraints = false
-        buildView(hostApp: hostApp, panel: panel, instruction: instruction)
+        autoresizingMask = [.width, .height]
+        buildView(hostApp: hostApp, panel: panel, instruction: instruction, trustNote: trustNote)
     }
 
     @available(*, unavailable)
@@ -25,7 +26,8 @@ final class KikiAuthorizationOverlayView: NSView {
     private func buildView(
         hostApp: KikiAuthorizationHostApp,
         panel: KikiAuthorizationPanel,
-        instruction: String?
+        instruction: String?,
+        trustNote: String?
     ) {
         let materialView = NSVisualEffectView()
         materialView.translatesAutoresizingMaskIntoConstraints = false
@@ -81,13 +83,24 @@ final class KikiAuthorizationOverlayView: NSView {
         titleLabel.maximumNumberOfLines = 2
         materialView.addSubview(titleLabel)
 
+        let trustNoteLabel: NSTextField?
+        if let trustNote, trustNote.isEmpty == false {
+            let label = NSTextField(labelWithString: trustNote)
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.font = .systemFont(ofSize: 11, weight: .regular)
+            label.textColor = .tertiaryLabelColor
+            label.lineBreakMode = .byWordWrapping
+            label.maximumNumberOfLines = 2
+            materialView.addSubview(label)
+            trustNoteLabel = label
+        } else {
+            trustNoteLabel = nil
+        }
+
         let dragSource = KikiAuthorizationAppDragSourceView(hostApp: hostApp)
         materialView.addSubview(dragSource)
 
-        NSLayoutConstraint.activate([
-            widthAnchor.constraint(equalToConstant: 440),
-            heightAnchor.constraint(equalToConstant: 138),
-
+        var constraints: [NSLayoutConstraint] = [
             materialView.leadingAnchor.constraint(equalTo: leadingAnchor),
             materialView.trailingAnchor.constraint(equalTo: trailingAnchor),
             materialView.topAnchor.constraint(equalTo: topAnchor),
@@ -120,15 +133,28 @@ final class KikiAuthorizationOverlayView: NSView {
             dragSource.trailingAnchor.constraint(equalTo: materialView.trailingAnchor, constant: -16),
             dragSource.bottomAnchor.constraint(equalTo: materialView.bottomAnchor, constant: -14),
             dragSource.heightAnchor.constraint(equalToConstant: 48),
-        ])
+        ]
+
+        if let trustNoteLabel {
+            constraints.append(contentsOf: [
+                trustNoteLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+                trustNoteLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
+                trustNoteLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
+            ])
+        }
+
+        NSLayoutConstraint.activate(constraints)
     }
 
+    /// Default fallback covers both flows (toggle if the app is already
+    /// listed, drag if not). Apps typically pass their own instruction
+    /// tailored to the specific permission and product context.
     private func instructionText(
         hostApp: KikiAuthorizationHostApp,
         panel: KikiAuthorizationPanel,
         override: String?
     ) -> String {
-        override ?? "Drag the app below into the list in System Settings, then turn it on."
+        override ?? "Turn on \(hostApp.displayName) in the list — drag it in from below if it's not there yet."
     }
 
     @objc private func dismissPressed() {
