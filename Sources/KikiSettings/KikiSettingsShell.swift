@@ -1,20 +1,21 @@
 import SwiftUI
 
 public enum KikiSettingsDefaults {
-    /// Ideal Settings content width. Sized for menu-bar utility Settings —
-    /// wider than SwiftUI's default `Settings {}` scene, narrower than the
-    /// old 540 that left every row of a sparse pane looking half-empty.
-    /// Apps with dense Settings content can pass explicit larger values.
-    public static let windowWidth: CGFloat = 460
-    public static let windowHeight: CGFloat = 520
-    /// Lets the user drag the window narrower than ideal when their content
-    /// fits. Kept above SwiftUI Form(.grouped)'s comfortable reading width.
-    public static let minimumWindowWidth: CGFloat = 420
-    public static let minimumWindowHeight: CGFloat = 320
-    /// Caps the width so a legacy autosave frame or an aggressive drag
-    /// doesn't leave narrow settings looking stranded in whitespace.
-    public static let maximumWindowWidth: CGFloat = 560
-    public static let maximumWindowHeight: CGFloat = 720
+    /// Settings width is fixed. Menu-bar utility Settings look uniform
+    /// across apps when they don't drift with intrinsic content width, so
+    /// min == ideal == max. Apps with genuinely wider content pass their
+    /// own width to `KikiSettingsShell` / `KikiSettingsWindowController`.
+    public static let windowWidth: CGFloat = 500
+    public static let minimumWindowWidth: CGFloat = 500
+    public static let maximumWindowWidth: CGFloat = 500
+
+    /// Ideal height is sized for the busiest expected tab (Cat Lock's Lock
+    /// pane, ~615pt). Fresh windows open at ideal; users who explicitly
+    /// resize down to `minimum` get their frame respected on next launch.
+    /// Content taller than `maximum` scrolls inside the pane.
+    public static let windowHeight: CGFloat = 620
+    public static let minimumWindowHeight: CGFloat = 480
+    public static let maximumWindowHeight: CGFloat = 780
 }
 
 public struct KikiSettingsTabSpec<Tab: Hashable>: Identifiable {

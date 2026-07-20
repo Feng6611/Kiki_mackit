@@ -47,6 +47,12 @@ extension NSWindow: KikiSettingsWindowManaging {
             // Reset those distorted saved frames as a whole instead of keeping
             // an awkward aspect ratio after clamping just one dimension.
             targetContentSize = idealContentSize
+        } else if savedWindowSize == nil {
+            // Fresh install with no autosave: open at ideal so the busiest
+            // tab has room. SwiftUI's Settings scene otherwise starts smaller
+            // than either ideal or min, and AppKit's minimum clamp alone
+            // won't grow the window to fit dense content.
+            targetContentSize = idealContentSize
         } else {
             targetContentSize = CGSize(
                 width: max(currentContentSize.width, minimumContentSize.width),
