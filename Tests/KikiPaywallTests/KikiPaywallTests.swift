@@ -87,6 +87,65 @@ struct KikiPaywallTests {
         _ = sheet.body
     }
 
+    @Test("Paywall action config defaults to bordered style")
+    func paywallActionConfigDefaultsToBorderedStyle() {
+        let bordered = KikiPaywallActionConfig(title: "Buy") {}
+        let link = KikiPaywallActionConfig(title: "Restore", style: .footerLink) {}
+
+        #expect(bordered.style == .bordered)
+        #expect(link.style == .footerLink)
+    }
+
+    @MainActor
+    @Test("Paywall sheet accepts mixed bordered and footer-link secondaries")
+    func paywallSheetAcceptsMixedSecondaryStyles() {
+        let plans = [
+            KikiPaywallPlan(
+                id: "lifetime",
+                title: "Lifetime",
+                displayPrice: "$12.99",
+                billingDetail: "one-time purchase"
+            )
+        ]
+
+        let sheet = KikiPaywallSheet(
+            header: .init(title: "Upgrade", subtitle: "Unlock everything"),
+            plans: plans,
+            selectedPlanID: .constant("lifetime"),
+            primary: .init(title: "Unlock") {},
+            secondaryActions: [
+                .init(title: "Start Free Trial") {},
+                .init(title: "Restore Purchases", style: .footerLink) {}
+            ]
+        )
+
+        _ = sheet.body
+    }
+
+    @Test("Paywall action presentation carries style through")
+    func paywallActionPresentationCarriesStyleThrough() {
+        let restore = KikiPaywallActionPresentation(
+            title: "Restore",
+            style: .footerLink,
+            action: {}
+        )
+
+        #expect(restore.style == .footerLink)
+    }
+
+    @MainActor
+    @Test("Paywall link action button is constructible from config")
+    func paywallLinkActionButtonIsConstructible() {
+        let config = KikiPaywallActionConfig(
+            title: "Restore",
+            style: .footerLink,
+            action: {}
+        )
+        let button = KikiPaywallLinkActionButton(action: config)
+
+        _ = button.body
+    }
+
     @MainActor
     @Test("Paywall status card primitives are constructible")
     func paywallStatusCardPrimitivesAreConstructible() {

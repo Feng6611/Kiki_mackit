@@ -171,13 +171,32 @@ public struct KikiAuthorizationStatusRow: View {
     }
 }
 
+/// Layout preference for `KikiSettingsSegmentedPickerRow`.
+///
+/// - `segmented`: always render as a segmented control.
+/// - `menu`: always render as a menu popup.
+/// - `adaptive`: segmented for `≤ adaptiveThreshold` options, menu otherwise.
+///   Prevents wide segmented controls from pushing Settings past its max
+///   content width. Default for new rows.
+public enum KikiSettingsPickerLayoutPreference: Sendable {
+    case segmented
+    case menu
+    case adaptive
+}
+
 public struct KikiSettingsSegmentedPickerRow<Value: Hashable>: View {
+    /// Above this option count, `.adaptive` falls back to a menu popup.
+    /// Chosen so 2–4-option pickers keep the tappable segmented control and
+    /// 5+ pickers avoid overflowing the standard Settings content width.
+    public static var adaptiveThreshold: Int { 4 }
+
     private let title: String
     private let options: [Value]
     private let systemImage: String?
     private let controlWidth: CGFloat
     private let leadingCaption: String?
     private let trailingCaption: String?
+    private let preferredStyle: KikiSettingsPickerLayoutPreference
     private let optionTitle: (Value) -> String
     @Binding private var selection: Value
 
@@ -189,6 +208,7 @@ public struct KikiSettingsSegmentedPickerRow<Value: Hashable>: View {
         controlWidth: CGFloat = 180,
         leadingCaption: String? = nil,
         trailingCaption: String? = nil,
+        preferredStyle: KikiSettingsPickerLayoutPreference = .adaptive,
         optionTitle: @escaping (Value) -> String
     ) {
         self.title = title
@@ -198,6 +218,7 @@ public struct KikiSettingsSegmentedPickerRow<Value: Hashable>: View {
         self.controlWidth = controlWidth
         self.leadingCaption = leadingCaption
         self.trailingCaption = trailingCaption
+        self.preferredStyle = preferredStyle
         self.optionTitle = optionTitle
     }
 
@@ -207,18 +228,40 @@ public struct KikiSettingsSegmentedPickerRow<Value: Hashable>: View {
                 caption(leadingCaption)
             }
 
-            Picker(title, selection: $selection) {
-                ForEach(options, id: \.self) { option in
-                    Text(optionTitle(option)).tag(option)
-                }
-            }
-            .labelsHidden()
-            .pickerStyle(.segmented)
-            .frame(minWidth: controlWidth, alignment: .trailing)
+            picker
 
             if let trailingCaption {
                 caption(trailingCaption)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var picker: some View {
+        let style = resolvedStyle
+        Picker(title, selection: $selection) {
+            ForEach(options, id: \.self) { option in
+                Text(optionTitle(option)).tag(option)
+            }
+        }
+        .labelsHidden()
+        .modifier(SegmentedOrMenuPickerStyle(style: style))
+        .frame(minWidth: minWidth(for: style), alignment: .trailing)
+    }
+
+    private var resolvedStyle: KikiSettingsPickerLayoutPreference {
+        switch preferredStyle {
+        case .segmented, .menu:
+            return preferredStyle
+        case .adaptive:
+            return options.count > Self.adaptiveThreshold ? .menu : .segmented
+        }
+    }
+
+    private func minWidth(for style: KikiSettingsPickerLayoutPreference) -> CGFloat {
+        switch style {
+        case .menu, .adaptive: return 140
+        case .segmented: return controlWidth
         }
     }
 
@@ -227,6 +270,19 @@ public struct KikiSettingsSegmentedPickerRow<Value: Hashable>: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .fixedSize()
+    }
+}
+
+private struct SegmentedOrMenuPickerStyle: ViewModifier {
+    let style: KikiSettingsPickerLayoutPreference
+
+    func body(content: Content) -> some View {
+        switch style {
+        case .menu:
+            content.pickerStyle(.menu)
+        case .segmented, .adaptive:
+            content.pickerStyle(.segmented)
+        }
     }
 }
 

@@ -112,6 +112,60 @@ public struct KikiPaywallActionLabel: View {
     }
 }
 
+/// Text-only footer link for actions like Restore or Retry that should not
+/// compete with the primary purchase CTA. Uses `.link` button style so the
+/// visual weight matches URL links rendered elsewhere in the footer.
+public struct KikiPaywallLinkActionButton: View {
+    private let title: String
+    private let isLoading: Bool
+    private let isEnabled: Bool
+    private let tint: Color
+    private let action: @MainActor () -> Void
+
+    public init(
+        title: String,
+        isLoading: Bool = false,
+        isEnabled: Bool = true,
+        tint: Color = .accentColor,
+        action: @escaping @MainActor () -> Void
+    ) {
+        self.title = title
+        self.isLoading = isLoading
+        self.isEnabled = isEnabled
+        self.tint = tint
+        self.action = action
+    }
+
+    public init(
+        action config: KikiPaywallActionConfig,
+        tint: Color = .accentColor
+    ) {
+        self.title = config.title
+        self.isLoading = config.isLoading
+        self.isEnabled = config.isEnabled
+        self.tint = tint
+        self.action = config.action
+    }
+
+    public var body: some View {
+        Button {
+            action()
+        } label: {
+            HStack(spacing: 4) {
+                if isLoading {
+                    ProgressView()
+                        .controlSize(.mini)
+                        .tint(tint)
+                }
+                Text(title)
+            }
+            .font(.caption)
+        }
+        .buttonStyle(.link)
+        .disabled(!isEnabled)
+    }
+}
+
 public enum KikiPaywallPillTone {
     case accent
     case neutral

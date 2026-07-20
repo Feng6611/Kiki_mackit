@@ -133,6 +133,40 @@ struct KikiSettingsTests {
     }
 
     @MainActor
+    @Test("Segmented picker row accepts all layout preferences")
+    func segmentedPickerRowAcceptsAllLayoutPreferences() {
+        _ = KikiSettingsSegmentedPickerRow(
+            "Duration",
+            selection: .constant(10),
+            options: [5, 10, 30, 60],
+            optionTitle: { "\($0) min" }
+        )
+        _ = KikiSettingsSegmentedPickerRow(
+            "Strength",
+            selection: .constant(3),
+            options: [1, 2, 3, 4, 5],
+            leadingCaption: "Subtle",
+            trailingCaption: "Strong",
+            preferredStyle: .adaptive,
+            optionTitle: { "\($0)" }
+        )
+        _ = KikiSettingsSegmentedPickerRow(
+            "Preset",
+            selection: .constant("b"),
+            options: ["a", "b", "c"],
+            preferredStyle: .segmented,
+            optionTitle: { $0.uppercased() }
+        )
+        _ = KikiSettingsSegmentedPickerRow(
+            "Preset",
+            selection: .constant("b"),
+            options: ["a", "b", "c"],
+            preferredStyle: .menu,
+            optionTitle: { $0.uppercased() }
+        )
+    }
+
+    @MainActor
     @Test("Settings opener performs standard settings item from the main menu")
     func settingsOpenerPerformsStandardSettingsItemFromMainMenu() {
         let application = NSApplication.shared

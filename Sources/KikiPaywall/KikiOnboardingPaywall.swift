@@ -57,6 +57,7 @@ public struct KikiOnboardingPaywall: View {
                 isLoading: action.isLoading,
                 isEnabled: presentation.isInteractionDisabled == false
                     && action.isEnabled(for: planID),
+                style: action.style,
                 action: { action.perform(selectedPlanID: planID) }
             )
         }

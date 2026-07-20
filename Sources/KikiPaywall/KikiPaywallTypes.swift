@@ -89,23 +89,38 @@ public struct KikiPaywallStatConfig: Identifiable, Equatable {
     }
 }
 
+/// Visual weight for a paywall action.
+///
+/// - `bordered`: full-width bordered button rendered in the actions area
+///   under the primary CTA (current default).
+/// - `footerLink`: subtle text-only link rendered in a dot-separated row
+///   inside the footer slot. Use for restore, retry, or "manage subscription"
+///   style actions that should not compete with the primary purchase CTA.
+public enum KikiPaywallActionStyle: Sendable {
+    case bordered
+    case footerLink
+}
+
 public struct KikiPaywallActionConfig: Identifiable {
     public let id: UUID
     public let title: String
     public let isLoading: Bool
     public let isEnabled: Bool
+    public let style: KikiPaywallActionStyle
     public let action: @MainActor () -> Void
 
     public init(
         title: String,
         isLoading: Bool = false,
         isEnabled: Bool = true,
+        style: KikiPaywallActionStyle = .bordered,
         action: @escaping @MainActor () -> Void
     ) {
         self.id = UUID()
         self.title = title
         self.isLoading = isLoading
         self.isEnabled = isEnabled
+        self.style = style
         self.action = action
     }
 
@@ -114,12 +129,14 @@ public struct KikiPaywallActionConfig: Identifiable {
         title: String,
         isLoading: Bool = false,
         isEnabled: Bool = true,
+        style: KikiPaywallActionStyle = .bordered,
         action: @escaping @MainActor () -> Void
     ) {
         self.id = id
         self.title = title
         self.isLoading = isLoading
         self.isEnabled = isEnabled
+        self.style = style
         self.action = action
     }
 }

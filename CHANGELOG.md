@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+### Added
+
+- `KikiPaywallActionStyle` (`.bordered` / `.footerLink`) plus a `style`
+  field on `KikiPaywallActionConfig` and `KikiPaywallActionPresentation`.
+  Actions marked `.footerLink` render as dot-separated `.link`-style
+  buttons inside the paywall footer instead of stacking under the primary
+  CTA. Commerce Kit should tag Restore, Retry, and "Manage Subscription"
+  style actions as `.footerLink`; apps automatically stop showing them as
+  full-width bordered buttons.
+- `KikiPaywallLinkActionButton` atom for hand-composed paywall footers.
+- `KikiSettingsPickerLayoutPreference` (`.segmented` / `.menu` /
+  `.adaptive`) plus a `preferredStyle:` parameter on
+  `KikiSettingsSegmentedPickerRow`. Default is `.adaptive`, which keeps
+  the segmented control for 2–4 options and falls back to a menu popup
+  for 5+, so wide segmented rows no longer push Settings past its max
+  content width.
+
 ### Removed
 
 - The four size-less `KikiPaywallSheet` compatibility initializers scheduled

@@ -79,6 +79,7 @@ public struct KikiPaywallActionPresentation: Identifiable {
     public let id: UUID
     public let title: String
     public let isLoading: Bool
+    public let style: KikiPaywallActionStyle
     private let isEnabled: @MainActor (_ selectedPlanID: String) -> Bool
     private let action: @MainActor (_ selectedPlanID: String) -> Void
 
@@ -86,11 +87,13 @@ public struct KikiPaywallActionPresentation: Identifiable {
         title: String,
         isLoading: Bool = false,
         isEnabled: Bool = true,
+        style: KikiPaywallActionStyle = .bordered,
         action: @escaping @MainActor () -> Void
     ) {
         self.id = UUID()
         self.title = title
         self.isLoading = isLoading
+        self.style = style
         self.isEnabled = { _ in isEnabled }
         self.action = { _ in action() }
     }
@@ -100,11 +103,13 @@ public struct KikiPaywallActionPresentation: Identifiable {
         title: String,
         isLoading: Bool = false,
         isEnabled: Bool = true,
+        style: KikiPaywallActionStyle = .bordered,
         action: @escaping @MainActor () -> Void
     ) {
         self.id = id
         self.title = title
         self.isLoading = isLoading
+        self.style = style
         self.isEnabled = { _ in isEnabled }
         self.action = { _ in action() }
     }
@@ -112,12 +117,14 @@ public struct KikiPaywallActionPresentation: Identifiable {
     public init(
         title: String,
         isLoading: Bool = false,
+        style: KikiPaywallActionStyle = .bordered,
         isEnabled: @escaping @MainActor (_ selectedPlanID: String) -> Bool,
         action: @escaping @MainActor (_ selectedPlanID: String) -> Void
     ) {
         self.id = UUID()
         self.title = title
         self.isLoading = isLoading
+        self.style = style
         self.isEnabled = isEnabled
         self.action = action
     }
@@ -126,12 +133,14 @@ public struct KikiPaywallActionPresentation: Identifiable {
         id: UUID,
         title: String,
         isLoading: Bool = false,
+        style: KikiPaywallActionStyle = .bordered,
         isEnabled: @escaping @MainActor (_ selectedPlanID: String) -> Bool,
         action: @escaping @MainActor (_ selectedPlanID: String) -> Void
     ) {
         self.id = id
         self.title = title
         self.isLoading = isLoading
+        self.style = style
         self.isEnabled = isEnabled
         self.action = action
     }

@@ -133,7 +133,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
                 .disabled(!primary.isEnabled)
                 .keyboardShortcut(.defaultAction)
 
-                ForEach(secondaryActions) { secondary in
+                ForEach(borderedSecondaryActions) { secondary in
                     Button {
                         secondary.action()
                     } label: {
@@ -149,8 +149,30 @@ public struct KikiPaywallSheet<Footer: View>: View {
                 }
             }
         } footer: {
-            footer
+            VStack(spacing: 8) {
+                if footerLinkActions.isEmpty == false {
+                    HStack(spacing: 10) {
+                        ForEach(Array(footerLinkActions.enumerated()), id: \.element.id) { index, action in
+                            if index > 0 {
+                                KikiPaywallDotSeparator()
+                            }
+                            KikiPaywallLinkActionButton(action: action, tint: tint)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+
+                footer
+            }
         }
+    }
+
+    private var borderedSecondaryActions: [KikiPaywallActionConfig] {
+        secondaryActions.filter { $0.style == .bordered }
+    }
+
+    private var footerLinkActions: [KikiPaywallActionConfig] {
+        secondaryActions.filter { $0.style == .footerLink }
     }
 }
 
