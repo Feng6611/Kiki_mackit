@@ -1,5 +1,6 @@
 import AppKit
 import KikiCore
+import QuartzCore
 import SwiftUI
 
 public struct KikiMenuShortcut: Equatable {
@@ -227,6 +228,63 @@ public final class KikiMenuBarController: NSObject {
 
     public func updateButtonTooltip(_ tooltip: String) {
         statusItem.button?.toolTip = tooltip
+    }
+
+    /// Acknowledges an event with a single gentle "breath" of the status
+    /// button: scale 1.0 → 1.22 → 1.0 paired with opacity 1.0 → 0.45 → 1.0
+    /// over 0.8 s (ease-out inhale, ease-in-out exhale). One-shot, never
+    /// stacked, no rotation or overshoot. Honors Reduce Motion by skipping
+    /// the scale component.
+    public func pulseButton() {
+        guard let button = statusItem.button else {
+            return
+        }
+        button.wantsLayer = true
+        guard let layer = button.layer,
+              layer.animation(forKey: Self.pulseAnimationKey) == nil else {
+            return
+        }
+
+        let centeredAnchor = CGPoint(x: 0.5, y: 0.5)
+        if layer.anchorPoint != centeredAnchor {
+            var position = layer.position
+            position.x += (centeredAnchor.x - layer.anchorPoint.x) * layer.bounds.width
+            position.y += (centeredAnchor.y - layer.anchorPoint.y) * layer.bounds.height
+            layer.anchorPoint = centeredAnchor
+            layer.position = position
+        }
+
+        let animation = Self.makePulseAnimation(
+            reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        )
+        layer.add(animation, forKey: Self.pulseAnimationKey)
+    }
+
+    static let pulseAnimationKey = "kikiButtonPulse"
+
+    nonisolated static func makePulseAnimation(reduceMotion: Bool) -> CAAnimationGroup {
+        let inhale = CAMediaTimingFunction(name: .easeOut)
+        let exhale = CAMediaTimingFunction(name: .easeInEaseOut)
+        let peak: NSNumber = 0.375
+
+        let opacity = CAKeyframeAnimation(keyPath: "opacity")
+        opacity.values = [1.0, 0.45, 1.0]
+        opacity.keyTimes = [0, peak, 1]
+        opacity.timingFunctions = [inhale, exhale]
+
+        var animations: [CAAnimation] = [opacity]
+        if !reduceMotion {
+            let scale = CAKeyframeAnimation(keyPath: "transform.scale")
+            scale.values = [1.0, 1.22, 1.0]
+            scale.keyTimes = [0, peak, 1]
+            scale.timingFunctions = [inhale, exhale]
+            animations.append(scale)
+        }
+
+        let group = CAAnimationGroup()
+        group.animations = animations
+        group.duration = 0.8
+        return group
     }
 
     private func configureStatusItem(

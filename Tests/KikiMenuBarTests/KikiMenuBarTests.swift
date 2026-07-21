@@ -1,5 +1,5 @@
 import AppKit
-import KikiMenuBar
+@testable import KikiMenuBar
 import SwiftUI
 import Testing
 
@@ -122,6 +122,33 @@ struct KikiMenuBarTests {
 
         #expect(NSApp.sendAction(action, to: item.target, from: item))
         #expect(performCount == 1)
+    }
+
+    @Test("Pulse animation is a single gentle breath, scale-free under Reduce Motion")
+    func pulseAnimationSpec() {
+        let group = KikiMenuBarController.makePulseAnimation(reduceMotion: false)
+        #expect(group.duration == 0.8)
+        #expect(group.animations?.count == 2)
+        let keyPaths = group.animations?.compactMap { ($0 as? CAKeyframeAnimation)?.keyPath } ?? []
+        #expect(keyPaths.sorted() == ["opacity", "transform.scale"])
+
+        let reduced = KikiMenuBarController.makePulseAnimation(reduceMotion: true)
+        #expect(reduced.animations?.count == 1)
+        #expect((reduced.animations?.first as? CAKeyframeAnimation)?.keyPath == "opacity")
+    }
+
+    @MainActor
+    @Test("Pulse button is invocable and repeat calls do not throw")
+    func pulseButtonIsInvocable() {
+        let controller = KikiMenuBarController(
+            title: "Kiki Test",
+            systemImageName: "command"
+        ) {
+            [.status(title: "Ready")]
+        }
+
+        controller.pulseButton()
+        controller.pulseButton()
     }
 
     @MainActor
