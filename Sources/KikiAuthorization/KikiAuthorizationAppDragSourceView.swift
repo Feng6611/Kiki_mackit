@@ -13,7 +13,7 @@ final class KikiAuthorizationAppDragSourceView: NSView {
     private let rowView = NSView()
     private let iconBackgroundView = NSView()
     private let label = NSTextField(labelWithString: "")
-    private let detailLabel = NSTextField(labelWithString: "Drag me into the list")
+    private let detailLabel = NSTextField(labelWithString: String(localized: "Drag me into the list", bundle: .main, comment: "Drag-source hint in the app authorization panel."))
     private let dragIndicator = NSImageView()
     private var isHovering = false
 
@@ -106,7 +106,7 @@ final class KikiAuthorizationAppDragSourceView: NSView {
         // hand.point.up.left signals "drag with pointer" instead of
         // arrow.up.circle.fill, which read as an "upload" button and
         // invited clicks on a non-interactive glyph.
-        dragIndicator.image = NSImage(systemSymbolName: "hand.point.up.left", accessibilityDescription: "Drag upward")
+        dragIndicator.image = NSImage(systemSymbolName: "hand.point.up.left", accessibilityDescription: String(localized: "Drag upward", bundle: .main, comment: "VoiceOver description for the drag-source hand icon."))
         dragIndicator.symbolConfiguration = .init(pointSize: 15, weight: .medium)
         dragIndicator.contentTintColor = .secondaryLabelColor
         rowView.addSubview(dragIndicator)

@@ -79,7 +79,7 @@ public struct KikiSettingsApplicationPicker<Applications: RandomAccessCollection
     public var body: some View {
         HStack {
             Picker(selection: $selection) {
-                Text("Select an app...").tag(String?.none)
+                Text(String(localized: "Select an app…", bundle: .main, comment: "Placeholder in an app-picker before the user selects an app.")).tag(String?.none)
                 ForEach(pickerApplications) { application in
                     Text(application.displayName)
                         .tag(Optional(application.bundleID))

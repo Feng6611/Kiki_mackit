@@ -73,7 +73,9 @@ public struct KikiPaywallPlanCard: View {
         .animation(.easeInOut(duration: 0.15), value: isSelected)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(plan.title), \(plan.displayPrice), \(plan.billingDetail)")
-        .accessibilityValue(isSelected ? "Selected" : "Not selected")
+        .accessibilityValue(isSelected
+            ? String(localized: "Selected", bundle: .main, comment: "VoiceOver value for a selected paywall plan card.")
+            : String(localized: "Not selected", bundle: .main, comment: "VoiceOver value for an unselected paywall plan card."))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

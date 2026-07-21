@@ -185,7 +185,7 @@ public struct KikiStandardAboutLinks: Equatable, Sendable {
         if let terms {
             result.append(KikiStandardAboutLink(
                 id: "terms",
-                title: "Terms of use",
+                title: String(localized: "Terms of use", bundle: .main, comment: "Default About-pane link label."),
                 url: terms,
                 value: nil,
                 systemImage: "doc.text"
@@ -194,7 +194,7 @@ public struct KikiStandardAboutLinks: Equatable, Sendable {
         if let privacy {
             result.append(KikiStandardAboutLink(
                 id: "privacy",
-                title: "Privacy policy",
+                title: String(localized: "Privacy policy", bundle: .main, comment: "Default About-pane link label."),
                 url: privacy,
                 value: nil,
                 systemImage: "lock.shield"

@@ -28,7 +28,9 @@ surfaces of `KikiDesign`, `KikiWindow`, `KikiMenuBar`, `KikiSettings`,
 `KikiPaywall`, `KikiOnboarding`, `KikiAuthorization`, `KikiOverlay`, and
 `KikiTriggerCorner`.
 
-Read `Docs/APIConventions.md` before changing public API. Kiki only exposes APIs
+Read `Docs/APIConventions.md` before changing public API, and
+`Docs/Localization.md` before touching any user-facing string, default
+copy value, or new string-emitting call site. Kiki only exposes APIs
 for business apps to call; adoption workflow, product skeletons, and app-specific
 development practices belong in the workspace or starter, not in this package.
 

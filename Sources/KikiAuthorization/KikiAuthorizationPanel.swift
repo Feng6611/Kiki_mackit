@@ -15,9 +15,9 @@ public enum KikiAuthorizationPanel: String, CaseIterable, Sendable {
     public var title: String {
         switch self {
         case .accessibility:
-            return "Accessibility"
+            return String(localized: "Accessibility", bundle: .main, comment: "System privacy panel name. Caller must provide this key.")
         case .screenRecording:
-            return "Screen Recording"
+            return String(localized: "Screen Recording", bundle: .main, comment: "System privacy panel name. Caller must provide this key.")
         }
     }
 

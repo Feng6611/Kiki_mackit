@@ -13,13 +13,13 @@ public enum KikiTriggerCorner: String, CaseIterable, Identifiable {
     public var title: String {
         switch self {
         case .topLeft:
-            return "Top Left"
+            return String(localized: "Top Left", bundle: .main, comment: "Trigger-corner label.")
         case .topRight:
-            return "Top Right"
+            return String(localized: "Top Right", bundle: .main, comment: "Trigger-corner label.")
         case .bottomLeft:
-            return "Bottom Left"
+            return String(localized: "Bottom Left", bundle: .main, comment: "Trigger-corner label.")
         case .bottomRight:
-            return "Bottom Right"
+            return String(localized: "Bottom Right", bundle: .main, comment: "Trigger-corner label.")
         }
     }
 }

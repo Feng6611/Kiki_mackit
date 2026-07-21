@@ -60,7 +60,7 @@ public enum KikiMenuItem {
              .about(let title, _):
             return title
         case .quit(let appName, _):
-            return "Quit \(appName)"
+            return String(localized: "Quit \(appName)", bundle: .main, comment: "Menu item. Callers must provide 'Quit %@' in their app's Localizable.xcstrings.")
         case .separator:
             return nil
         }
@@ -117,7 +117,7 @@ public enum KikiMenuBuilder {
                 ))
             case .quit(let appName, let action):
                 menu.addItem(makeActionItem(
-                    title: "Quit \(appName)",
+                    title: String(localized: "Quit \(appName)", bundle: .main, comment: "Menu item. Callers must provide 'Quit %@' in their app's Localizable.xcstrings."),
                     shortcut: .quit,
                     isEnabled: true,
                     action: action

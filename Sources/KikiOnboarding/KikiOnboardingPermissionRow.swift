@@ -16,8 +16,8 @@ public struct KikiOnboardingPermissionRow: View {
         panel: KikiAuthorizationPanel,
         instruction: String,
         trustNote: String? = nil,
-        authorizedLabel: String = "Allowed",
-        unauthorizedLabel: String = "Not connected",
+        authorizedLabel: String = String(localized: "Allowed", bundle: .main, comment: "Default onboarding-row status when the permission is granted."),
+        unauthorizedLabel: String = String(localized: "Not connected", bundle: .main, comment: "Default onboarding-row status when the permission is not granted."),
         tint: Color = .accentColor
     ) {
         self.panel = panel

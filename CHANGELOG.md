@@ -2,6 +2,34 @@
 
 ## Unreleased
 
+### Changed
+
+- **Localization opt-in.** Kit-owned English literals now resolve through
+  the host app's main bundle via `String(localized:, bundle: .main, ...)`.
+  Adopting apps that add the matching keys to their own `.xcstrings`
+  automatically render Kit strings in the app's locale; apps that do not
+  keep seeing the previous English source. Sites converted:
+  - `KikiMenuBar.KikiMenuItem.quit`: `Quit %@`
+  - `KikiAuthorization.KikiAuthorizationPanel.title`: `Accessibility`,
+    `Screen Recording`
+  - `KikiAuthorization.KikiAuthorizationAppDragSourceView`:
+    `Drag me into the list`, `Drag upward`
+  - `KikiPaywall.KikiPaywallPlanCard` accessibility value: `Selected`,
+    `Not selected`
+  - `KikiSettings.KikiSettingsAppPicker` placeholder: `Select an app…`
+    (also switched `...` → `…`)
+  - `KikiSettings.KikiAppMetadata` default About links:
+    `Terms of use`, `Privacy policy`
+  - `KikiSettings.LaunchAtLogin.Toggle()` no-arg init is unchanged;
+    callers wanting localization should use the `LocalizedStringKey` or
+    `Text`-block overload (already supported).
+  - `KikiTriggerCorner.title`: `Top Left`, `Top Right`, `Bottom Left`,
+    `Bottom Right`
+  - `KikiOnboardingPermissionRow` defaults: `Allowed`, `Not connected`
+
+  See `Docs/Localization.md` for the caller-owned pattern and the full
+  key contract each host app is expected to provide.
+
 ## 0.9.0 - 2026-07-20
 
 Focus: paywall CTA hierarchy, Settings sizing that fits menu-bar
