@@ -1,12 +1,13 @@
 import AppKit
+import Combine
 import SwiftUI
 
 @MainActor
-public final class KikiSettingsCoordinator<Tab: Hashable> {
+public final class KikiSettingsCoordinator<Tab: Hashable>: ObservableObject {
     public let navigation: KikiSettingsNavigationModel<Tab>
     public let opener: KikiSettingsOpener
     public let windowController: KikiSettingsWindowController?
-    public let tabs: [KikiSettingsTabSpec<Tab>]
+    @Published public private(set) var tabs: [KikiSettingsTabSpec<Tab>]
 
     public init(
         tabs: [KikiSettingsTabSpec<Tab>],
@@ -25,6 +26,12 @@ public final class KikiSettingsCoordinator<Tab: Hashable> {
 
     public func select(_ tab: Tab) {
         navigation.selectedTab = tab
+    }
+
+    /// Replaces caller-owned labels while preserving the selected tab and the
+    /// native Settings window. Useful when the host changes its live locale.
+    public func updateTabs(_ tabs: [KikiSettingsTabSpec<Tab>]) {
+        self.tabs = tabs
     }
 
     public func open(tab: Tab? = nil, isMenuBarApp: Bool = true) {
@@ -49,7 +56,7 @@ public final class KikiSettingsCoordinator<Tab: Hashable> {
 
 public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
     @ObservedObject private var navigation: KikiSettingsNavigationModel<Tab>
-    private let tabs: [KikiSettingsTabSpec<Tab>]
+    @ObservedObject private var coordinator: KikiSettingsCoordinator<Tab>
     private let width: CGFloat
     private let height: CGFloat
     private let minimumWidth: CGFloat
@@ -66,7 +73,7 @@ public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
         @ViewBuilder content: @escaping (Tab) -> Content
     ) {
         self.navigation = coordinator.navigation
-        self.tabs = coordinator.tabs
+        self.coordinator = coordinator
         self.width = width
         self.height = height
         self.minimumWidth = minimumWidth
@@ -78,7 +85,7 @@ public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
     public var body: some View {
         KikiSettingsShell(
             selection: $navigation.selectedTab,
-            tabs: tabs,
+            tabs: coordinator.tabs,
             width: width,
             height: height,
             minimumWidth: minimumWidth,
