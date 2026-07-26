@@ -38,6 +38,23 @@ public struct KikiOnboardingRowsContent: View {
     }
 }
 
+/// Background treatment for `KikiOnboardingScaffold`.
+public enum KikiOnboardingBackground: Sendable {
+    /// Material surface plus a tinted radial wash from the top (default).
+    case tintWash
+    /// Material surface only — calm, system-native look with no tint wash.
+    case plain
+}
+
+/// Vertical placement of the hero/title/content column.
+public enum KikiOnboardingContentAlignment: Sendable {
+    /// Top-aligned inside a scroll view (default).
+    case top
+    /// Vertically centered between the title bar and the action area.
+    /// Content must fit the window; there is no scroll fallback.
+    case centered
+}
+
 public struct KikiOnboardingScaffold<Content: View>: View {
     private let appName: String
     private let title: String
@@ -53,6 +70,8 @@ public struct KikiOnboardingScaffold<Content: View>: View {
     private let size: CGSize
     private let stepIndex: Int?
     private let stepCount: Int?
+    private let background: KikiOnboardingBackground
+    private let contentAlignment: KikiOnboardingContentAlignment
 
     public init(
         appName: String,
@@ -68,6 +87,8 @@ public struct KikiOnboardingScaffold<Content: View>: View {
         size: CGSize = KikiOnboardingDefaults.windowSize,
         stepIndex: Int? = nil,
         stepCount: Int? = nil,
+        background: KikiOnboardingBackground = .tintWash,
+        contentAlignment: KikiOnboardingContentAlignment = .top,
         @ViewBuilder content: () -> Content
     ) {
         self.appName = appName
@@ -84,38 +105,13 @@ public struct KikiOnboardingScaffold<Content: View>: View {
         self.size = size
         self.stepIndex = stepIndex
         self.stepCount = stepCount
+        self.background = background
+        self.contentAlignment = contentAlignment
     }
 
     public var body: some View {
         VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 18) {
-                    VStack(spacing: 12) {
-                        hero
-
-                        VStack(spacing: 6) {
-                            Text(title)
-                                .font(.title.bold())
-                                .multilineTextAlignment(.center)
-
-                            if let bodyText {
-                                Text(bodyText)
-                                    .font(.body)
-                                    .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.center)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                    }
-
-                    content
-                }
-                .frame(maxWidth: .infinity, alignment: .top)
-                .padding(.horizontal, 28)
-                .padding(.top, 28)
-                .padding(.bottom, 14)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            contentColumnContainer
 
             if let stepIndex, let stepCount, stepCount > 1 {
                 KikiOnboardingProgressDots(
@@ -134,12 +130,14 @@ public struct KikiOnboardingScaffold<Content: View>: View {
         .background {
             ZStack {
                 KikiMaterialSurface(in: Rectangle(), material: .regularMaterial, tint: tint, tintOpacity: 0.02)
-                RadialGradient(
-                    colors: [tint.opacity(KikiDesignTokens.Opacity.mediumFill), .clear],
-                    center: .top,
-                    startRadius: 0,
-                    endRadius: 280
-                )
+                if background == .tintWash {
+                    RadialGradient(
+                        colors: [tint.opacity(KikiDesignTokens.Opacity.mediumFill), .clear],
+                        center: .top,
+                        startRadius: 0,
+                        endRadius: 280
+                    )
+                }
             }
             // Cover the full-size transparent title bar as well as the content
             // area. This mirrors Command Reopen and prevents a detached top
@@ -148,6 +146,51 @@ public struct KikiOnboardingScaffold<Content: View>: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(appName) onboarding")
+    }
+
+    @ViewBuilder
+    private var contentColumnContainer: some View {
+        switch contentAlignment {
+        case .top:
+            ScrollView {
+                contentColumn
+                    .frame(maxWidth: .infinity, alignment: .top)
+                    .padding(.horizontal, 28)
+                    .padding(.top, 28)
+                    .padding(.bottom, 14)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case .centered:
+            contentColumn
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .padding(.horizontal, 28)
+                .padding(.top, 28)
+                .padding(.bottom, 14)
+        }
+    }
+
+    private var contentColumn: some View {
+        VStack(spacing: 18) {
+            VStack(spacing: 12) {
+                hero
+
+                VStack(spacing: 6) {
+                    Text(title)
+                        .font(.title.bold())
+                        .multilineTextAlignment(.center)
+
+                    if let bodyText {
+                        Text(bodyText)
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+
+            content
+        }
     }
 
     @ViewBuilder
