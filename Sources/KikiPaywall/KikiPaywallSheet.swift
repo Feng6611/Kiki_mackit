@@ -73,7 +73,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
     public var body: some View {
         KikiPaywallShell(
             width: size.width,
-            height: size.height,
+            height: sheetHeight,
             tint: tint,
             showsCloseButton: showsCloseButton,
             onClose: onClose
@@ -108,6 +108,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
                                 plan: plan,
                                 isSelected: selectedPlanID == plan.id,
                                 tint: tint,
+                                reservesBadgeSpace: plans.contains { $0.badge != nil },
                                 onSelect: {
                                     selectedPlanID = plan.id
                                 }
@@ -165,6 +166,27 @@ public struct KikiPaywallSheet<Footer: View>: View {
                 footer
             }
         }
+    }
+
+    /// The fixed sizes fit a header, features and plans, with a little slack
+    /// below. Content sits in a scroll view, so anything beyond that slack was
+    /// silently hidden under the actions area rather than growing the sheet —
+    /// which is how the plan cards ended up clipped once a stats card and a
+    /// second button appeared. A sheet with less content shrinks instead.
+    private var sheetHeight: CGFloat {
+        if plans.isEmpty {
+            return size.height - KikiPaywallDefaults.planRowHeight
+        }
+
+        var extraContent: CGFloat = stats.isEmpty ? 0 : KikiPaywallDefaults.statsRowHeight
+        extraContent += CGFloat(borderedSecondaryActions.count)
+            * KikiPaywallDefaults.secondaryActionRowHeight
+
+        let growth = max(
+            0,
+            extraContent - KikiPaywallDefaults.baseContentSlack + KikiPaywallDefaults.minimumActionsGap
+        )
+        return size.height + growth
     }
 
     private var borderedSecondaryActions: [KikiPaywallActionConfig] {

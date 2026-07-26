@@ -9,6 +9,25 @@ public enum KikiPaywallDefaults {
     public static let windowWidth: CGFloat = 520
     public static let windowHeight: CGFloat = 620
     public static let sheetPadding: CGFloat = 28
+
+    /// Slack the fixed sheet heights carry below their content, measured on a
+    /// rendered compact sheet with a header, three features and a plan row.
+    public static let baseContentSlack: CGFloat = 56
+
+    /// Breathing room to keep between the content and the actions area.
+    public static let minimumActionsGap: CGFloat = 20
+
+    /// Height a stats card occupies, including the spacing above it.
+    public static let statsRowHeight: CGFloat = 76
+
+    /// Height the plan cards occupy, including the spacing above them.
+    ///
+    /// Reclaimed when a sheet has no plans to offer — an entitled user is shown
+    /// their status, and holding the row open leaves a void above the button.
+    public static let planRowHeight: CGFloat = 112
+
+    /// Height one bordered secondary button adds, including its spacing.
+    public static let secondaryActionRowHeight: CGFloat = 44
 }
 
 public enum KikiPaywallSheetSize: Sendable {

@@ -20,6 +20,7 @@ public struct KikiMenuShortcut: Equatable {
 public enum KikiMenuItem {
     case action(
         title: String,
+        badgeCount: Int? = nil,
         shortcut: KikiMenuShortcut? = nil,
         isEnabled: Bool = true,
         action: @MainActor () -> Void
@@ -52,8 +53,9 @@ public enum KikiMenuItem {
 
     public var title: String? {
         switch self {
-        case .action(let title, _, _, _),
-             .toggle(let title, _, _, _),
+        case .action(let title, _, _, _, _):
+            return title
+        case .toggle(let title, _, _, _),
              .link(let title, _, _),
              .status(let title),
              .settings(let title, _),
@@ -68,8 +70,9 @@ public enum KikiMenuItem {
 
     public var isEnabled: Bool {
         switch self {
-        case .action(_, _, let isEnabled, _),
-             .toggle(_, _, let isEnabled, _),
+        case .action(_, _, _, let isEnabled, _):
+            return isEnabled
+        case .toggle(_, _, let isEnabled, _),
              .link(_, _, let isEnabled):
             return isEnabled
         case .settings, .about, .quit:
@@ -122,9 +125,10 @@ public enum KikiMenuBuilder {
                     isEnabled: true,
                     action: action
                 ))
-            case .action(let title, let shortcut, let isEnabled, let action):
+            case .action(let title, let badgeCount, let shortcut, let isEnabled, let action):
                 menu.addItem(makeActionItem(
                     title: title,
+                    badgeCount: badgeCount,
                     shortcut: shortcut,
                     isEnabled: isEnabled,
                     action: action
@@ -146,6 +150,7 @@ public enum KikiMenuBuilder {
 
     private static func makeActionItem(
         title: String,
+        badgeCount: Int? = nil,
         shortcut: KikiMenuShortcut?,
         isEnabled: Bool,
         action: @escaping @MainActor () -> Void
@@ -163,6 +168,11 @@ public enum KikiMenuBuilder {
         item.representedObject = target
         item.keyEquivalentModifierMask = shortcut?.modifiers ?? []
         item.isEnabled = isEnabled
+        // Trailing-aligned and secondary — the system treatment for a count in
+        // a menu. Callers targeting macOS 13 should fold it into `title`.
+        if let badgeCount, #available(macOS 14.0, *) {
+            item.badge = NSMenuItemBadge(count: badgeCount)
+        }
         return item
     }
 

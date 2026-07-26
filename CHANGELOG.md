@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+### Added
+
+- **`badgeCount` on `KikiMenuItem.action`.** Renders as an `NSMenuItemBadge` on
+  macOS 14+, the system treatment for a count in a menu: trailing-aligned and
+  secondary, so the label reads first and the number sits alone against the
+  right edge. Ignored on macOS 13, where callers should fold the number into
+  the title. Defaults to `nil`.
+
+### Fixed
+
+- **Plan cards in a row now share a height.** A `badge` was laid out inside the
+  card's stack, so a badged card was ~22pt taller than its neighbours: their
+  prices sat on different baselines and the taller card ran under the actions
+  area. `KikiPaywallPlanCard` gains `reservesBadgeSpace` (default `false`, so
+  standalone callers are unchanged); `KikiPaywallSheet` sets it whenever any
+  plan in the row carries a badge.
+- **Sheet height follows its content.** The fixed sheet sizes fit a header,
+  features and plans with a little slack below, and the content sits in a
+  scroll view — so anything beyond that slack was silently hidden under the
+  actions area instead of growing the sheet. A stats card plus a second
+  bordered button (the "purchase or start trial" state) clipped the plan cards
+  outright. `KikiPaywallSheet` now grows by whatever a stats card and each
+  bordered secondary button need beyond `baseContentSlack`, keeping
+  `minimumActionsGap` clear, and reclaims `planRowHeight` when it has no plans
+  to show. A sheet whose extra content still fits the existing slack keeps its
+  exact previous size.
+
 ### Changed
 
 - **Localization opt-in.** Kit-owned English literals now resolve through

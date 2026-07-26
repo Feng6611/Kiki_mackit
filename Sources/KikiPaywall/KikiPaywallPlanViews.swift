@@ -6,30 +6,38 @@ public struct KikiPaywallPlanCard: View {
     private let plan: KikiPaywallPlan
     private let isSelected: Bool
     private let tint: Color
+    private let reservesBadgeSpace: Bool
     private let onSelect: () -> Void
 
     public init(
         plan: KikiPaywallPlan,
         isSelected: Bool,
         tint: Color = .accentColor,
+        reservesBadgeSpace: Bool = false,
         onSelect: @escaping () -> Void
     ) {
         self.plan = plan
         self.isSelected = isSelected
         self.tint = tint
+        self.reservesBadgeSpace = reservesBadgeSpace
         self.onSelect = onSelect
     }
 
     public var body: some View {
         Button(action: onSelect) {
             VStack(spacing: 8) {
-                if let badge = plan.badge {
-                    Text(badge)
+                // Every card in a row keeps the badge's space so the badged one
+                // is not taller than its neighbours, which pushed their prices
+                // off a shared baseline and ran the row into the actions area.
+                if reservesBadgeSpace || plan.badge != nil {
+                    Text(plan.badge ?? " ")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(tint)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
                         .background(Capsule().fill(tint.opacity(KikiDesignTokens.Opacity.strongFill)))
+                        .opacity(plan.badge == nil ? 0 : 1)
+                        .accessibilityHidden(plan.badge == nil)
                 }
 
                 Text(plan.title)
