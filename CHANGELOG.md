@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- **The paywall sheet takes the height its content needs.** `KikiPaywallShell`
+  gained a `minimumHeight`/`idealHeight`/`maximumHeight` initializer; it
+  measures its content at the real width and clamps the result, scrolling only
+  past the ceiling. The fixed heights hid overflow under the actions area, so
+  each new arrangement needed another slack constant to stop clipping the plan
+  cards. The single-`height:` initializer is unchanged and still right for
+  content of one fixed shape.
+- **Brand tint is limited to the primary CTA and the selected plan card.**
+  `KikiPaywallStatItem` figures, `KikiPaywallFeatureRow` marks, the
+  `KikiPaywallStatsCard` panel and the shell background no longer take the
+  tint, so the two controls a paywall needs found have something to stand out
+  against. Both views keep their `tint` parameter for source compatibility and
+  ignore it.
+
+### Deprecated
+
+- `KikiPaywallDefaults.baseContentSlack`, `.minimumActionsGap`,
+  `.statsRowHeight`, `.planRowHeight`, `.secondaryActionRowHeight`. Sheets
+  measure their own content; nothing computes a height from row constants.
+
 ## 0.9.1 - 2026-07-28
 
 ### Added

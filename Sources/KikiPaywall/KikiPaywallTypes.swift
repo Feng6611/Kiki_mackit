@@ -10,23 +10,27 @@ public enum KikiPaywallDefaults {
     public static let windowHeight: CGFloat = 620
     public static let sheetPadding: CGFloat = 28
 
-    /// Slack the fixed sheet heights carry below their content, measured on a
-    /// rendered compact sheet with a header, three features and a plan row.
+    /// Floor for a sheet that measures itself. Below this a sheet with only a
+    /// header and one button stops reading as a sheet.
+    public static let minimumSheetHeight: CGFloat = 380
+
+    /// Ceiling for a compact sheet. Past this the content scrolls rather than
+    /// growing a settings sheet taller than a small display's free space.
+    public static let maximumSheetHeight: CGFloat = 720
+
+    @available(*, deprecated, message: "Sheets measure their content; slack constants are no longer used.")
     public static let baseContentSlack: CGFloat = 56
 
-    /// Breathing room to keep between the content and the actions area.
+    @available(*, deprecated, message: "Sheets measure their content; row-height constants are no longer used.")
     public static let minimumActionsGap: CGFloat = 20
 
-    /// Height a stats card occupies, including the spacing above it.
+    @available(*, deprecated, message: "Sheets measure their content; row-height constants are no longer used.")
     public static let statsRowHeight: CGFloat = 76
 
-    /// Height the plan cards occupy, including the spacing above them.
-    ///
-    /// Reclaimed when a sheet has no plans to offer — an entitled user is shown
-    /// their status, and holding the row open leaves a void above the button.
+    @available(*, deprecated, message: "Sheets measure their content; row-height constants are no longer used.")
     public static let planRowHeight: CGFloat = 112
 
-    /// Height one bordered secondary button adds, including its spacing.
+    @available(*, deprecated, message: "Sheets measure their content; row-height constants are no longer used.")
     public static let secondaryActionRowHeight: CGFloat = 44
 }
 
@@ -41,9 +45,26 @@ public enum KikiPaywallSheetSize: Sendable {
         }
     }
 
+    /// The height a sheet opens at, before its content reports its own.
     public var height: CGFloat {
         switch self {
         case .compact: return KikiPaywallDefaults.sheetHeight
+        case .onboarding: return KikiPaywallDefaults.onboardingSheetHeight
+        }
+    }
+
+    public var minimumHeight: CGFloat {
+        KikiPaywallDefaults.minimumSheetHeight
+    }
+
+    /// How tall the sheet may grow before its content scrolls.
+    ///
+    /// An onboarding paywall is hosted inside the welcome window and cannot
+    /// exceed it, so it is capped at its own height. A settings sheet has the
+    /// screen to itself and may grow.
+    public var maximumHeight: CGFloat {
+        switch self {
+        case .compact: return KikiPaywallDefaults.maximumSheetHeight
         case .onboarding: return KikiPaywallDefaults.onboardingSheetHeight
         }
     }

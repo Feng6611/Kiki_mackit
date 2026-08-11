@@ -2,22 +2,29 @@ import AppKit
 import KikiDesign
 import SwiftUI
 
+/// A figure the user earned, with its label underneath.
+///
+/// The figure is rendered in the primary content color, not the tint. Brand
+/// color on a paywall is reserved for the two controls that need to be found
+/// — the primary CTA and the selected plan card — and a tinted figure competed
+/// with both for the same glance. Size and weight already make it the loudest
+/// thing in the card.
 public struct KikiPaywallStatItem: View {
     private let value: String
     private let label: String
-    private let tint: Color
 
+    /// - Parameter tint: accepted for source compatibility and unused. See the
+    ///   type's documentation for why the figure is not tinted.
     public init(value: String, label: String, tint: Color = .accentColor) {
         self.value = value
         self.label = label
-        self.tint = tint
     }
 
     public var body: some View {
         VStack(spacing: 2) {
             Text(value)
                 .font(.title2.bold())
-                .foregroundStyle(tint)
+                .foregroundStyle(.primary)
                 .lineLimit(1)
             Text(label)
                 .font(.caption)
@@ -28,13 +35,17 @@ public struct KikiPaywallStatItem: View {
     }
 }
 
+/// The panel that groups the user's own figures.
+///
+/// Its fill is a neutral wash rather than a tinted one, for the reason given
+/// on `KikiPaywallStatItem`: a tinted panel behind tinted figures made the
+/// whole upper half of the sheet read as one accent-colored block.
 public struct KikiPaywallStatsCard: View {
     private let stats: [KikiPaywallStatConfig]
-    private let tint: Color
 
+    /// - Parameter tint: accepted for source compatibility and unused.
     public init(stats: [KikiPaywallStatConfig], tint: Color = .accentColor) {
         self.stats = stats
-        self.tint = tint
     }
 
     public var body: some View {
@@ -42,8 +53,7 @@ public struct KikiPaywallStatsCard: View {
             ForEach(stats) { stat in
                 KikiPaywallStatItem(
                     value: stat.value,
-                    label: stat.label,
-                    tint: tint
+                    label: stat.label
                 )
             }
         }
@@ -52,26 +62,31 @@ public struct KikiPaywallStatsCard: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.panel, style: .continuous)
-                .fill(tint.opacity(KikiDesignTokens.Opacity.mediumFill))
+                .fill(Color.primary.opacity(KikiDesignTokens.Opacity.mediumFill))
         )
     }
 }
 
+/// One line in the feature list.
+///
+/// The mark is secondary, not tinted. A column of tinted checkmarks reads as a
+/// column of buttons, and it put brand color in a third place on a sheet that
+/// only has two things worth finding.
 public struct KikiPaywallFeatureRow: View {
     private let icon: String
     private let text: String
-    private let tint: Color
 
+    /// - Parameter tint: accepted for source compatibility and unused.
     public init(icon: String, text: String, tint: Color = .accentColor) {
         self.icon = icon
         self.text = text
-        self.tint = tint
     }
 
     public var body: some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
-                .foregroundStyle(tint)
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.secondary)
                 .frame(width: 18)
             Text(text)
                 .font(.callout)

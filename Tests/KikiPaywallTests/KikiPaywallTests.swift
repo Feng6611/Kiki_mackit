@@ -7,6 +7,17 @@ struct KikiPaywallTests {
     func onboardingPaywallStaysWithinWelcomeWindow() {
         #expect(KikiPaywallSheetSize.onboarding.width == 520)
         #expect(KikiPaywallSheetSize.onboarding.height == 520)
+        // It is hosted inside the welcome window, so it may not grow past it
+        // once it measures its own content — long content scrolls instead.
+        #expect(KikiPaywallSheetSize.onboarding.maximumHeight == 520)
+    }
+
+    @Test("A compact sheet may grow past its opening height")
+    func compactSheetGrowsWithinBounds() {
+        let size = KikiPaywallSheetSize.compact
+
+        #expect(size.minimumHeight < size.height)
+        #expect(size.maximumHeight > size.height)
     }
 
     @Test("Paywall plan stores display metadata")
