@@ -18,9 +18,20 @@ public struct KikiMenuShortcut: Equatable {
 
 @MainActor
 public enum KikiMenuItem {
+    /// - Parameters:
+    ///   - badgeText: trailing supplementary text — "2 days left", "20% off".
+    ///     Use it to make one item carry news the others do not; the system
+    ///     draws it the way it draws its own menu badges, which is what makes
+    ///     it read as emphasis rather than decoration.
+    ///   - systemImage: leading SF Symbol, tinted with `imageTint` when given.
+    ///     A menu is a list of equals, so an icon on exactly one item is what
+    ///     singles it out; icons on several cancel each other out.
     case action(
         title: String,
         badgeCount: Int? = nil,
+        badgeText: String? = nil,
+        systemImage: String? = nil,
+        imageTint: NSColor? = nil,
         shortcut: KikiMenuShortcut? = nil,
         isEnabled: Bool = true,
         action: @MainActor () -> Void
@@ -53,7 +64,7 @@ public enum KikiMenuItem {
 
     public var title: String? {
         switch self {
-        case .action(let title, _, _, _, _):
+        case .action(let title, _, _, _, _, _, _, _):
             return title
         case .toggle(let title, _, _, _),
              .link(let title, _, _),
@@ -70,7 +81,7 @@ public enum KikiMenuItem {
 
     public var isEnabled: Bool {
         switch self {
-        case .action(_, _, _, let isEnabled, _):
+        case .action(_, _, _, _, _, _, let isEnabled, _):
             return isEnabled
         case .toggle(_, _, let isEnabled, _),
              .link(_, _, let isEnabled):
@@ -125,10 +136,22 @@ public enum KikiMenuBuilder {
                     isEnabled: true,
                     action: action
                 ))
-            case .action(let title, let badgeCount, let shortcut, let isEnabled, let action):
+            case .action(
+                let title,
+                let badgeCount,
+                let badgeText,
+                let systemImage,
+                let imageTint,
+                let shortcut,
+                let isEnabled,
+                let action
+            ):
                 menu.addItem(makeActionItem(
                     title: title,
                     badgeCount: badgeCount,
+                    badgeText: badgeText,
+                    systemImage: systemImage,
+                    imageTint: imageTint,
                     shortcut: shortcut,
                     isEnabled: isEnabled,
                     action: action
@@ -151,14 +174,27 @@ public enum KikiMenuBuilder {
     private static func makeActionItem(
         title: String,
         badgeCount: Int? = nil,
+        badgeText: String? = nil,
+        systemImage: String? = nil,
+        imageTint: NSColor? = nil,
         shortcut: KikiMenuShortcut?,
         isEnabled: Bool,
         action: @escaping @MainActor () -> Void
     ) -> NSMenuItem {
         let target = KikiMenuActionTarget(action: action)
 
+        // Badges arrived in macOS 14. Below it the text still has to reach the
+        // user, so it joins the title — losing the trailing alignment is a far
+        // smaller loss than losing "2 days left" altogether.
+        let resolvedTitle: String
+        if let badgeText, !isBadgeTextSupported {
+            resolvedTitle = "\(title) — \(badgeText)"
+        } else {
+            resolvedTitle = title
+        }
+
         let item = NSMenuItem(
-            title: title,
+            title: resolvedTitle,
             action: #selector(KikiMenuActionTarget.performKikiMenuAction),
             keyEquivalent: shortcut?.key ?? ""
         )
@@ -173,7 +209,28 @@ public enum KikiMenuBuilder {
         if let badgeCount, #available(macOS 14.0, *) {
             item.badge = NSMenuItemBadge(count: badgeCount)
         }
+        if let badgeText, #available(macOS 14.0, *) {
+            item.badge = NSMenuItemBadge(string: badgeText)
+        }
+        if let systemImage {
+            let image = NSImage(
+                systemSymbolName: systemImage,
+                accessibilityDescription: nil
+            )
+            if let imageTint {
+                item.image = image?.withSymbolConfiguration(
+                    NSImage.SymbolConfiguration(paletteColors: [imageTint])
+                )
+            } else {
+                item.image = image
+            }
+        }
         return item
+    }
+
+    /// Whether `NSMenuItemBadge` will actually render this run.
+    private static var isBadgeTextSupported: Bool {
+        if #available(macOS 14.0, *) { true } else { false }
     }
 
     private static func makeStatusItem(title: String) -> NSMenuItem {

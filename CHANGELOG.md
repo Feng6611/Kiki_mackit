@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added
+
+- **`KikiMenuItem.action` takes a `badgeText`, a `systemImage` and an
+  `imageTint`.** A menu bar menu is a list of equals, so an app with news on
+  exactly one item — a trial counting down, a discount holding — had no way to
+  say so. The badge uses `NSMenuItemBadge` on macOS 14 and folds into the
+  title below it, where dropping the text would be the worse trade.
+
 ### Changed
 
 - **The paywall sheet takes the height its content needs.** `KikiPaywallShell`
