@@ -168,7 +168,28 @@ public enum KikiMenuBuilder {
             }
         }
 
+        alignTitles(in: menu)
         return menu
+    }
+
+    /// Keeps every title on one vertical line once any item carries an icon.
+    ///
+    /// AppKit reserves the image column per item rather than per menu, so a
+    /// single icon pushes that one title right and leaves the others where
+    /// they were — a menu that reads as accidentally indented. Handing the
+    /// remaining items a transparent image of the same size restores the
+    /// column while leaving exactly one glyph visible, which is the whole
+    /// point of putting an icon on one item.
+    private static func alignTitles(in menu: NSMenu) {
+        let iconSize = menu.items.compactMap(\.image?.size).max { $0.width < $1.width }
+        guard let iconSize else { return }
+
+        let spacer = NSImage(size: iconSize)
+        spacer.isTemplate = true
+
+        for item in menu.items where item.image == nil && !item.isSeparatorItem {
+            item.image = spacer
+        }
     }
 
     private static func makeActionItem(

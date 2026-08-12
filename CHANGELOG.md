@@ -10,6 +10,13 @@
   say so. The badge uses `NSMenuItemBadge` on macOS 14 and folds into the
   title below it, where dropping the text would be the worse trade.
 
+### Fixed
+
+- **Menu titles stay on one vertical line when a single item carries an icon.**
+  AppKit reserves the image column per item, not per menu, so one icon pushed
+  that title right and left the rest where they were. `KikiMenuBuilder` now
+  hands the remaining items a transparent image of the same size.
+
 ### Changed
 
 - **The paywall sheet takes the height its content needs.** `KikiPaywallShell`
