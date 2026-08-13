@@ -4,6 +4,14 @@
 
 ### Added
 
+- **`KikiSheetShell` — the card chrome shared by every Kiki sheet.** A fixed
+  width, a height that follows its content between a floor and a ceiling
+  (scrolling past it), a plain material background, and one close control in
+  the top-trailing corner. `KikiPaywallShell` is now built on it, so a sheet
+  added later — a shortcuts list, a what's-new card — inherits the same size
+  behaviour and the same way out instead of reinventing either. Present it
+  inside SwiftUI's `.sheet`.
+
 - **`KikiMenuItem.action` takes a `badgeText`, a `systemImage` and an
   `imageTint`.** A menu bar menu is a list of equals, so an app with news on
   exactly one item — a trial counting down, a discount holding — had no way to

@@ -2,19 +2,10 @@ import AppKit
 import KikiDesign
 import SwiftUI
 
-/// Reports the height the shell's content wants, so the shell can be as tall
-/// as what it holds instead of a number someone guessed.
-private struct KikiPaywallNaturalHeightKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
-
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
-    }
-}
-
 public struct KikiPaywallShell<Header: View, Content: View, Actions: View, Footer: View>: View {
     private let width: CGFloat
     private let minimumHeight: CGFloat
+    private let idealHeight: CGFloat
     private let maximumHeight: CGFloat
     private let horizontalPadding: CGFloat
     private let tint: Color
@@ -24,11 +15,6 @@ public struct KikiPaywallShell<Header: View, Content: View, Actions: View, Foote
     private let content: Content
     private let actions: Actions
     private let footer: Footer
-
-    /// Height the shell shows until its content has been measured. Seeded from
-    /// the caller's ideal so the sheet opens at its intended size rather than
-    /// snapping open on the first layout pass.
-    @State private var naturalHeight: CGFloat
 
     /// A shell of a fixed height, for content whose shape does not change.
     public init(
@@ -87,6 +73,7 @@ public struct KikiPaywallShell<Header: View, Content: View, Actions: View, Foote
     ) {
         self.width = width
         self.minimumHeight = min(minimumHeight, maximumHeight)
+        self.idealHeight = idealHeight
         self.maximumHeight = max(minimumHeight, maximumHeight)
         self.horizontalPadding = horizontalPadding
         self.tint = tint
@@ -96,70 +83,23 @@ public struct KikiPaywallShell<Header: View, Content: View, Actions: View, Foote
         self.content = content()
         self.actions = actions()
         self.footer = footer()
-        _naturalHeight = State(initialValue: idealHeight)
     }
 
     public var body: some View {
-        ZStack(alignment: .topTrailing) {
-            VStack(spacing: 0) {
-                if isScrollable {
-                    ScrollView(showsIndicators: false) {
-                        scrollingArea
-                    }
-                } else {
-                    scrollingArea
-                    Spacer(minLength: 0)
-                }
-
-                actionsArea
-            }
-
-            if showsCloseButton {
-                Button {
-                    onClose?()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title2.weight(.medium))
-                        .symbolRenderingMode(.hierarchical)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .padding(20)
-                .keyboardShortcut(.cancelAction)
-                .accessibilityLabel("Close")
-            }
-        }
-        // An unclamped, non-scrolling copy laid out at the real width, purely
-        // to report how tall the content is. Hidden and non-interactive, and
-        // it never reads the resolved height, so it cannot feed back into it.
-        .background(alignment: .top) {
-            VStack(spacing: 0) {
-                scrollingArea
-                actionsArea
-            }
-            .frame(width: width)
-            .fixedSize(horizontal: false, vertical: true)
-            .background(
-                GeometryReader { proxy in
-                    Color.clear.preference(
-                        key: KikiPaywallNaturalHeightKey.self,
-                        value: proxy.size.height
-                    )
-                }
-            )
-            .hidden()
-            .accessibilityHidden(true)
-        }
-        .onPreferenceChange(KikiPaywallNaturalHeightKey.self) { height in
-            guard height > 0 else { return }
-            naturalHeight = height
-        }
-        .frame(width: width, height: resolvedHeight)
-        // Plain material, no tinted wash or top gradient. Those put brand
-        // color behind every element on the sheet, which left the CTA and the
-        // selected plan card with nothing to stand out against.
-        .background {
-            KikiMaterialSurface(in: Rectangle(), material: .regularMaterial)
+        // The card chrome — width, content-measured height, material, and the
+        // close control — is the shared KikiSheetShell. The paywall keeps only
+        // what is its own: how the header, stats, plans and actions stack.
+        KikiSheetShell(
+            width: width,
+            minimumHeight: minimumHeight,
+            idealHeight: idealHeight,
+            maximumHeight: maximumHeight,
+            showsCloseButton: showsCloseButton,
+            onClose: onClose
+        ) {
+            scrollingArea
+        } footer: {
+            actionsArea
         }
     }
 
@@ -182,13 +122,6 @@ public struct KikiPaywallShell<Header: View, Content: View, Actions: View, Foote
         .padding(.bottom, 14)
     }
 
-    private var resolvedHeight: CGFloat {
-        min(max(naturalHeight, minimumHeight), maximumHeight)
-    }
-
-    private var isScrollable: Bool {
-        naturalHeight > maximumHeight
-    }
 }
 
 public extension KikiPaywallShell where Actions == EmptyView, Footer == EmptyView {
