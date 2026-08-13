@@ -40,6 +40,27 @@ struct KikiDesignTests {
         _ = KikiDesignColor.systemAccent
     }
 
+    @MainActor
+    @Test("Bottom card sheet is constructible with dismissal policy")
+    func cardSheetIsConstructible() {
+        let style = KikiCardSheetStyle(
+            horizontalInset: 20,
+            maximumHeightFraction: 0.85
+        )
+        let view = Text("Host").kikiCardSheet(
+            isPresented: .constant(true),
+            style: style,
+            showsCloseButton: true,
+            allowsBackgroundDismiss: true
+        ) {
+            Text("Sheet")
+        }
+
+        _ = view
+        #expect(style.horizontalInset == 20)
+        #expect(style.maximumHeightFraction == 0.85)
+    }
+
     @Test("Application icon resource names support Icon Composer output")
     func applicationIconResourceNamesSupportIconComposerOutput() {
         let implicitExtension = KikiApplicationIcon.resourceLocation(for: "AppIcon")
