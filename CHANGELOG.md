@@ -1,5 +1,52 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`KikiSheetShell` — the card chrome shared by every Kiki sheet.** A fixed
+  width, a height that follows its content between a floor and a ceiling
+  (scrolling past it), a plain material background, and one close control in
+  the top-trailing corner. `KikiPaywallShell` is now built on it, so a sheet
+  added later — a shortcuts list, a what's-new card — inherits the same size
+  behaviour and the same way out instead of reinventing either. Present it
+  inside SwiftUI's `.sheet`.
+
+- **`KikiMenuItem.action` takes a `badgeText`, a `systemImage` and an
+  `imageTint`.** A menu bar menu is a list of equals, so an app with news on
+  exactly one item — a trial counting down, a discount holding — had no way to
+  say so. The badge uses `NSMenuItemBadge` on macOS 14 and folds into the
+  title below it, where dropping the text would be the worse trade.
+
+### Fixed
+
+- **Menu titles stay on one vertical line when a single item carries an icon.**
+  AppKit reserves the image column per item, not per menu, so one icon pushed
+  that title right and left the rest where they were. `KikiMenuBuilder` now
+  hands the remaining items a transparent image of the same size.
+
+### Changed
+
+- **The paywall sheet takes the height its content needs.** `KikiPaywallShell`
+  gained a `minimumHeight`/`idealHeight`/`maximumHeight` initializer; it
+  measures its content at the real width and clamps the result, scrolling only
+  past the ceiling. The fixed heights hid overflow under the actions area, so
+  each new arrangement needed another slack constant to stop clipping the plan
+  cards. The single-`height:` initializer is unchanged and still right for
+  content of one fixed shape.
+- **Brand tint is limited to the primary CTA and the selected plan card.**
+  `KikiPaywallStatItem` figures, `KikiPaywallFeatureRow` marks, the
+  `KikiPaywallStatsCard` panel and the shell background no longer take the
+  tint, so the two controls a paywall needs found have something to stand out
+  against. Both views keep their `tint` parameter for source compatibility and
+  ignore it.
+
+### Deprecated
+
+- `KikiPaywallDefaults.baseContentSlack`, `.minimumActionsGap`,
+  `.statsRowHeight`, `.planRowHeight`, `.secondaryActionRowHeight`. Sheets
+  measure their own content; nothing computes a height from row constants.
+
 ## 0.9.1 - 2026-07-28
 
 ### Added

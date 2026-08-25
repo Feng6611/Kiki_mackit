@@ -40,6 +40,35 @@ struct KikiDesignTests {
         _ = KikiDesignColor.systemAccent
     }
 
+    @MainActor
+    @Test("Sheet shell is constructible with and without a footer")
+    func sheetShellIsConstructible() {
+        let withFooter = KikiSheetShell(
+            width: 440,
+            minimumHeight: 320,
+            idealHeight: 420,
+            maximumHeight: 520,
+            showsCloseButton: true,
+            onClose: {}
+        ) {
+            Text("Content")
+        } footer: {
+            Text("Actions")
+        }
+
+        let contentOnly = KikiSheetShell(
+            width: 440,
+            minimumHeight: 320,
+            idealHeight: 420,
+            maximumHeight: 520
+        ) {
+            Text("Content")
+        }
+
+        _ = withFooter
+        _ = contentOnly
+    }
+
     @Test("Application icon resource names support Icon Composer output")
     func applicationIconResourceNamesSupportIconComposerOutput() {
         let implicitExtension = KikiApplicationIcon.resourceLocation(for: "AppIcon")

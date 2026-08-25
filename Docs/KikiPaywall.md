@@ -24,8 +24,23 @@ post-success routing remain outside Base Kit in both cases.
 - No RevenueCat dependency; purchasing and entitlement policy belong to the app
   or the separate `KikiCommerceKit` package.
 - `KikiPaywallShell` extracts a stable small-app paywall sheet structure:
-  scrollable header/content, fixed action/footer area, optional close button,
+  header/content over a fixed action/footer area, optional close button,
   default sheet sizes, and subtle native material background.
+- The shell sizes itself to its content, between a floor and a ceiling. It
+  lays an unclamped hidden copy of its content out at the real width, reads
+  that height, and clamps it; content taller than the ceiling scrolls, and
+  nothing below it does. The previous fixed heights hid overflow under the
+  actions area, so every new arrangement — a stats card, a second bordered
+  button — needed another slack constant to stop clipping the plan cards.
+  Those constants (`baseContentSlack`, `statsRowHeight`, `planRowHeight`,
+  `secondaryActionRowHeight`, `minimumActionsGap`) are deprecated.
+- An onboarding paywall's ceiling is its own height, because it is hosted
+  inside the welcome window and may not grow past it. A compact sheet owns the
+  screen and may grow to `maximumSheetHeight`.
+- Brand tint is reserved for the primary CTA and the selected plan card, the
+  only two controls a paywall needs the eye to find. Stat figures, feature
+  marks, the stats panel and the sheet background are neutral: when all of
+  them carried the tint, the two controls had nothing to stand out against.
 - Preset primary/secondary actions use native
   `.borderedProminent`/`.bordered` buttons. Return activates the primary action;
   Escape activates an available close action.
