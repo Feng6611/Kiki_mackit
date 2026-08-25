@@ -50,6 +50,22 @@ struct KikiWindowTests {
     }
 
     @MainActor
+    @Test("Desktop glass window background is constructible")
+    func desktopGlassWindowBackgroundIsConstructible() {
+        let glass = Text("Window")
+            .kikiDesktopGlassWindowBackground(
+                tint: .blue,
+                tintOpacity: 0.12,
+                isMovableByWindowBackground: true
+            )
+
+        let bridge = KikiDesktopGlassWindowBackground(tint: .blue, tintOpacity: 0.12)
+
+        _ = glass
+        _ = bridge
+    }
+
+    @MainActor
     @Test("Transparent utility applies rounded non-opaque content at runtime")
     func transparentUtilityAppliesRoundedContentAtRuntime() {
         let controller = KikiSingleWindowController(

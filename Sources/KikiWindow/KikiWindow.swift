@@ -142,6 +142,8 @@ public struct KikiTransparentWindowBackground: NSViewRepresentable {
         if clearsBackground {
             window.isOpaque = false
             window.backgroundColor = .clear
+            window.contentView?.wantsLayer = true
+            window.contentView?.layer?.backgroundColor = NSColor.clear.cgColor
         }
 
         window.titlebarAppearsTransparent = titlebarAppearsTransparent
@@ -168,6 +170,115 @@ public extension View {
                 frameAutosaveName: frameAutosaveName
             )
         }
+    }
+}
+
+/// A desktop-sampled material background for a SwiftUI `Window` or
+/// `WindowGroup`. Unlike a regular SwiftUI `Material`, this bridge clears the
+/// host `NSWindow` and asks AppKit to blend the visual effect behind it.
+public struct KikiDesktopGlassWindowBackground: NSViewRepresentable {
+    private let material: NSVisualEffectView.Material
+    private let tint: NSColor
+    private let tintOpacity: CGFloat
+    private let isMovableByWindowBackground: Bool
+    private let extendsIntoTitlebar: Bool
+
+    public init(
+        material: NSVisualEffectView.Material = .underWindowBackground,
+        tint: Color = .clear,
+        tintOpacity: Double = 0,
+        isMovableByWindowBackground: Bool = false,
+        extendsIntoTitlebar: Bool = true
+    ) {
+        self.material = material
+        self.tint = NSColor(tint)
+        self.tintOpacity = max(0, min(tintOpacity, 1))
+        self.isMovableByWindowBackground = isMovableByWindowBackground
+        self.extendsIntoTitlebar = extendsIntoTitlebar
+    }
+
+    public func makeNSView(context: Context) -> KikiDesktopGlassView {
+        KikiDesktopGlassView(
+            material: material,
+            tint: tint,
+            tintOpacity: tintOpacity
+        )
+    }
+
+    public func updateNSView(_ nsView: KikiDesktopGlassView, context: Context) {
+        nsView.update(material: material, tint: tint, tintOpacity: tintOpacity)
+        applyWindowTransparency(to: nsView.window)
+    }
+
+    private func applyWindowTransparency(to window: NSWindow?) {
+        guard let window else {
+            return
+        }
+
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        window.isMovableByWindowBackground = isMovableByWindowBackground
+        window.contentView?.wantsLayer = true
+        window.contentView?.layer?.backgroundColor = NSColor.clear.cgColor
+
+        if extendsIntoTitlebar {
+            window.styleMask.insert(.fullSizeContentView)
+            window.titlebarAppearsTransparent = true
+            window.titleVisibility = .hidden
+        }
+    }
+}
+
+public extension View {
+    /// Installs a desktop-sampled AppKit material behind this view and clears
+    /// the host window background. Use it for the outermost app workspace,
+    /// not for cards or controls inside that workspace.
+    func kikiDesktopGlassWindowBackground(
+        material: NSVisualEffectView.Material = .underWindowBackground,
+        tint: Color = .clear,
+        tintOpacity: Double = 0,
+        isMovableByWindowBackground: Bool = false,
+        extendsIntoTitlebar: Bool = true
+    ) -> some View {
+        background {
+            KikiDesktopGlassWindowBackground(
+                material: material,
+                tint: tint,
+                tintOpacity: tintOpacity,
+                isMovableByWindowBackground: isMovableByWindowBackground,
+                extendsIntoTitlebar: extendsIntoTitlebar
+            )
+        }
+    }
+}
+
+public final class KikiDesktopGlassView: NSVisualEffectView {
+    private let tintView = NSView()
+
+    init(material: NSVisualEffectView.Material, tint: NSColor, tintOpacity: CGFloat) {
+        super.init(frame: .zero)
+        blendingMode = .behindWindow
+        state = .active
+        tintView.translatesAutoresizingMaskIntoConstraints = false
+        tintView.wantsLayer = true
+        addSubview(tintView)
+        NSLayoutConstraint.activate([
+            tintView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            tintView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            tintView.topAnchor.constraint(equalTo: topAnchor),
+            tintView.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
+        update(material: material, tint: tint, tintOpacity: tintOpacity)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func update(material: NSVisualEffectView.Material, tint: NSColor, tintOpacity: CGFloat) {
+        self.material = material
+        tintView.layer?.backgroundColor = tint.withAlphaComponent(tintOpacity).cgColor
     }
 }
 

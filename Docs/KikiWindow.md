@@ -14,6 +14,11 @@ scene modifiers are not enough.
   hosting `NSWindow` background and optionally makes the titlebar transparent.
 - `View.kikiTransparentWindowBackground(...)`: convenience wrapper for the
   bridge.
+- `KikiDesktopGlassWindowBackground`: AppKit desktop-sampled material bridge
+  that clears the host window before compositing.
+- `View.kikiDesktopGlassWindowBackground(...)`: all-in-one root-view modifier
+  for desktop glass, optional tint, movable background behavior, and full-size
+  content under the titlebar.
 - `KikiSingleWindowController`: single-instance `NSWindow` presenter that hosts
   SwiftUI content through `NSHostingView`.
 
@@ -45,3 +50,25 @@ Use `KikiSingleWindowController` when the host needs any of the following:
   extra `WindowGroup`);
 - short-lived utility windows that need an explicit lifecycle and a
   programmatic close.
+
+## Desktop glass
+
+Use `kikiDesktopGlassWindowBackground` only on an app workspace's outermost
+view. It clears the host window and installs `NSVisualEffectView` with
+`.behindWindow`, which lets desktop pixels participate in the material. Do not
+combine it with `kikiTransparentWindowBackground`, because desktop glass
+already applies the same window transparency:
+
+```swift
+import KikiWindow
+
+WorkspaceView()
+    .kikiDesktopGlassWindowBackground(
+        tint: Color(red: 0.20, green: 0.52, blue: 0.79),
+        tintOpacity: 0.10,
+        isMovableByWindowBackground: true
+    )
+```
+
+The app still owns its workspace layout, window scene, tint choice, and
+whether the window should be movable by background.
