@@ -10,6 +10,14 @@ private struct KikiSheetNaturalHeightKey: PreferenceKey {
     }
 }
 
+private struct KikiSheetFooterHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 /// The card chrome shared by every Kiki sheet: a fixed width, a height that
 /// follows its content within bounds, a plain material background, and one
 /// close control in the top-trailing corner.
@@ -34,6 +42,7 @@ public struct KikiSheetShell<Content: View, Footer: View>: View {
     /// Shown until the content reports its own height, so the sheet opens at
     /// its intended size instead of snapping open on the first layout pass.
     @State private var naturalHeight: CGFloat
+    @State private var footerHeight: CGFloat = 0
 
     public init(
         width: CGFloat,
@@ -58,16 +67,27 @@ public struct KikiSheetShell<Content: View, Footer: View>: View {
     public var body: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 0) {
-                if isScrollable {
-                    ScrollView(showsIndicators: false) {
-                        content
-                    }
-                } else {
-                    content
-                    Spacer(minLength: 0)
+                // Keep the same hierarchy as content grows or shrinks. Measuring
+                // the mounted scroll document avoids duplicate lifecycle work.
+                ScrollView(showsIndicators: true) {
+                    VStack(spacing: 0) { content }
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .background(contentHeightReader)
                 }
+                .onPreferenceChange(KikiSheetNaturalHeightKey.self) { naturalHeight = $0 }
+                .frame(height: max(0, resolvedHeight - resolvedFooterHeight))
 
-                footer
+                // Normal footers stay pinned at their natural height. An unusually
+                // tall footer scrolls within half the shell, keeping both regions usable.
+                ScrollView(showsIndicators: true) {
+                    VStack(spacing: 0) { footer }
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .background(footerHeightReader)
+                }
+                .onPreferenceChange(KikiSheetFooterHeightKey.self) { footerHeight = $0 }
+                .frame(height: resolvedFooterHeight)
             }
 
             if showsCloseButton {
@@ -85,31 +105,6 @@ public struct KikiSheetShell<Content: View, Footer: View>: View {
                 .accessibilityLabel(Text("Close", bundle: .main))
             }
         }
-        // An unclamped, non-scrolling copy laid out at the real width, purely
-        // to report how tall the content is. Hidden and non-interactive, and it
-        // never reads the resolved height, so it cannot feed back into it.
-        .background(alignment: .top) {
-            VStack(spacing: 0) {
-                content
-                footer
-            }
-            .frame(width: width)
-            .fixedSize(horizontal: false, vertical: true)
-            .background(
-                GeometryReader { proxy in
-                    Color.clear.preference(
-                        key: KikiSheetNaturalHeightKey.self,
-                        value: proxy.size.height
-                    )
-                }
-            )
-            .hidden()
-            .accessibilityHidden(true)
-        }
-        .onPreferenceChange(KikiSheetNaturalHeightKey.self) { height in
-            guard height > 0 else { return }
-            naturalHeight = height
-        }
         .frame(width: width, height: resolvedHeight)
         .background {
             KikiMaterialSurface(in: Rectangle(), material: .regularMaterial)
@@ -117,11 +112,23 @@ public struct KikiSheetShell<Content: View, Footer: View>: View {
     }
 
     private var resolvedHeight: CGFloat {
-        min(max(naturalHeight, minimumHeight), maximumHeight)
+        min(max(naturalHeight + footerHeight, minimumHeight), maximumHeight)
     }
 
-    private var isScrollable: Bool {
-        naturalHeight > maximumHeight
+    private var resolvedFooterHeight: CGFloat {
+        min(footerHeight, resolvedHeight / 2)
+    }
+
+    private var contentHeightReader: some View {
+        GeometryReader { proxy in
+            Color.clear.preference(key: KikiSheetNaturalHeightKey.self, value: proxy.size.height)
+        }
+    }
+
+    private var footerHeightReader: some View {
+        GeometryReader { proxy in
+            Color.clear.preference(key: KikiSheetFooterHeightKey.self, value: proxy.size.height)
+        }
     }
 }
 

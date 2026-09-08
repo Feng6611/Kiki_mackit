@@ -23,6 +23,30 @@ popovers, Paywall, sheets, and standalone windows.
 - `View.kikiGlassActionForeground()`: foreground treatment for prominent glass
   actions.
 
+## Sheet sizing and lifecycle
+
+`KikiSheetShell` supplies fixed-width card chrome for a SwiftUI `.sheet`.
+Its existing initializers accept minimum, ideal and maximum heights, optional
+close handling, content, and an optional pinned footer. Equal minimum and
+maximum heights produce a fixed-height shell. `idealHeight` is only the
+initial estimate until measurement arrives.
+
+Content and footer each remain mounted once in their own stable `ScrollView`.
+Separate preference keys measure the visible documents at the configured width;
+there is no hidden measurement copy and crossing a height threshold does not
+restart caller `onAppear` or `.task` work. A parent removing the shell or changing
+its identity still starts a new lifecycle normally.
+
+The shell clamps the sum of both natural heights to its bounds. Ordinary footers
+retain their natural height beneath the scrolling content. A footer taller than
+half the resolved shell height gets a half-height scrolling viewport, leaving
+space for content. Callers supply padding for both regions. With no footer,
+content receives the full height.
+
+`KikiSheetShellHostingTests` exercises actual `NSHostingView` layout, document
+scrolling, host resizing, fixed/max heights, oversized and absent footers, and
+single lifecycle/task execution across size changes.
+
 ## Boundary
 
 This target provides visual treatment only. It does not own app layout, product

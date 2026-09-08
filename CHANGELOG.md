@@ -1,8 +1,40 @@
 # Changelog
 
-## Unreleased
+## 0.10.0 - 2026-09-08
+
+### UI and API refinements
+
+- Share Settings size constraints through `KikiSettingsWindowLayout`; coordinator views
+  inherit the registered window's sizes, including maximum bounds.
+- About accepts tint and URL interception together, keeps link values visible,
+  and displays access subtitle, action and loading state. Neutral status is no
+  longer styled as a warning; apps choose warnings explicitly.
+- Copy rows show transient success feedback (host-localized `Copied`), and
+  adaptive pickers fall back to menus when their labels do not fit.
+- Review keeps the custom design, grows within a 560-point ceiling, and stacks
+  long action labels. Sheets expose scroll indicators for overflowing content.
+- Onboarding progress respects Reduce Motion. Add a standalone component Gallery.
+- Remove obsolete refactor plans and app-specific third-party guidance.
+
+### Migration from 0.9.1
+
+Settings initializer signatures remain available. The menu `action` enum case
+now includes badge text, symbol and tint associated values: update exhaustive
+pattern matches to the expanded case. Construction using existing labels and
+defaults continues to work. This is the intentional pre-1.0 minor-version break.
+
 
 ### Added
+
+- About extension slots: `KikiStandardAboutPane.statusContent`,
+  `.additionalLinks`, and `.additionalSections`, plus
+  `KikiAboutPane.additionalSections`. Existing pane types and initializers
+  remain source compatible.
+
+- **`KikiReview` review/feedback prompt Feature.** Hosts provide all copy and
+  actions; Kiki supplies a single-instance compact window, native buttons, and
+  explicit review/not-now/closed outcomes. It deliberately does not import
+  StoreKit or claim that a review was submitted.
 
 - **`KikiSheetShell` — the card chrome shared by every Kiki sheet.** A fixed
   width, a height that follows its content between a floor and a ceiling
@@ -19,6 +51,13 @@
   title below it, where dropping the text would be the worse trade.
 
 ### Fixed
+
+- Sheet content and footer are measured from their single mounted scroll
+  documents with independent preference keys. Resizing no longer duplicates
+  lifecycle/task work; normal footers stay pinned and oversized footers scroll
+  within half the shell height. Actual hosting tests cover these behaviors.
+- Standard About copy rows retain their copy action when `onOpenLink` is set;
+  URL interception applies only to link rows, covered by routing regression tests.
 
 - **Menu titles stay on one vertical line when a single item carries an icon.**
   AppKit reserves the image column per item, not per menu, so one icon pushed

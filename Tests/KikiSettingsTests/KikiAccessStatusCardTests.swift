@@ -52,11 +52,9 @@ struct KikiAccessStatusPresentationTests {
         #expect(KikiAccessStatusTone.lifetime.settingsTone == .accent)
     }
 
-    @Test("Access status uses only inactive warning or active accent tones")
+    @Test("Neutral status is distinct from an expired warning")
     func accessStatusUsesStableTwoTonePresentation() {
-        // Product request: inactive/default access is deliberately orange;
-        // trial and paid access use the Kiki purple accent by default.
-        #expect(KikiAccessStatusTone.neutral.settingsTone == .warning)
+        #expect(KikiAccessStatusTone.neutral.settingsTone == .neutral)
         #expect(KikiAccessStatusTone.expired.settingsTone == .warning)
         #expect(KikiAccessStatusTone.trial.settingsTone == .accent)
         #expect(KikiAccessStatusTone.active.settingsTone == .accent)

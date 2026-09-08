@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct KikiOnboardingProgressDots: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private let count: Int
     private let currentIndex: Int
     private let tint: Color
@@ -16,7 +17,7 @@ public struct KikiOnboardingProgressDots: View {
         activeDotWidth: CGFloat = 22,
         spacing: CGFloat = 7
     ) {
-        self.count = count
+        self.count = max(0, count)
         self.currentIndex = currentIndex
         self.tint = tint
         self.dotSize = dotSize
@@ -33,7 +34,7 @@ public struct KikiOnboardingProgressDots: View {
                         width: index == currentIndex ? activeDotWidth : dotSize,
                         height: dotSize
                     )
-                    .animation(.easeInOut(duration: 0.2), value: currentIndex)
+                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: currentIndex)
             }
         }
     }

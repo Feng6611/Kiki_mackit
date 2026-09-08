@@ -1,181 +1,72 @@
 # KikiSettings
 
-`KikiSettings` provides reusable Settings window and pane primitives for
-small macOS apps. The host owns settings tabs, settings state, permission
-meaning, and About content. Kiki owns chrome, row visuals, opener
-mechanics, and window helpers.
+The host owns its Settings scene, tabs, values, copy and actions. Kiki provides
+window registration, navigation, grouped forms and reusable rows.
 
-## Recommended Adoption
+## Default integration
 
-Start with the Feature layer:
+Create a KikiSettingsWindowLayout and pass it to
+KikiSettingsWindowController(frameAutosaveName:layout:). Supply that controller
+to KikiSettingsCoordinator, then render KikiSettingsCoordinatorView inside the
+host's native Settings scene. The view inherits the controller's layout; explicit
+legacy size arguments still work. New code should configure sizes once.
 
-- `KikiSettingsCoordinator` owns selection, opener, exact-window registration,
-  visibility, and close behavior.
-- `KikiSettingsCoordinatorView` renders app-provided tab content.
-- `KikiStandardAboutPane` renders the common About identity/status/link shape.
+Defaults are 500×620 ideal, 500×480 minimum, 500×780 maximum. Bounds are
+normalized by KikiSettingsWindowLayout. The registered NSWindow owns frame
+restoration; saved sizes outside supported bounds reset to the ideal.
+KikiSettingsCoordinator.close() targets that window, not unrelated app windows.
 
-Use `KikiSettingsShell`, panes, and rows directly only when an App has a proven
-layout or interaction requirement the Feature layer cannot express. SwiftUI's
-native `Settings {}` scene remains in the host App.
+SwiftUI callers can use the native openSettings action. AppKit callers use
+KikiSettingsOpener: it invokes the standard Settings menu item first, then the
+tracked showSettingsWindow: selector fallback. See APIConventions.md.
 
-## Public API
+## Panes and rows
 
-- `KikiSettingsShell`: top-tab SwiftUI shell that lives inside a native
-  `Settings {}` scene. Keeps panes alive when switching tabs.
-- `KikiSettingsTabSpec`: app-owned tab metadata (`tab`, `title`,
-  `systemImage`) consumed by the shell.
-- `KikiSettingsPane`: grouped `Form` pane chrome with top alignment.
-- `KikiAboutPane`: app identity, status, and links layout for About panes.
-- `KikiSettingsWindowController`: AppKit helper that activates the app and
-  manages the exact Settings window registered by the SwiftUI scene.
-- `KikiSettingsOpener`: imperative opener that triggers SwiftUI Settings
-  through native paths first and a private selector only as a last resort.
-- `KikiSettingsDefaults`: stable ideal, minimum, and maximum geometry. Defaults
-  are `540×560` ideal, `540×320` minimum, and `640×720` maximum, so localized
-  content can adapt without allowing an autosaved frame to become unbounded.
-- Rows:
-  `KikiSettingsValueRow`, `KikiSettingsToggleRow`,
-  `KikiSettingsSegmentedPickerRow`, `KikiSettingsMenuPickerRow`,
-  `KikiSettingsStepperRow`, `KikiSettingsSliderRow`,
-  `KikiSettingsStatusRow`, `KikiAuthorizationStatusRow`,
-  `KikiSettingsLinkRow`, `KikiSettingsCopyRow`, and
-  `KikiSettingsHelperText`.
-- `LaunchAtLogin.Toggle`: minimal SwiftUI toggle on top of `SMAppService`.
+KikiSettingsPane is a grouped Form with top alignment. KikiSettingsShell is
+the lower-level TabView escape path. Neither adds mandatory product settings.
 
-## Opener Mechanics
+Rows accept caller-owned bindings and localized strings:
+toggle, value, slider, stepper, menu picker, segmented picker, status,
+authorization, application, link, copy and helper text.
 
-`KikiSettingsOpener.open()` follows a native-first chain:
+Adaptive segmented pickers use option count and available width. Long labels
+fall back to the native menu; explicit segmented/menu preferences remain available.
+Copy rows show a short checkmark and copiedTitle after a successful pasteboard
+write. Link rows accept an optional action without changing their content.
 
-1. Trigger the standard `Settings...` (`Preferences...`) main-menu item
-   that AppKit installs for the SwiftUI `Settings {}` scene. Found by
-   `keyEquivalent == ","` first, then by normalized title.
-2. If no menu item could be performed, fall back to
-   `NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)`
-   and log a tracked message through
-   `OSLog(subsystem: "kiki.mackit", category: "settings")` so the private
-   path is visible in Console.
+## About
 
-Menu bar hosts call `openForMenuBarApp()` so the window controller prepares
-the app activation state. The registered SwiftUI view configures autosave plus
-ideal/minimum/maximum size when AppKit attaches it to the native Settings
-window. A saved frame outside the maximum resets to the ideal size; saved user
-adjustments inside the supported range remain intact.
+KikiStandardAboutPane accepts metadata, links, tint and onOpenLink together.
+URL interception applies only to link rows and preserves the displayed value;
+copy rows retain their native action.
 
-`EnvironmentValues.openSettings` is the most native way to open Settings,
-but it must be invoked from a SwiftUI view tree. `KikiSettingsOpener` is
-AppKit-side and therefore prefers the main-menu route; hosts that already
-sit inside SwiftUI should call `openSettings` from there directly.
+The optional accessStatus renders title, subtitle, action and loading feedback
+through KikiAccessStatusCard. Neutral uses secondary styling; expired uses a
+warning. The legacy access-state vocabulary is presentation compatibility only:
+apps map product states, and new generic statuses can use KikiSettingsStatusRow
+with neutral/success/warning/accent/info tones.
 
-The compatibility initializer parameter `windowTitle` remains available for
-0.6/0.7 hosts. The value is ignored because exact view registration replaced
-title-based discovery.
+Extension slots:
+- statusContent replaces the configured access content.
+- additionalLinks inserts rows after standard links and before copyright.
+- additionalSections appends sections within the same Form.
 
-## Pane Chrome
+Repeated calls replace that slot; they do not append to earlier calls.
+KikiAboutPane also supports additionalSections. Hosts retain control of
+which sections exist.
 
-`KikiSettingsPane` is `Form` wrapped in `kikiSettingsPaneChrome()`. The
-chrome is intentionally minimal:
+## Localization
 
-```
-formStyle(.grouped)
-.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-```
+All explicit text parameters are already-localized caller values.
+KikiSettingsCopyRow's fallback key is `Copied` in the main bundle; pass
+copiedTitle for an app-owned live language setting.
+Other main-bundle defaults: `Terms of use`, `Privacy policy`,
+`Launch at login` (see the corresponding source defaults).
+Keep the host catalog in sync with the defaults it uses.
 
-The grouped form already paints the system Settings look. We do not stack
-`scrollContentBackground(.hidden)`, custom backgrounds, or `scenePadding`;
-those diverged from the native look. `KikiAboutPane` uses the same chrome.
+## Verification
 
-## Picker Rows
-
-Two picker rows ship with `KikiSettings`:
-
-- `KikiSettingsSegmentedPickerRow`: two or three short, mutually exclusive
-  options where direct comparison helps.
-- `KikiSettingsMenuPickerRow`: three or more options, especially when the
-  option labels are long enough to overflow a segmented control. Uses
-  `.pickerStyle(.menu)`.
-
-Hosts pick the row by option count and copy length per macOS HIG. Both
-rows take a `Binding<Value>` and an `optionTitle` mapper, so the value type
-stays app-owned. Segmented rows reserve the caller-provided control width and
-align the native control to its trailing edge, keeping controls with different
-intrinsic label widths aligned across a settings section. The width is a
-minimum rather than a fixed frame, so localized labels can expand it.
-
-## Window Controller
-
-`KikiSettingsWindowController` does three things:
-
-- Activates the app on `prepareForSettingsScene()` so a menu bar app can
-  present the Settings window without losing focus.
-- Restores the autosaved frame and applies `contentMinSize` to the exact native
-  window registered by `kikiSettingsWindow(_:)`.
-- Reports visibility and closes that registered window without searching or
-  mutating unrelated `NSApp.windows`.
-
-`KikiSettingsCoordinatorView` installs the registration bridge automatically.
-Hosts composing `KikiSettingsShell` directly can apply
-`.kikiSettingsWindow(windowController)` themselves.
-
-## Removed in 0.6.0
-
-- `KikiSettingsUI` namespace and its `FormPane`, `LinkButton`, `CopyRow`
-  shims and the `AppIdentityView`, `ApplicationRow`, `ApplicationPicker`
-  type aliases. Use `KikiSettingsPane`, `KikiSettingsLinkRow`,
-  `KikiSettingsCopyRow`, `KikiAppIdentityView`,
-  `KikiSettingsApplicationRow`, and `KikiSettingsApplicationPicker`.
-
-## High-Level Features (0.7.0)
-
-The atoms above stay; 0.7.0 adds optional presets that let the host skip
-hand-wiring the most common Settings shapes.
-
-- `KikiAppMetadata`: app identity (name, bundle id, short version, build,
-  copyright) with `displayVersion` and a `KikiAppMetadata.bundle(.main)`
-  factory that reads `Info.plist`. Pair with `KikiStandardAboutLinks` for
-  ordered Website / Support / Feedback / Terms / Privacy rows.
-- `KikiAccessStatusPresentation` + `KikiAccessStatusCard`: a small,
-  Commerce-agnostic status card with a tone (`neutral | trial | active |
-  lifetime | expired`), title, optional subtitle, optional action title, and an
-  in-flight flag. The host derives the presentation; the card stays
-  unaware of RevenueCat or trial math.
-- `KikiStandardAboutPane`: composes `KikiAboutPane` with an optional
-  `KikiAccessStatusCard` and the ordered links from
-  `KikiStandardAboutLinks`. One call covers the standard About pane. Its
-  status row keeps the leading label/icon neutral and renders active, trial,
-  lifetime, or expired symbols beside the trailing value. The inactive value
-  stays text-only to avoid repeating the row's information icon.
-  Inactive/expired map to warning; trial/active/lifetime map to the caller's
-  tint. Without an explicit tint, the positive access states use
-  `KikiDesignColor.proAccent` (Kiki purple), while inactive/expired remain
-  orange by deliberate product request.
-- `KikiSettingsCoordinator<Tab>`: owns the
-  `KikiSettingsNavigationModel`, the tab specs, an optional
-  `KikiSettingsWindowController`, and a `KikiSettingsOpener`. Exposes
-  `select(_:)`, `open(tab:isMenuBarApp:)`, `close()`, `prepare()`, and
-  `isVisible`. `close()` acts only on the registered Settings window, so a
-  menu bar host can dismiss Settings from an arbitrary trigger without owning
-  or scanning global window state.
-- `KikiSettingsCoordinatorView`: a thin SwiftUI wrapper that feeds the
-  coordinator's selection into `KikiSettingsShell` so the host only
-  supplies `@ViewBuilder content`.
-- `KikiSettingsWindowController.close()`: closes the registered Settings
-  window. Paired with `isVisible`, this lets hosts manage Settings dismissal
-  imperatively.
-
-These presets don't replace `KikiSettingsShell` — they sit on top of it and
-remain Commerce-agnostic.
-
-## Boundaries
-
-KikiSettings may:
-
-- own the Settings window opener, frame restore, and pane chrome;
-- ship reusable rows for toggles, pickers, status, link, copy, sliders, and
-  steppers;
-- expose `LaunchAtLogin.Toggle` because `SMAppService` is awkward inline.
-
-KikiSettings must not:
-
-- own product-specific settings state;
-- decide product copy for permission rows;
-- host paywall, onboarding, or business workflow.
+Package hosting tests cover registration, shared geometry, slot order and
+replacement, single mounting, and link/copy routing.
+Use the Component Gallery for long text, narrow windows, loading, keyboard
+navigation, VoiceOver and system Reduce Motion.

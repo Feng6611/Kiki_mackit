@@ -65,52 +65,17 @@ default and the override slot need translator coverage. Overrides win at
 runtime, but the default remains as the fallback and should always render
 in the app's UI language.
 
-## Current status (2026-07-21)
+## Current contract
 
-The package currently uses zero `String(localized:)` calls, no
-`bundle: .module` lookups, and no per-package catalog. Every user-facing
-string is either passed through as caller-provided `String`, or emitted as
-a plain English literal from inside the library.
+The exact fallback keys are listed in each module document. Source code is
+authoritative; old inventories with file line numbers are not maintained.
 
-The following list is the plain-English literals inside Kiki_mackit that
-should move to `String(localized:, bundle: .main)` at the next Kit release.
-Adopting apps should add matching keys to their `Localizable.xcstrings`
-before the Kit ships those changes.
-
-| Module | File / line | Current literal | Notes |
-|---|---|---|---|
-| KikiMenuBar | `KikiMenuBar.swift:63,120` | `"Quit \(appName)"` | Menu label. Key format: `Quit %@`. |
-| KikiAuthorization | `KikiAuthorizationPanel.swift:20` | `"Screen Recording"` | Permission name; iterate through every `KikiAuthorizationKind` returning strings. |
-| KikiAuthorization | `KikiAuthorizationAppDragSourceView.swift:16,109` | `"Drag me into the list"`, `"Drag upward"` | Drag hint and accessibility label. |
-| KikiPaywall | `KikiPaywallPlanViews.swift:76` | `"Selected"`, `"Not selected"` | Accessibility value on paywall plan cards. |
-| KikiSettings | `KikiSettingsApplications.swift:82` | `"Select an app..."` | Picker placeholder. Also fix `...` → `…`. |
-| KikiSettings | `KikiAppMetadata.swift:188,197` | `"Terms of use"`, `"Privacy policy"` | Default About-pane link titles. |
-| KikiSettings | `LaunchAtLogin.swift:75,130` | `"Launch at login"` | Default toggle label; already exposed as an override in the `.init(_ titleKey:)` overload. |
-| KikiTriggerCorner | `KikiTriggerCorner.swift:16-22` | `"Top Left"` / `"Top Right"` / `"Bottom Left"` / `"Bottom Right"` | Enum descriptions used by Settings rows. |
-| KikiOnboarding | `KikiOnboardingPermissionRow.swift:20` | `"Not connected"` | Default status label; already overridable via parameter. |
-
-Suggested change shape (illustrative — do not apply in this repo without a
-Kit release plan):
-
-```swift
-// KikiMenuBar.swift
-case .quit(let appName, _):
-    return String(
-        localized: "Quit \(appName)",
-        bundle: .main,
-        comment: "Menu item. Callers must provide 'Quit %@' in their app's Localizable.xcstrings."
-    )
-```
-
-After this change, an adopting app whose `Localizable.xcstrings` contains a
-`Quit %@` key with ja/de/fr translations will render `Command Reopen を終了`
-/ `Command Reopen beenden` / `Quitter Command Reopen` automatically. Apps
-that do not translate the key see the English source, matching today's
-behavior.
+KikiSettingsCopyRow adds the main-bundle key `Copied`. Hosts may override
+`copiedTitle` with a live localized value. Its visible feedback and
+accessibility value use the same string.
 
 ## Testing
 
-Kiki tests should not assert on the English source of a caller-owned
-`bundle: .main` string, because the resolved value depends on the test host
-bundle and preferred language. Test the semantic path (which case fires,
-which action runs) and let the string flow through as an opaque value.
+Test action routing and caller-owned values without assuming the test host's
+language. Use the Gallery for long labels and real host applications to verify
+their string catalogs.

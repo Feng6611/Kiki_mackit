@@ -22,6 +22,8 @@ It intentionally contains no commerce SDK or paid-access state machine.
   scaffold/row atoms, permission row, and single-window controller.
 - `KikiActivation`: activation-policy coordinator for menu bar apps that
   temporarily promote to a regular app.
+- `KikiReview`: product-neutral review/feedback prompt window and action
+  reporting; apps keep timing, persistence, StoreKit, links, and policy.
 
 ## Repository Shape
 
@@ -52,16 +54,21 @@ product.
 See [Docs/APIConventions.md](Docs/APIConventions.md) for public API boundaries
 and extraction rules.
 
-Optional celebration effects and third-party guidance are documented in
-[Docs/KikiCelebration.md](Docs/KikiCelebration.md); they are intentionally not
-part of the default Kiki dependency graph.
+Optional celebration effects remain app-owned and outside the default dependency graph.
 
-## Remote Usage
+## Component Gallery
+
+Run `./script/gallery.sh` to build and open the development app. It exercises
+long labels, resizing, loading, disabled controls, light/dark appearance,
+copy/link actions and both Review presentation routes. Check keyboard and
+VoiceOver behavior there; enable Reduce Motion in macOS for the system path.
+
+## Package installation
 
 After pushing this package to a remote repository, consume it from another app with SwiftPM:
 
 ```swift
-.package(url: "https://github.com/Feng6611/Kiki_mackit.git", from: "0.7.0")
+.package(url: "https://github.com/Feng6611/Kiki_mackit.git", exact: "0.10.0")
 ```
 
 Then add only the required products to the app target:
@@ -76,7 +83,8 @@ Then add only the required products to the app target:
 .product(name: "KikiTriggerCorner", package: "Kiki_mackit"),
 .product(name: "KikiAuthorization", package: "Kiki_mackit"),
 .product(name: "KikiOnboarding", package: "Kiki_mackit"),
-.product(name: "KikiActivation", package: "Kiki_mackit")
+.product(name: "KikiActivation", package: "Kiki_mackit"),
+.product(name: "KikiReview", package: "Kiki_mackit")
 ```
 
 Local path development and product app dependency policy are workspace concerns;

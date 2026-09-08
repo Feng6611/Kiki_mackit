@@ -128,6 +128,15 @@ public final class KikiSettingsWindowController {
         _ = windowTitle
     }
 
+    public var layout: KikiSettingsWindowLayout {
+        KikiSettingsWindowLayout(ideal: idealContentSize, minimum: minimumContentSize, maximum: maximumContentSize)
+    }
+
+    public convenience init(frameAutosaveName: String, layout: KikiSettingsWindowLayout) {
+        self.init(frameAutosaveName: frameAutosaveName, idealContentSize: layout.ideal,
+                  minimumContentSize: layout.minimum, maximumContentSize: layout.maximum)
+    }
+
     public var isVisible: Bool {
         settingsWindow?.isVisible == true
     }

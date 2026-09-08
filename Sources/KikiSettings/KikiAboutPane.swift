@@ -46,6 +46,7 @@ public struct KikiAboutPane<StatusContent: View, LinksContent: View>: View {
     private let iconSize: CGFloat
     private let statusContent: StatusContent
     private let linksContent: LinksContent
+    private var extraSections: AnyView?
 
     public init(
         appName: String,
@@ -61,6 +62,13 @@ public struct KikiAboutPane<StatusContent: View, LinksContent: View>: View {
         self.iconSize = iconSize
         self.statusContent = status()
         self.linksContent = links()
+    }
+
+    /// Appends caller-owned sections to the same About form.
+    public func additionalSections<Sections: View>(@ViewBuilder _ sections: () -> Sections) -> Self {
+        var pane = self
+        pane.extraSections = AnyView(sections())
+        return pane
     }
 
     public var body: some View {
@@ -85,6 +93,7 @@ public struct KikiAboutPane<StatusContent: View, LinksContent: View>: View {
                 linksContent
             }
             .listRowBackground(Color(nsColor: .controlBackgroundColor))
+            extraSections
         }
         .kikiSettingsPaneChrome()
     }

@@ -4,6 +4,21 @@ import XCTest
 
 @MainActor
 final class KikiSettingsWindowControllerTests: XCTestCase {
+    func testSharedLayoutConfiguresRegisteredWindow() {
+        let layout = KikiSettingsWindowLayout(
+            ideal: CGSize(width: 720, height: 800),
+            minimum: CGSize(width: 640, height: 500),
+            maximum: CGSize(width: 900, height: 1000)
+        )
+        let controller = KikiSettingsWindowController(frameAutosaveName: "LayoutTest", layout: layout)
+        let window = FakeSettingsWindow()
+        controller.register(managedWindow: window)
+        XCTAssertEqual(controller.layout, layout)
+        XCTAssertEqual(window.configuredIdealSize, layout.ideal)
+        XCTAssertEqual(window.configuredMinimumSize, layout.minimum)
+        XCTAssertEqual(window.configuredMaximumSize, layout.maximum)
+    }
+
     func testLegacyWindowTitleInitializerPreservesSourceCompatibility() {
         let controller = KikiSettingsWindowController(
             frameAutosaveName: "KikiSettingsTests.LegacyWindow",

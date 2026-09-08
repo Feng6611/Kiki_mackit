@@ -214,6 +214,13 @@ temporarily promote themselves to a regular app, then restore the previous
 frontmost application. Apps own when to begin or end the promoted state and
 what UI they install during it.
 
+### KikiReview
+
+Provides a reusable review/feedback prompt window and reports which visible
+action the person chose. Apps own eligibility, request frequency, persistence,
+copy, StoreKit calls, App Store URLs, and submission-policy risk. The module
+does not infer that opening a link or pressing a button completed a review.
+
 ### KikiDesign
 
 Provides reusable visual surface primitives and shared color tokens. Apps own

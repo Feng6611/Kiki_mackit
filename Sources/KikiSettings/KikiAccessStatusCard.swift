@@ -20,7 +20,7 @@ public enum KikiAccessStatusTone: Equatable, Sendable {
 
     public var settingsTone: KikiSettingsStatusTone {
         switch self {
-        case .neutral: return .warning
+        case .neutral: return .neutral
         case .trial: return .accent
         case .active: return .accent
         case .lifetime: return .accent
@@ -30,7 +30,7 @@ public enum KikiAccessStatusTone: Equatable, Sendable {
 
     public func foregroundColor(tint: Color = .accentColor) -> Color {
         switch self {
-        case .neutral: return .orange
+        case .neutral: return .secondary
         case .trial: return tint
         case .active: return tint
         case .lifetime: return tint

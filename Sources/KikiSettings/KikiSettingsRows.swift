@@ -238,7 +238,17 @@ public struct KikiSettingsSegmentedPickerRow<Value: Hashable>: View {
 
     @ViewBuilder
     private var picker: some View {
-        let style = resolvedStyle
+        if preferredStyle == .adaptive && options.count <= Self.adaptiveThreshold {
+            ViewThatFits(in: .horizontal) {
+                styledPicker(.segmented)
+                styledPicker(.menu)
+            }
+        } else {
+            styledPicker(preferredStyle == .segmented ? .segmented : .menu)
+        }
+    }
+
+    private func styledPicker(_ style: KikiSettingsPickerLayoutPreference) -> some View {
         Picker(title, selection: $selection) {
             ForEach(options, id: \.self) { option in
                 Text(optionTitle(option)).tag(option)
@@ -246,23 +256,18 @@ public struct KikiSettingsSegmentedPickerRow<Value: Hashable>: View {
         }
         .labelsHidden()
         .modifier(SegmentedOrMenuPickerStyle(style: style))
-        .frame(minWidth: minWidth(for: style), alignment: .trailing)
+        .frame(width: style == .segmented ? segmentedMinimumWidth : nil, alignment: .trailing)
+        .frame(minWidth: style == .segmented ? 0 : 140, alignment: .trailing)
     }
 
-    private var resolvedStyle: KikiSettingsPickerLayoutPreference {
-        switch preferredStyle {
-        case .segmented, .menu:
-            return preferredStyle
-        case .adaptive:
-            return options.count > Self.adaptiveThreshold ? .menu : .segmented
+    // NSSegmentedControl reports a compact fitting width even when it truncates
+    // labels. Reserve the labels' measured widths before ViewThatFits chooses.
+    private var segmentedMinimumWidth: CGFloat {
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        let labelsWidth = options.reduce(CGFloat.zero) { total, option in
+            total + (optionTitle(option) as NSString).size(withAttributes: [.font: font]).width + 28
         }
-    }
-
-    private func minWidth(for style: KikiSettingsPickerLayoutPreference) -> CGFloat {
-        switch style {
-        case .menu, .adaptive: return 140
-        case .segmented: return controlWidth
-        }
+        return max(controlWidth, ceil(labelsWidth))
     }
 
     private func caption(_ text: String) -> some View {
@@ -518,23 +523,33 @@ public struct KikiSettingsLinkRow: View {
     private let systemImage: String
     private let trailingSystemImage: String
 
+    private let action: (() -> Void)?
+
     public init(
         title: String,
         value: String,
         urlString: String,
         systemImage: String,
-        trailingSystemImage: String = "arrow.up.right"
+        trailingSystemImage: String = "arrow.up.right",
+        action: (() -> Void)?
     ) {
         self.title = title
         self.value = value
         self.urlString = urlString
         self.systemImage = systemImage
         self.trailingSystemImage = trailingSystemImage
+        self.action = action
+    }
+
+    public init(title: String, value: String, urlString: String, systemImage: String,
+                trailingSystemImage: String = "arrow.up.right") {
+        self.init(title: title, value: value, urlString: urlString, systemImage: systemImage,
+                  trailingSystemImage: trailingSystemImage, action: nil)
     }
 
     public var body: some View {
         Button {
-            KikiSettingsActions.openURL(urlString)
+            if let action { action() } else { KikiSettingsActions.openURL(urlString) }
         } label: {
             KikiSettingsNavigationRowContent(
                 title: title,
@@ -553,31 +568,48 @@ public struct KikiSettingsCopyRow: View {
     private let systemImage: String
     private let trailingSystemImage: String
 
+    @State private var copied = false
+    private let copiedTitle: String
+
     public init(
         title: String,
         value: String,
         systemImage: String,
-        trailingSystemImage: String = "doc.on.doc"
+        trailingSystemImage: String = "doc.on.doc",
+        copiedTitle: String
     ) {
         self.title = title
         self.value = value
         self.systemImage = systemImage
         self.trailingSystemImage = trailingSystemImage
+        self.copiedTitle = copiedTitle
+    }
+
+    public init(title: String, value: String, systemImage: String, trailingSystemImage: String = "doc.on.doc") {
+        self.init(title: title, value: value, systemImage: systemImage,
+                  trailingSystemImage: trailingSystemImage,
+                  copiedTitle: String(localized: "Copied", bundle: .main))
     }
 
     public var body: some View {
         Button {
             NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(value, forType: .string)
+            copied = NSPasteboard.general.setString(value, forType: .string)
         } label: {
             KikiSettingsNavigationRowContent(
                 title: title,
-                value: value,
+                value: copied ? copiedTitle : value,
                 systemImage: systemImage,
-                trailingSystemImage: trailingSystemImage
+                trailingSystemImage: copied ? "checkmark" : trailingSystemImage
             )
         }
         .buttonStyle(.plain)
+        .accessibilityValue(copied ? copiedTitle : value)
+        .task(id: copied) {
+            guard copied else { return }
+            do { try await Task.sleep(nanoseconds: 1_500_000_000) } catch { return }
+            copied = false
+        }
     }
 }
 

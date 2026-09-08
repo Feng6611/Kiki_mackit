@@ -57,39 +57,52 @@ public final class KikiSettingsCoordinator<Tab: Hashable>: ObservableObject {
 public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
     @ObservedObject private var navigation: KikiSettingsNavigationModel<Tab>
     @ObservedObject private var coordinator: KikiSettingsCoordinator<Tab>
-    private let width: CGFloat
-    private let height: CGFloat
-    private let minimumWidth: CGFloat
-    private let minimumHeight: CGFloat
+    private let layout: KikiSettingsWindowLayout
     private let windowController: KikiSettingsWindowController?
     private let content: (Tab) -> Content
 
     public init(
         coordinator: KikiSettingsCoordinator<Tab>,
-        width: CGFloat = KikiSettingsDefaults.windowWidth,
-        height: CGFloat = KikiSettingsDefaults.windowHeight,
-        minimumWidth: CGFloat = KikiSettingsDefaults.minimumWindowWidth,
-        minimumHeight: CGFloat = KikiSettingsDefaults.minimumWindowHeight,
+        width: CGFloat? = nil,
+        height: CGFloat? = nil,
+        minimumWidth: CGFloat? = nil,
+        minimumHeight: CGFloat? = nil,
+        maximumWidth: CGFloat?,
+        maximumHeight: CGFloat?,
         @ViewBuilder content: @escaping (Tab) -> Content
     ) {
         self.navigation = coordinator.navigation
         self.coordinator = coordinator
-        self.width = width
-        self.height = height
-        self.minimumWidth = minimumWidth
-        self.minimumHeight = minimumHeight
+        let base = coordinator.windowController?.layout ?? KikiSettingsWindowLayout()
+        self.layout = KikiSettingsWindowLayout(
+            ideal: CGSize(width: width ?? base.ideal.width, height: height ?? base.ideal.height),
+            minimum: CGSize(width: minimumWidth ?? base.minimum.width, height: minimumHeight ?? base.minimum.height),
+            maximum: CGSize(width: maximumWidth ?? base.maximum.width, height: maximumHeight ?? base.maximum.height)
+        )
         self.windowController = coordinator.windowController
         self.content = content
+    }
+
+    public init(coordinator: KikiSettingsCoordinator<Tab>, width: CGFloat = KikiSettingsDefaults.windowWidth, height: CGFloat = KikiSettingsDefaults.windowHeight,
+                minimumWidth: CGFloat = KikiSettingsDefaults.minimumWindowWidth, minimumHeight: CGFloat = KikiSettingsDefaults.minimumWindowHeight,
+                @ViewBuilder content: @escaping (Tab) -> Content) {
+        self.init(coordinator: coordinator, width: width == KikiSettingsDefaults.windowWidth ? nil : width,
+                  height: height == KikiSettingsDefaults.windowHeight ? nil : height,
+                  minimumWidth: minimumWidth == KikiSettingsDefaults.minimumWindowWidth ? nil : minimumWidth,
+                  minimumHeight: minimumHeight == KikiSettingsDefaults.minimumWindowHeight ? nil : minimumHeight,
+                  maximumWidth: nil, maximumHeight: nil, content: content)
     }
 
     public var body: some View {
         KikiSettingsShell(
             selection: $navigation.selectedTab,
             tabs: coordinator.tabs,
-            width: width,
-            height: height,
-            minimumWidth: minimumWidth,
-            minimumHeight: minimumHeight,
+            width: layout.ideal.width,
+            height: layout.ideal.height,
+            minimumWidth: layout.minimum.width,
+            minimumHeight: layout.minimum.height,
+            maximumWidth: layout.maximum.width,
+            maximumHeight: layout.maximum.height,
             content: content
         )
         .kikiSettingsWindow(windowController)

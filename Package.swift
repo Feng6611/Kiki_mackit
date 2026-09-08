@@ -17,7 +17,8 @@ let package = Package(
         .library(name: "KikiTriggerCorner", targets: ["KikiTriggerCorner"]),
         .library(name: "KikiAuthorization", targets: ["KikiAuthorization"]),
         .library(name: "KikiOnboarding", targets: ["KikiOnboarding"]),
-        .library(name: "KikiActivation", targets: ["KikiActivation"])
+        .library(name: "KikiActivation", targets: ["KikiActivation"]),
+        .library(name: "KikiReview", targets: ["KikiReview"])
     ],
     targets: [
         .target(name: "KikiCore"),
@@ -34,6 +35,7 @@ let package = Package(
             dependencies: ["KikiAuthorization", "KikiWindow", "KikiDesign"]
         ),
         .target(name: "KikiActivation", dependencies: ["KikiCore"]),
+        .target(name: "KikiReview", dependencies: ["KikiDesign", "KikiWindow"]),
         .testTarget(name: "KikiDesignTests", dependencies: ["KikiDesign"]),
         .testTarget(name: "KikiWindowTests", dependencies: ["KikiWindow"]),
         .testTarget(name: "KikiSettingsTests", dependencies: ["KikiSettings"]),
@@ -43,6 +45,7 @@ let package = Package(
         .testTarget(name: "KikiTriggerCornerTests", dependencies: ["KikiTriggerCorner"]),
         .testTarget(name: "KikiAuthorizationTests", dependencies: ["KikiAuthorization"]),
         .testTarget(name: "KikiOnboardingTests", dependencies: ["KikiOnboarding"]),
-        .testTarget(name: "KikiActivationTests", dependencies: ["KikiActivation"])
+        .testTarget(name: "KikiActivationTests", dependencies: ["KikiActivation"]),
+        .testTarget(name: "KikiReviewTests", dependencies: ["KikiReview"])
     ]
 )
