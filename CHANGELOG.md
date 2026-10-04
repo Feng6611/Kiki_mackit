@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.1 - 2026-10-04
+
+- `KikiSingleWindowController` centers a newly created window when its
+  `frameAutosaveName` has no stored frame (first launch, or an empty name),
+  instead of skipping centering whenever an autosave name is set.
+
 ## 0.10.0 - 2026-09-08
 
 ### UI and API refinements

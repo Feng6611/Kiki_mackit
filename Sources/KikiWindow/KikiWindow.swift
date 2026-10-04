@@ -347,13 +347,21 @@ public final class KikiSingleWindowController<Content: View>: NSObject, NSWindow
 
     public func show() {
         if let window {
-            present(window)
+            present(window, centering: configuration.centersOnShow && configuration.frameAutosaveName == nil)
             return
         }
 
+        let hadSavedFrame = Self.hasSavedFrame(named: configuration.frameAutosaveName)
         let window = makeWindow()
         self.window = window
-        present(window)
+        present(window, centering: configuration.centersOnShow && !hadSavedFrame)
+    }
+
+    /// `setFrameAutosaveName` silently restores a stored frame, so a first
+    /// launch (nothing stored, or an empty name) must be centered explicitly.
+    private static func hasSavedFrame(named name: String?) -> Bool {
+        guard let name, !name.isEmpty else { return false }
+        return UserDefaults.standard.string(forKey: "NSWindow Frame \(name)") != nil
     }
 
     public func close() {
@@ -435,9 +443,8 @@ public final class KikiSingleWindowController<Content: View>: NSObject, NSWindow
         window.standardWindowButton(button)?.isHidden = hidden
     }
 
-    private func present(_ window: NSWindow) {
-        if configuration.centersOnShow,
-           configuration.frameAutosaveName == nil {
+    private func present(_ window: NSWindow, centering: Bool) {
+        if centering {
             window.center()
         }
 

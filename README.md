@@ -68,7 +68,7 @@ VoiceOver behavior there; enable Reduce Motion in macOS for the system path.
 After pushing this package to a remote repository, consume it from another app with SwiftPM:
 
 ```swift
-.package(url: "https://github.com/Feng6611/Kiki_mackit.git", exact: "0.10.0")
+.package(url: "https://github.com/Feng6611/Kiki_mackit.git", exact: "0.10.1")
 ```
 
 Then add only the required products to the app target:

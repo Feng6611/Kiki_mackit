@@ -109,4 +109,27 @@ struct KikiWindowTests {
         #expect(controller.window?.contentView?.layer?.cornerRadius == 20)
         #expect(controller.window?.contentView?.layer?.masksToBounds == true)
     }
+
+    @MainActor
+    @Test("First show centers a window whose autosave name has no stored frame")
+    func firstShowCentersWhenAutosaveFrameIsMissing() throws {
+        let screen = try #require(NSScreen.main)
+        for name in ["KikiWindowTests.FreshFrame", ""] {
+            UserDefaults.standard.removeObject(forKey: "NSWindow Frame \(name)")
+            let controller = KikiSingleWindowController(
+                configuration: .utility(
+                    title: "Fresh",
+                    size: CGSize(width: 300, height: 200),
+                    frameAutosaveName: name
+                )
+            ) {
+                Text("Fresh").frame(width: 300, height: 200)
+            }
+            controller.show()
+            let window = try #require(controller.window)
+            defer { controller.close() }
+
+            #expect(abs(window.frame.midX - screen.visibleFrame.midX) < 1)
+        }
+    }
 }
