@@ -57,6 +57,10 @@ navigation.
 - `KikiOnboardingPermissionRow`: permission row bound to a
   `KikiAuthorizationPanel` plus host instruction text. It refreshes when the
   app becomes active so the row reflects user changes in System Settings.
+- `KikiOnboardingStatusRow`: caller-owned readiness/status row for setup,
+  import, sync, or recovery states. Hosts provide the label, tone, detail,
+  optional action, loading state, trust note, and tint. It does not inspect
+  platform services, persist state, or emit analytics.
 - `KikiOnboardingAction`: title plus closure, shared by primary and secondary.
 - `KikiOnboardingWindowController`: single-instance window built on
   `KikiSingleWindowController.utility(...)` with a stable frame autosave
@@ -67,7 +71,7 @@ navigation.
 KikiOnboarding may:
 
 - own the welcome window chrome, scaffold layout, row visuals, and
-  permission row plumbing;
+  permission/status row plumbing;
 - provide a single-window controller that closes on Done and stays single
   instance;
 - track step navigation when the host opts into the 0.7.0 coordinator

@@ -120,6 +120,32 @@ struct KikiOnboardingTests {
     }
 
     @MainActor
+    @Test("Status row supports tone, action, loading, and trust note")
+    func statusRowSupportsStatePresentation() {
+        var actionCount = 0
+        let row = KikiOnboardingStatusRow(
+            systemImage: "arrow.down.circle",
+            title: "Import",
+            detail: "Bring in an existing library when you are ready.",
+            statusLabel: "Not started",
+            tone: .neutral,
+            action: .init(title: "Import now") { actionCount += 1 },
+            trustNote: "Your existing files stay on this Mac.",
+            tint: .accentColor
+        )
+        let loadingRow = KikiOnboardingStatusRow(
+            systemImage: "arrow.triangle.2.circlepath",
+            title: "Checking",
+            detail: "Looking for an available source.",
+            isLoading: true
+        )
+
+        _ = row.body
+        _ = loadingRow.body
+        #expect(actionCount == 0)
+    }
+
+    @MainActor
     @Test("Rows initializer accepts back and skip actions")
     func rowsInitializerAcceptsBackAndSkipActions() {
         let scaffold = KikiOnboardingScaffold(

@@ -73,8 +73,10 @@ public struct KikiPaywallSheet<Footer: View>: View {
     public var body: some View {
         KikiPaywallShell(
             width: size.width,
-            minimumHeight: size.minimumHeight,
-            idealHeight: size.height,
+            // Without plan cards (an owner's access summary) the purchase
+            // minimum leaves a band of empty space above the action.
+            minimumHeight: plans.isEmpty ? min(size.minimumHeight, Self.summaryMinimumHeight) : size.minimumHeight,
+            idealHeight: plans.isEmpty ? min(size.height, Self.summaryMinimumHeight) : size.height,
             maximumHeight: size.maximumHeight,
             tint: tint,
             showsCloseButton: showsCloseButton,
@@ -168,6 +170,8 @@ public struct KikiPaywallSheet<Footer: View>: View {
             }
         }
     }
+
+    static var summaryMinimumHeight: CGFloat { 300 }
 
     private var borderedSecondaryActions: [KikiPaywallActionConfig] {
         secondaryActions.filter { $0.style == .bordered }

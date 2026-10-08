@@ -1,5 +1,34 @@
 # KikiReview
 
+Review-request pacing, the system prompt, and an optional custom window.
+
+## Request policy (recommended path)
+
+`KikiReviewRequestPolicy` applies Apple's published rules; the host supplies
+what counts as engagement, the moments that are natural stopping points, and
+who may be asked.
+
+- `KikiReviewRequestRules.recommended(minimumQualifyingEvents:)`: 14 days
+  between requests, 3 per rolling year, once per `CFBundleVersion`.
+- `evaluate(qualifyingEvents:isAudienceEligible:)` records nothing;
+  `requestIfEligible(...)` records and then calls the host closure.
+- Storage keys are host-supplied and store epoch seconds (`[Double]`), so an
+  app can adopt existing request history without migration.
+- `KikiSystemReviewRequest.request(in:)` uses `AppStore.requestReview(in:)`
+  and falls back to the window-less StoreKit call only when no window exists.
+- `KikiSystemReviewRequest.writeReviewURL(appStoreID:)` is for a persistent,
+  user-chosen menu or Settings item — never for an automatic prompt.
+
+Call sites follow Apple's StoreKit guidance: not at launch, not as the direct
+result of a click, at the end of a completed sequence, and not for users whose
+paid access has lapsed (`isAudienceEligible: false`).
+
+## Custom window (host risk)
+
+App Review Guideline 5.6.1 asks apps to use the provided API and states that
+custom review prompts are disallowed. The window below remains for hosts that
+explicitly accept that risk; it is not the default path.
+
 A reusable custom review/feedback window. The app owns eligibility, frequency,
 storage, copy, StoreKit calls and link actions; Kiki reports review/notNow/closed
 without claiming a review was submitted.

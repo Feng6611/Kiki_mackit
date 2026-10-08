@@ -2,9 +2,27 @@
 
 ## Unreleased
 
+### Added
+
 - `KikiMenuBarPopoverController` takes an optional `contextMenuItems` provider.
   Right-click and control-click show that menu; left-click still toggles the
   popover. Existing callers are unchanged.
+- `KikiOnboardingStatusRow` and `KikiOnboardingStatusTone` provide a
+  caller-owned readiness/status row for setup, import, sync, and recovery
+  states. The row supports status labels, actions, loading, trust notes, and
+  accessibility semantics without owning platform state or analytics.
+- `KikiReviewRequestPolicy`, `KikiReviewRequestRules`, and
+  `KikiSystemReviewRequest` pace App Store review requests by Apple's rules
+  (engagement threshold, 14-day spacing, 3 per year, once per version,
+  host audience gate) and present the system prompt through
+  `AppStore.requestReview(in:)`. The custom `KikiReviewPromptView` is now
+  documented as a host-accepted App Review risk (Guideline 5.6.1).
+
+### Changed
+
+- `KikiPaywallSheet` without plan cards (an entitled access summary) uses a
+  300-point minimum instead of the purchase minimum, removing the empty band
+  above its action.
 
 ## 0.10.1 - 2026-10-04
 
