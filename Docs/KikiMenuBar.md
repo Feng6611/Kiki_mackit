@@ -20,7 +20,8 @@ pure-function builder so non-controller hosts can reuse the same model.
   installs an image/tooltip, and refreshes the menu via the items provider.
 - `KikiMenuBarPopoverController`: same `NSStatusItem` lifecycle but uses
   `NSPopover` to host SwiftUI content. Hosts own popover content; Kiki owns
-  the AppKit bridge.
+  the AppKit bridge. Pass `contextMenuItems` to show that menu on right-click
+  and control-click; left-click still toggles the popover.
 
 ## When To Use Each
 

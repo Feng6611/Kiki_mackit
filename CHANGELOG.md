@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- `KikiMenuBarPopoverController` takes an optional `contextMenuItems` provider.
+  Right-click and control-click show that menu; left-click still toggles the
+  popover. Existing callers are unchanged.
+
 ## 0.10.1 - 2026-10-04
 
 - `KikiSingleWindowController` centers a newly created window when its

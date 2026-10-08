@@ -163,5 +163,39 @@ struct KikiMenuBarTests {
         }
 
         #expect(!controller.isShown)
+        #expect(controller.makeContextMenu() == nil)
+    }
+
+    @MainActor
+    @Test("Popover context menu uses the host items and standard shortcuts")
+    func popoverContextMenuUsesHostItems() throws {
+        let controller = KikiMenuBarPopoverController(
+            title: "Kiki Test",
+            systemImageName: "bolt",
+            popoverSize: CGSize(width: 100, height: 40),
+            contextMenuItems: {
+                [
+                    .settings(title: "设置…") {},
+                    .about(title: "关于") {},
+                    .separator,
+                    .action(title: "退出", shortcut: .quit) {}
+                ]
+            }
+        ) {
+            Text("Ready")
+        }
+
+        let menu = try #require(controller.makeContextMenu())
+        let settings = try #require(menu.item(at: 0))
+        let about = try #require(menu.item(at: 1))
+        let quit = try #require(menu.item(at: 3))
+        #expect(settings.title == "设置…")
+        #expect(settings.keyEquivalent == ",")
+        #expect(settings.keyEquivalentModifierMask == .command)
+        #expect(about.title == "关于")
+        #expect(menu.item(at: 2)?.isSeparatorItem == true)
+        #expect(quit.title == "退出")
+        #expect(quit.keyEquivalent == "q")
+        #expect(quit.keyEquivalentModifierMask == .command)
     }
 }

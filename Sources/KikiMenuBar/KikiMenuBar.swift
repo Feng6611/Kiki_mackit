@@ -409,6 +409,7 @@ public final class KikiMenuBarPopoverController<Content: View>: NSObject {
     private let statusItem: NSStatusItem
     private let popover = NSPopover()
     private let onWillShow: (@MainActor () -> Void)?
+    private let contextMenuItems: (@MainActor () -> [KikiMenuItem])?
 
     public init(
         title: String,
@@ -419,11 +420,13 @@ public final class KikiMenuBarPopoverController<Content: View>: NSObject {
         popoverSize: CGSize,
         behavior: NSPopover.Behavior = .transient,
         onWillShow: (@MainActor () -> Void)? = nil,
+        contextMenuItems: (@MainActor () -> [KikiMenuItem])? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.title = title
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         self.onWillShow = onWillShow
+        self.contextMenuItems = contextMenuItems
         super.init()
 
         configureStatusItem(
@@ -485,6 +488,13 @@ public final class KikiMenuBarPopoverController<Content: View>: NSObject {
         popover.contentViewController?.view.window?.makeKey()
     }
 
+    /// The menu shown for a right-click or control-click. Nil when the host
+    /// did not provide `contextMenuItems`.
+    public func makeContextMenu() -> NSMenu? {
+        guard let contextMenuItems else { return nil }
+        return KikiMenuBuilder.menu(from: contextMenuItems(), title: title)
+    }
+
     private func configureStatusItem(
         autosaveName: String?,
         systemImageName: String,
@@ -498,6 +508,9 @@ public final class KikiMenuBarPopoverController<Content: View>: NSObject {
 
         button.target = self
         button.action = #selector(togglePopover(_:))
+        if contextMenuItems != nil {
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        }
         button.toolTip = tooltip
         updateButtonImage(systemImageName: systemImageName, accessibilityDescription: accessibilityDescription)
     }
@@ -514,7 +527,26 @@ public final class KikiMenuBarPopoverController<Content: View>: NSObject {
     }
 
     @objc private func togglePopover(_ sender: Any?) {
+        if isContextClick(NSApp.currentEvent) {
+            showContextMenu()
+            return
+        }
         toggle(sender)
+    }
+
+    private func isContextClick(_ event: NSEvent?) -> Bool {
+        guard contextMenuItems != nil, let event else { return false }
+        if event.type == .rightMouseUp { return true }
+        return event.type == .leftMouseUp && event.modifierFlags.contains(.control)
+    }
+
+    private func showContextMenu() {
+        guard let menu = makeContextMenu() else {
+            toggle(nil)
+            return
+        }
+        close(nil)
+        statusItem.kikiShowMenu(menu)
     }
 }
 
