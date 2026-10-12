@@ -4,6 +4,10 @@
 
 ### Added
 
+- `KikiSettingsWindowLayout.heightPolicy` adds an opt-in `.fitsContent` mode
+  that animates the registered Settings window to each selected pane's fitting
+  height, bounded by the configured minimum and maximum. `.fixed` remains the
+  default for existing callers.
 - `KikiMenuBarPopoverController` takes an optional `contextMenuItems` provider.
   Right-click and control-click show that menu; left-click still toggles the
   popover. Existing callers are unchanged.

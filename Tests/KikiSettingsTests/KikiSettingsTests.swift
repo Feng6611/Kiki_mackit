@@ -30,6 +30,7 @@ struct KikiSettingsTests {
 
     @Test("Settings defaults fix width and adapt height around the ideal")
     func settingsDefaultsFixWidthAndAdaptHeight() {
+        #expect(KikiSettingsWindowLayout().heightPolicy == .fixed)
         #expect(KikiSettingsDefaults.minimumWindowWidth == KikiSettingsDefaults.windowWidth)
         #expect(KikiSettingsDefaults.maximumWindowWidth == KikiSettingsDefaults.windowWidth)
         #expect(KikiSettingsDefaults.windowHeight > KikiSettingsDefaults.minimumWindowHeight)

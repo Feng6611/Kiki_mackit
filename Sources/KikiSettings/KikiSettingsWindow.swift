@@ -9,8 +9,10 @@ protocol KikiSettingsWindowManaging: AnyObject {
         frameAutosaveName: NSWindow.FrameAutosaveName,
         idealContentSize: CGSize,
         minimumContentSize: CGSize,
-        maximumContentSize: CGSize
+        maximumContentSize: CGSize,
+        heightPolicy: KikiSettingsWindowHeightPolicy
     )
+    func fitContentHeight(_ height: CGFloat)
     func close()
 }
 
@@ -19,7 +21,8 @@ extension NSWindow: KikiSettingsWindowManaging {
         frameAutosaveName: NSWindow.FrameAutosaveName,
         idealContentSize: CGSize,
         minimumContentSize: CGSize,
-        maximumContentSize: CGSize
+        maximumContentSize: CGSize,
+        heightPolicy: KikiSettingsWindowHeightPolicy
     ) {
         let savedWindowSize = kikiSavedWindowFrameSize(for: frameAutosaveName)
         let maximumWindowSize = frameRect(
@@ -40,6 +43,33 @@ extension NSWindow: KikiSettingsWindowManaging {
         let exceedsMaximum = savedFrameExceedsMaximum
             || restoredContentSize.width > maximumContentSize.width
             || restoredContentSize.height > maximumContentSize.height
+
+        if heightPolicy == .fitsContent {
+            // The saved height belongs to whichever pane was open last time.
+            // Keep the restored position and supported width, then let the
+            // selected pane report the height for this display.
+            let savedWidthExceedsMaximum = savedWindowSize.map {
+                $0.width > maximumWindowSize.width
+            } ?? false
+            let targetWidth: CGFloat
+            if savedWidthExceedsMaximum {
+                targetWidth = idealContentSize.width
+            } else if savedWindowSize == nil {
+                targetWidth = idealContentSize.width
+            } else {
+                targetWidth = min(
+                    max(currentContentSize.width, minimumContentSize.width),
+                    maximumContentSize.width
+                )
+            }
+            kikiSetContentHeight(
+                idealContentSize.height,
+                contentWidth: targetWidth,
+                animated: false
+            )
+            return
+        }
+
         let targetContentSize: CGSize
 
         if exceedsMaximum {
@@ -71,6 +101,38 @@ extension NSWindow: KikiSettingsWindowManaging {
         targetWindowFrame.size = targetFrameSize
         setFrame(targetWindowFrame, display: true)
     }
+
+    func fitContentHeight(_ height: CGFloat) {
+        kikiSetContentSize(
+            CGSize(
+                width: contentLayoutRect.width,
+                height: min(max(height, contentMinSize.height), contentMaxSize.height)
+            ),
+            animated: true
+        )
+    }
+
+    private func kikiSetContentHeight(_ height: CGFloat, contentWidth: CGFloat, animated: Bool) {
+        kikiSetContentSize(CGSize(width: contentWidth, height: height), animated: animated)
+    }
+
+    private func kikiSetContentSize(_ contentSize: CGSize, animated: Bool) {
+        let currentContentSize = contentLayoutRect.size
+        guard abs(currentContentSize.height - contentSize.height) > 0.5
+                || abs(currentContentSize.width - contentSize.width) > 0.5 else {
+            return
+        }
+
+        let targetFrameSize = frameRect(
+            forContentRect: CGRect(origin: .zero, size: contentSize)
+        ).size
+        var targetFrame = frame
+        targetFrame.size = targetFrameSize
+        // NSWindow's frame origin is its bottom-left corner. Holding maxY
+        // fixed makes the window grow and shrink downward from its titlebar.
+        targetFrame.origin.y = frame.maxY - targetFrame.size.height
+        setFrame(targetFrame, display: true, animate: animated)
+    }
 }
 
 // Best-effort parse of AppKit's private "NSWindow Frame <name>" UserDefaults
@@ -101,7 +163,9 @@ public final class KikiSettingsWindowController {
     private let idealContentSize: CGSize
     private let minimumContentSize: CGSize
     private let maximumContentSize: CGSize
+    private let heightPolicy: KikiSettingsWindowHeightPolicy
     private weak var settingsWindow: (any KikiSettingsWindowManaging)?
+    private var latestFittedContentHeight: CGFloat?
 
     public init(
         frameAutosaveName: String,
@@ -117,24 +181,32 @@ public final class KikiSettingsWindowController {
             width: KikiSettingsDefaults.maximumWindowWidth,
             height: KikiSettingsDefaults.maximumWindowHeight
         ),
-        windowTitle: String = "Settings"
+        windowTitle: String = "Settings",
+        heightPolicy: KikiSettingsWindowHeightPolicy = .fixed
     ) {
         self.frameAutosaveName = NSWindow.FrameAutosaveName(frameAutosaveName)
         self.idealContentSize = idealContentSize
         self.minimumContentSize = minimumContentSize
         self.maximumContentSize = maximumContentSize
+        self.heightPolicy = heightPolicy
         // Retained for source compatibility. Exact view registration makes
         // title-based window discovery unnecessary.
         _ = windowTitle
     }
 
     public var layout: KikiSettingsWindowLayout {
-        KikiSettingsWindowLayout(ideal: idealContentSize, minimum: minimumContentSize, maximum: maximumContentSize)
+        KikiSettingsWindowLayout(
+            ideal: idealContentSize,
+            minimum: minimumContentSize,
+            maximum: maximumContentSize,
+            heightPolicy: heightPolicy
+        )
     }
 
     public convenience init(frameAutosaveName: String, layout: KikiSettingsWindowLayout) {
         self.init(frameAutosaveName: frameAutosaveName, idealContentSize: layout.ideal,
-                  minimumContentSize: layout.minimum, maximumContentSize: layout.maximum)
+                  minimumContentSize: layout.minimum, maximumContentSize: layout.maximum,
+                  heightPolicy: layout.heightPolicy)
     }
 
     public var isVisible: Bool {
@@ -167,8 +239,25 @@ public final class KikiSettingsWindowController {
             frameAutosaveName: frameAutosaveName,
             idealContentSize: idealContentSize,
             minimumContentSize: minimumContentSize,
-            maximumContentSize: maximumContentSize
+            maximumContentSize: maximumContentSize,
+            heightPolicy: heightPolicy
         )
+        if let latestFittedContentHeight {
+            managedWindow.fitContentHeight(latestFittedContentHeight)
+        }
+    }
+
+    func updateFittedContentHeight(_ height: CGFloat) {
+        guard heightPolicy == .fitsContent, height.isFinite else {
+            return
+        }
+
+        let fittedHeight = min(max(height, minimumContentSize.height), maximumContentSize.height)
+        guard latestFittedContentHeight.map({ abs($0 - fittedHeight) > 0.5 }) ?? true else {
+            return
+        }
+        latestFittedContentHeight = fittedHeight
+        settingsWindow?.fitContentHeight(fittedHeight)
     }
 }
 
