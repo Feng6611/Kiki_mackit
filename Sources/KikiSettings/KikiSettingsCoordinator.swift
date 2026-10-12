@@ -77,8 +77,7 @@ public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
         self.layout = KikiSettingsWindowLayout(
             ideal: CGSize(width: width ?? base.ideal.width, height: height ?? base.ideal.height),
             minimum: CGSize(width: minimumWidth ?? base.minimum.width, height: minimumHeight ?? base.minimum.height),
-            maximum: CGSize(width: maximumWidth ?? base.maximum.width, height: maximumHeight ?? base.maximum.height),
-            heightPolicy: base.heightPolicy
+            maximum: CGSize(width: maximumWidth ?? base.maximum.width, height: maximumHeight ?? base.maximum.height)
         )
         self.windowController = coordinator.windowController
         self.content = content
@@ -104,10 +103,6 @@ public struct KikiSettingsCoordinatorView<Tab: Hashable, Content: View>: View {
             minimumHeight: layout.minimum.height,
             maximumWidth: layout.maximum.width,
             maximumHeight: layout.maximum.height,
-            heightPolicy: layout.heightPolicy,
-            onFittedContentHeightChange: { [weak windowController] height in
-                windowController?.updateFittedContentHeight(height)
-            },
             content: content
         )
         .kikiSettingsWindow(windowController)

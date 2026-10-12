@@ -8,8 +8,7 @@ final class KikiSettingsWindowControllerTests: XCTestCase {
         let layout = KikiSettingsWindowLayout(
             ideal: CGSize(width: 720, height: 800),
             minimum: CGSize(width: 640, height: 500),
-            maximum: CGSize(width: 900, height: 1000),
-            heightPolicy: .fitsContent
+            maximum: CGSize(width: 900, height: 1000)
         )
         let controller = KikiSettingsWindowController(frameAutosaveName: "LayoutTest", layout: layout)
         let window = FakeSettingsWindow()
@@ -18,7 +17,6 @@ final class KikiSettingsWindowControllerTests: XCTestCase {
         XCTAssertEqual(window.configuredIdealSize, layout.ideal)
         XCTAssertEqual(window.configuredMinimumSize, layout.minimum)
         XCTAssertEqual(window.configuredMaximumSize, layout.maximum)
-        XCTAssertEqual(window.configuredHeightPolicy, .fitsContent)
     }
 
     func testLegacyWindowTitleInitializerPreservesSourceCompatibility() {
@@ -74,32 +72,6 @@ final class KikiSettingsWindowControllerTests: XCTestCase {
         XCTAssertTrue(window.didClose)
         XCTAssertFalse(controller.isVisible)
     }
-
-    func testLayoutHeightPolicyDefaultsToFixed() {
-        XCTAssertEqual(KikiSettingsWindowLayout().heightPolicy, .fixed)
-        XCTAssertEqual(
-            KikiSettingsWindowLayout(
-                ideal: CGSize(width: 500, height: 620),
-                minimum: CGSize(width: 500, height: 480),
-                maximum: CGSize(width: 500, height: 780)
-            ).heightPolicy,
-            .fixed
-        )
-    }
-
-    func testFittedHeightIsClampedCachedAndDeduplicated() {
-        let layout = KikiSettingsWindowLayout(heightPolicy: .fitsContent)
-        let controller = KikiSettingsWindowController(frameAutosaveName: "FittedHeightTest", layout: layout)
-        let window = FakeSettingsWindow()
-
-        controller.updateFittedContentHeight(layout.maximum.height + 100)
-        controller.register(managedWindow: window)
-        XCTAssertEqual(window.fittedHeights, [layout.maximum.height])
-
-        controller.updateFittedContentHeight(layout.maximum.height)
-        controller.updateFittedContentHeight(layout.ideal.height)
-        XCTAssertEqual(window.fittedHeights, [layout.maximum.height, layout.ideal.height])
-    }
 }
 
 @MainActor
@@ -109,26 +81,18 @@ private final class FakeSettingsWindow: KikiSettingsWindowManaging {
     private(set) var configuredIdealSize: CGSize?
     private(set) var configuredMinimumSize: CGSize?
     private(set) var configuredMaximumSize: CGSize?
-    private(set) var configuredHeightPolicy: KikiSettingsWindowHeightPolicy?
-    private(set) var fittedHeights: [CGFloat] = []
     private(set) var didClose = false
 
     func configure(
         frameAutosaveName: String,
         idealContentSize: CGSize,
         minimumContentSize: CGSize,
-        maximumContentSize: CGSize,
-        heightPolicy: KikiSettingsWindowHeightPolicy
+        maximumContentSize: CGSize
     ) {
         configuredAutosaveName = frameAutosaveName
         configuredIdealSize = idealContentSize
         configuredMinimumSize = minimumContentSize
         configuredMaximumSize = maximumContentSize
-        configuredHeightPolicy = heightPolicy
-    }
-
-    func fitContentHeight(_ height: CGFloat) {
-        fittedHeights.append(height)
     }
 
     func close() {

@@ -13,23 +13,8 @@ legacy size arguments still work. New code should configure sizes once.
 
 Defaults are 500×620 ideal, 500×480 minimum, 500×780 maximum. Bounds are
 normalized by KikiSettingsWindowLayout. The registered NSWindow owns frame
-restoration. In `.fixed` mode, saved sizes outside supported bounds reset to
-the ideal.
+restoration; saved sizes outside supported bounds reset to the ideal.
 KikiSettingsCoordinator.close() targets that window, not unrelated app windows.
-
-`KikiSettingsWindowLayout.heightPolicy` defaults to `.fixed`, preserving the
-configured ideal height for every tab. Opt in with `.fitsContent` to size the
-registered window to the selected pane on first display, tab changes, and
-subsequent pane layout changes. The existing pane is measured at its configured
-width, and its height is clamped to the layout's minimum and maximum; `Form`
-content scrolls when it reaches the maximum. Height changes animate with the
-window's top edge held in place. Frame autosave continues to restore position
-and a supported width, while the saved height is reset to the ideal before the
-selected pane is measured. This adds no strings or product settings.
-
-```swift
-let layout = KikiSettingsWindowLayout(heightPolicy: .fitsContent)
-```
 
 SwiftUI callers can use the native openSettings action. AppKit callers use
 KikiSettingsOpener: it invokes the standard Settings menu item first, then the
