@@ -4,6 +4,9 @@
 
 ### Added
 
+- `KikiDesignTokens.Spacing`: one 2/4-point spacing scale (`xxs` 2 … `xxxl` 24)
+  for padding and stack spacing in custom chrome, so hosts stop writing
+  per-view numbers.
 - `KikiMenuBarPopoverController` takes an optional `contextMenuItems` provider.
   Right-click and control-click show that menu; left-click still toggles the
   popover. Existing callers are unchanged.

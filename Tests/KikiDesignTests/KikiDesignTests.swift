@@ -79,4 +79,12 @@ struct KikiDesignTests {
         #expect(explicitExtension.name == "ProductIcon")
         #expect(explicitExtension.extension == "icns")
     }
+
+    @Test("Spacing scale rises on a 2-point rhythm")
+    func spacingScaleRises() {
+        let scale = KikiDesignTokens.Spacing.scale
+        #expect(scale == [2, 4, 6, 8, 12, 16, 20, 24])
+        #expect(zip(scale, scale.dropFirst()).allSatisfy { $0 < $1 })
+        #expect(scale.allSatisfy { $0.truncatingRemainder(dividingBy: 2) == 0 })
+    }
 }

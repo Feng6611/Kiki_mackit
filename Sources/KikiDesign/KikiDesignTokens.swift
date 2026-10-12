@@ -2,9 +2,34 @@ import SwiftUI
 
 /// Shared visual tokens for custom chrome that system controls don't cover
 /// (cards, badges, hero surfaces). Semantic fonts and colors remain the
-/// default; these tokens only govern repeated opacity and radius values so
+/// default; these tokens govern repeated spacing, opacity and radius values so
 /// features don't drift into per-component magic numbers.
 public enum KikiDesignTokens {
+    /// One spacing scale for padding and stack spacing in custom chrome, on a
+    /// 2/4-point rhythm. Pick the nearest step instead of a new number; system
+    /// controls and `Form` keep their own spacing.
+    public enum Spacing {
+        /// Hairline offsets: a caption under its title.
+        public static let xxs: CGFloat = 2
+        /// Icon to label, tight stacks, mark insets.
+        public static let xs: CGFloat = 4
+        /// Rows inside a compact card.
+        public static let s: CGFloat = 6
+        /// Default gap between related controls.
+        public static let m: CGFloat = 8
+        /// Gap between groups; footer and notice padding.
+        public static let l: CGFloat = 12
+        /// Paragraphs, card insets.
+        public static let xl: CGFloat = 16
+        /// Window and pane content insets.
+        public static let xxl: CGFloat = 20
+        /// Large empty-state padding.
+        public static let xxxl: CGFloat = 24
+
+        /// Every step, smallest first.
+        public static let scale: [CGFloat] = [xxs, xs, s, m, l, xl, xxl, xxxl]
+    }
+
     /// Fill opacities form a four-level hierarchy, weakest to strongest:
     /// subtle (0.06) < medium (0.08) < badge (0.12) < strong (0.14).
     /// Pick the weakest level that still reads against the surface.

@@ -10,7 +10,7 @@ popovers, Paywall, sheets, and standalone windows.
 - `KikiDesignColor.systemAccent`: the current macOS system accent color from
   `NSColor.controlAccentColor`.
 - `KikiSurfaceDefaults`: stable default corner radius and tint opacity.
-- `KikiDesignTokens`: shared opacity, corner-radius, and separator tokens for
+- `KikiDesignTokens`: shared spacing, opacity, corner-radius, and separator tokens for
   custom chrome (cards, badges, hero surfaces) that system controls don't
   cover. Features should use these instead of per-component magic numbers.
 - `KikiMaterialSurface`: reusable material plus tint background.
