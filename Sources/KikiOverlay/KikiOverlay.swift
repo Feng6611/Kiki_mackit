@@ -19,6 +19,8 @@ public struct KikiScreenEdgeOverlayStyle {
     public static let defaultGlowIntensity = 0.85
     static let toastHorizontalPadding: CGFloat = 13
     static let toastVerticalPadding: CGFloat = 10
+    /// The toast icon keeps its tuned 9 pt radius rather than the 10 pt card token.
+    static let toastIconRadius: CGFloat = 9
     /// Edge-glow blend: the effect's own tuning, not chrome opacity levels.
     static let glowEdgeCore = 0.52
     static let glowEdgeEnd = 0.50
@@ -65,7 +67,7 @@ public struct KikiScreenEdgeOverlayStyle {
         toastWidth: CGFloat = 340,
         toastTopPadding: CGFloat = 60,
         toastCornerRadius: CGFloat = KikiDesignTokens.CornerRadius.iconLarge,
-        toastIconCornerRadius: CGFloat = KikiDesignTokens.CornerRadius.card,
+        toastIconCornerRadius: CGFloat = KikiScreenEdgeOverlayStyle.toastIconRadius,
         fadeInDuration: TimeInterval = 0.2,
         fadeOutDuration: TimeInterval = 0.42,
         toastFadeOutDuration: TimeInterval = 0.35,
@@ -146,7 +148,7 @@ public struct KikiScreenEdgeOverlayStyle {
         toastWidth: 340,
         toastTopPadding: 60,
         toastCornerRadius: KikiDesignTokens.CornerRadius.iconLarge,
-        toastIconCornerRadius: KikiDesignTokens.CornerRadius.card,
+        toastIconCornerRadius: KikiScreenEdgeOverlayStyle.toastIconRadius,
         fadeInDuration: 0.2,
         fadeOutDuration: 0.42,
         toastFadeOutDuration: 0.35,

@@ -39,7 +39,10 @@
   align to 8/12/16-point spacing; weak tint and shadow fills use shared opacity
   levels, and muted labels use semantic tertiary colors. The onboarding
   background tint and the screen-edge glow keep their tuned values as named
-  constants.
+  constants, and so does the toast icon's 9-point radius.
+- `script/check_design_tokens.sh` scans whole files, so a value written on the
+  line after `.padding(` is caught; an exemption needs a reason, and a path
+  that is not a readable file exits 2. Apps can run it on their own files.
 - `KikiPaywallSheet` without plan cards (an entitled access summary) uses a
   300-point minimum instead of the purchase minimum, removing the empty band
   above its action.

@@ -59,6 +59,43 @@ struct DesignTokenCheckTests {
         #expect(result.report.contains("\(file.path):2:"))
     }
 
+    @Test("Values written across lines are still caught")
+    func multilineValuesFail() throws {
+        let file = try fixture("""
+        Text("A")
+            .padding(
+                .horizontal,
+                18
+            )
+        let fill = Color(
+            red: 0.2, green: 0.3, blue: 0.4
+        )
+        """)
+        defer { try? FileManager.default.removeItem(at: file) }
+
+        let result = try check([file])
+        #expect(result.status == 1)
+        #expect(result.report.contains("\(file.path):2:"))
+        #expect(result.report.contains("\(file.path):6:"))
+    }
+
+    @Test("An exemption needs a reason")
+    func exemptionWithoutReasonFails() throws {
+        let file = try fixture("""
+        .padding(18) // token-exempt:
+        """)
+        defer { try? FileManager.default.removeItem(at: file) }
+
+        let result = try check([file])
+        #expect(result.status == 1)
+    }
+
+    @Test("A directory is not a readable source file")
+    func directoryFails() throws {
+        let result = try check([FileManager.default.temporaryDirectory])
+        #expect(result.status == 2)
+    }
+
     @Test("An unreadable path exits with status 2")
     func unreadablePathFails() throws {
         let missing = FileManager.default.temporaryDirectory
