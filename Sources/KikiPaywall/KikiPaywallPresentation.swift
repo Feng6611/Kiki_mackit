@@ -4,6 +4,8 @@ import SwiftUI
 
 public enum KikiPaywallAccessState: Equatable, Sendable {
     case notStarted
+    /// The free tier of an app without a trial: never "expired".
+    case free
     case trial
     case expired
     case entitled(planTitle: String)

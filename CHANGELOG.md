@@ -4,6 +4,15 @@
 
 ### Added
 
+- `KikiAccessStatusRow`: About › Status as one settings row driven by
+  `KikiAccessStatusPresentation`. Neutral is plain secondary text, any paid
+  plan shows `crown.fill` in the tint, trial `clock`, expired a warning; an
+  action adds a chevron. `KikiAccessStatusTone.rowSystemImage` exposes the
+  mapping. Use it in `statusContent` instead of a hand-built status row.
+- `KikiPaywallAccessState.free`: the free tier of an app without a trial, so
+  a paywall no longer has to call a free user "expired". Exhaustive switches
+  over `KikiPaywallAccessState` need the new case (pre-1.0 minor break).
+
 - `KikiDesignTokens.Spacing`: one 2/4-point spacing scale (`xxs` 2 … `xxxl` 24)
   for padding and stack spacing in custom chrome, so hosts stop writing
   per-view numbers.

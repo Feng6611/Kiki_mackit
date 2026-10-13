@@ -89,7 +89,7 @@ public struct KikiAccessStatusCard: View {
         HStack(alignment: .center, spacing: KikiSettingsSpacing.sm) {
             badge
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: KikiDesignTokens.Spacing.xs) {
                 Text(presentation.title)
                     .font(.headline)
                 if let subtitle = presentation.subtitle {
@@ -100,7 +100,7 @@ public struct KikiAccessStatusCard: View {
                 }
             }
 
-            Spacer(minLength: 8)
+            Spacer(minLength: KikiDesignTokens.Spacing.m)
 
             if let actionTitle = presentation.actionTitle {
                 Button {
@@ -125,8 +125,8 @@ public struct KikiAccessStatusCard: View {
             .foregroundStyle(presentation.tone.foregroundColor(tint: tint))
             .frame(width: 36, height: 36)
             .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(presentation.tone.foregroundColor(tint: tint).opacity(0.14))
+                RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.card, style: .continuous)
+                    .fill(presentation.tone.foregroundColor(tint: tint).opacity(KikiDesignTokens.Opacity.strongFill))
             )
     }
 }

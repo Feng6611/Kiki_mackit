@@ -46,6 +46,14 @@ warning. The legacy access-state vocabulary is presentation compatibility only:
 apps map product states, and new generic statuses can use KikiSettingsStatusRow
 with neutral/success/warning/accent/info tones.
 
+KikiAccessStatusRow is the compact form for About › Status: one row whose value
+is the presentation title, styled by tone. Neutral (free tier, not started,
+checking) is plain secondary text; trial shows `clock`; active and lifetime
+show `crown.fill` (the crown means Pro, whatever the plan); expired shows a
+warning. An action adds a chevron and makes the row a button. Put it in
+statusContent instead of hand-building a status row, so every app shows
+access the same way.
+
 Extension slots:
 - statusContent replaces the configured access content.
 - additionalLinks inserts rows after standard links and before copyright.

@@ -61,3 +61,31 @@ struct KikiAccessStatusPresentationTests {
         #expect(KikiAccessStatusTone.lifetime.settingsTone == .accent)
     }
 }
+
+@MainActor
+struct KikiAccessStatusRowTests {
+    @Test("The row marks every paid plan with the crown and keeps neutral plain")
+    func rowSymbols() {
+        #expect(KikiAccessStatusTone.neutral.rowSystemImage == nil)
+        #expect(KikiAccessStatusTone.trial.rowSystemImage == "clock")
+        #expect(KikiAccessStatusTone.active.rowSystemImage == "crown.fill")
+        #expect(KikiAccessStatusTone.lifetime.rowSystemImage == "crown.fill")
+        #expect(KikiAccessStatusTone.expired.rowSystemImage == "exclamationmark.triangle")
+    }
+
+    @Test("Access status row constructs with and without action")
+    func rowIsConstructible() {
+        let free = KikiAccessStatusRow(
+            title: "Status",
+            presentation: KikiAccessStatusPresentation(tone: .neutral, title: "Free"),
+            action: {}
+        )
+        let owner = KikiAccessStatusRow(
+            title: "Status",
+            presentation: KikiAccessStatusPresentation(tone: .lifetime, title: "Lifetime"),
+            tint: .purple
+        )
+        _ = free.body
+        _ = owner.body
+    }
+}
