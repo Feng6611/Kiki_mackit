@@ -25,7 +25,7 @@ public struct KikiPaywallPlanCard: View {
 
     public var body: some View {
         Button(action: onSelect) {
-            VStack(spacing: 8) {
+            VStack(spacing: KikiDesignTokens.Spacing.m) {
                 // Every card in a row keeps the badge's space so the badged one
                 // is not taller than its neighbours, which pushed their prices
                 // off a shared baseline and ran the row into the actions area.
@@ -33,8 +33,8 @@ public struct KikiPaywallPlanCard: View {
                     Text(plan.badge ?? " ")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(tint)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
+                        .padding(.horizontal, KikiDesignTokens.Spacing.m)
+                        .padding(.vertical, KikiDesignTokens.Spacing.xxs)
                         .background(Capsule().fill(tint.opacity(KikiDesignTokens.Opacity.strongFill)))
                         .opacity(plan.badge == nil ? 0 : 1)
                         .accessibilityHidden(plan.badge == nil)
@@ -44,7 +44,7 @@ public struct KikiPaywallPlanCard: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.secondary)
 
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: KikiDesignTokens.Spacing.xs) {
                     if let originalPrice = plan.originalPrice {
                         Text(originalPrice)
                             .font(.callout)
@@ -61,8 +61,8 @@ public struct KikiPaywallPlanCard: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .padding(.horizontal, 8)
+            .padding(.vertical, KikiDesignTokens.Spacing.l)
+            .padding(.horizontal, KikiDesignTokens.Spacing.m)
             .background(
                 RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.card, style: .continuous)
                     .fill(isSelected ? tint.opacity(KikiDesignTokens.Opacity.subtleFill) : Color(nsColor: .controlBackgroundColor))
@@ -117,10 +117,10 @@ public struct KikiPaywallPlanRow: View {
 
     public var body: some View {
         Button(action: onSelect) {
-            HStack(spacing: 12) {
+            HStack(spacing: KikiDesignTokens.Spacing.l) {
                 selectionIndicator
 
-                HStack(spacing: 6) {
+                HStack(spacing: KikiDesignTokens.Spacing.s) {
                     Text(plan.title)
                         .font(.callout.weight(.medium))
 
@@ -135,7 +135,7 @@ public struct KikiPaywallPlanRow: View {
 
                 Spacer(minLength: 0)
 
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: KikiDesignTokens.Spacing.xs) {
                     if let originalPrice = plan.originalPrice {
                         Text(originalPrice)
                             .font(.callout)
@@ -154,8 +154,8 @@ public struct KikiPaywallPlanRow: View {
                     }
                 }
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.horizontal, KikiDesignTokens.Spacing.l)
+            .padding(.vertical, KikiDesignTokens.Spacing.l)
             .background(
                 RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.card, style: .continuous)
                     .fill(isSelected ? tint.opacity(KikiDesignTokens.Opacity.subtleFill) : Color(nsColor: .controlBackgroundColor))

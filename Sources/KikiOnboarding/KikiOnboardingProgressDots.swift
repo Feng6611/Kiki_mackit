@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 public struct KikiOnboardingProgressDots: View {
@@ -15,7 +16,7 @@ public struct KikiOnboardingProgressDots: View {
         tint: Color = .accentColor,
         dotSize: CGFloat = 6,
         activeDotWidth: CGFloat = 22,
-        spacing: CGFloat = 7
+        spacing: CGFloat = 7 // token-exempt: preserves the public progress-dot spacing default
     ) {
         self.count = max(0, count)
         self.currentIndex = currentIndex
@@ -29,7 +30,7 @@ public struct KikiOnboardingProgressDots: View {
         HStack(spacing: spacing) {
             ForEach(0..<count, id: \.self) { index in
                 Capsule()
-                    .fill(index == currentIndex ? tint : Color.secondary.opacity(0.25))
+                    .fill(index == currentIndex ? tint : Color(nsColor: .tertiaryLabelColor))
                     .frame(
                         width: index == currentIndex ? activeDotWidth : dotSize,
                         height: dotSize

@@ -21,7 +21,7 @@ public struct KikiPaywallStatItem: View {
     }
 
     public var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: KikiDesignTokens.Spacing.xxs) {
             Text(value)
                 .font(.title2.bold())
                 .foregroundStyle(.primary)
@@ -49,7 +49,7 @@ public struct KikiPaywallStatsCard: View {
     }
 
     public var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: KikiDesignTokens.Spacing.l) {
             ForEach(stats) { stat in
                 KikiPaywallStatItem(
                     value: stat.value,
@@ -57,8 +57,8 @@ public struct KikiPaywallStatsCard: View {
                 )
             }
         }
-        .padding(.vertical, 14)
-        .padding(.horizontal, 16)
+        .padding(.vertical, KikiDesignTokens.Spacing.l)
+        .padding(.horizontal, KikiDesignTokens.Spacing.xl)
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.panel, style: .continuous)
@@ -83,7 +83,7 @@ public struct KikiPaywallFeatureRow: View {
     }
 
     public var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: KikiDesignTokens.Spacing.m) {
             Image(systemName: icon)
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(.secondary)
@@ -112,7 +112,7 @@ public struct KikiPaywallActionLabel: View {
     }
 
     public var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: KikiDesignTokens.Spacing.m) {
             if isLoading {
                 ProgressView()
                     .controlSize(.small)
@@ -123,7 +123,7 @@ public struct KikiPaywallActionLabel: View {
                 .font(.headline)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 4)
+        .padding(.vertical, KikiDesignTokens.Spacing.xs)
     }
 }
 
@@ -166,7 +166,7 @@ public struct KikiPaywallLinkActionButton: View {
         Button {
             action()
         } label: {
-            HStack(spacing: 4) {
+            HStack(spacing: KikiDesignTokens.Spacing.xs) {
                 if isLoading {
                     ProgressView()
                         .controlSize(.mini)
@@ -239,8 +239,8 @@ public struct KikiPaywallPill: View {
         Text(text)
             .font(.caption2.weight(.bold))
             .foregroundStyle(foregroundColor)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
+            .padding(.horizontal, KikiDesignTokens.Spacing.m)
+            .padding(.vertical, KikiDesignTokens.Spacing.xxs)
             .background(Capsule().fill(backgroundColor))
     }
 
@@ -283,7 +283,7 @@ public struct KikiPaywallDotSeparator: View {
     private let size: CGFloat
 
     public init(
-        color: Color = .secondary.opacity(0.35),
+        color: Color = Color(nsColor: .tertiaryLabelColor),
         size: CGFloat = 3
     ) {
         self.color = color
@@ -357,15 +357,15 @@ public struct KikiPaywallMetadataRow: View {
                 .foregroundStyle(.primary)
         }
         .font(.callout)
-        .padding(.horizontal, 20)
-        .padding(.vertical, 13)
+        .padding(.horizontal, KikiDesignTokens.Spacing.xxl)
+        .padding(.vertical, KikiDesignTokens.Spacing.l)
     }
 }
 
 public extension View {
     func kikiPaywallCard(
         cornerRadius: CGFloat = KikiDesignTokens.CornerRadius.elevatedCard,
-        shadowColor: Color = .black.opacity(0.05),
+        shadowColor: Color = .black.opacity(KikiDesignTokens.Opacity.subtleFill),
         shadowRadius: CGFloat = 18,
         shadowY: CGFloat = 8
     ) -> some View {

@@ -104,22 +104,22 @@ public struct KikiPaywallShell<Header: View, Content: View, Actions: View, Foote
     }
 
     private var scrollingArea: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: KikiDesignTokens.Spacing.xl) {
             header
-                .padding(.top, 8)
+                .padding(.top, KikiDesignTokens.Spacing.m)
             content
         }
         .padding(.horizontal, horizontalPadding)
-        .padding(.bottom, 14)
+        .padding(.bottom, KikiPaywallDefaults.shellBottomInset)
     }
 
     private var actionsArea: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: KikiDesignTokens.Spacing.m) {
             actions
             footer
         }
         .padding(.horizontal, horizontalPadding)
-        .padding(.bottom, 14)
+        .padding(.bottom, KikiPaywallDefaults.shellBottomInset)
     }
 
 }
@@ -169,13 +169,13 @@ public struct KikiPaywallHeader: View {
     }
 
     public var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: KikiDesignTokens.Spacing.l) {
             if let icon {
                 Image(nsImage: icon)
                     .resizable()
                     .frame(width: iconSize, height: iconSize)
                     .clipShape(RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.iconLarge, style: .continuous))
-                    .shadow(color: .black.opacity(0.10), radius: 10, y: 5)
+                    .shadow(color: .black.opacity(KikiDesignTokens.Opacity.mediumFill), radius: 10, y: 5)
             }
 
             Text(title)

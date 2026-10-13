@@ -12,7 +12,8 @@
 - `KikiPaywallAccessState.free`: the free tier of an app without a trial, so
   a paywall no longer has to call a free user "expired". Exhaustive switches
   over `KikiPaywallAccessState` need the new case (pre-1.0 minor break).
-
+- `script/check_design_tokens.sh` checks Kiki source chrome for raw spacing,
+  radius, opacity, font-size and color values.
 - `KikiDesignTokens.Spacing`: one 2/4-point spacing scale (`xxs` 2 … `xxxl` 24)
   for padding and stack spacing in custom chrome, so hosts stop writing
   per-view numbers.
@@ -32,6 +33,13 @@
 
 ### Changed
 
+- Kiki's own chrome now uses the shared design tokens. Onboarding cards use
+  16-point insets, its content and action gaps align to 20/16/12 points, and
+  compact status badges use 2-point vertical padding. Paywall and review groups
+  align to 8/12/16-point spacing; weak tint and shadow fills use shared opacity
+  levels, and muted labels use semantic tertiary colors. The onboarding
+  background tint and the screen-edge glow keep their tuned values as named
+  constants.
 - `KikiPaywallSheet` without plan cards (an entitled access summary) uses a
   300-point minimum instead of the purchase minimum, removing the empty band
   above its action.

@@ -1,3 +1,4 @@
+import KikiDesign
 import SwiftUI
 
 public struct KikiOnboardingRow: Identifiable, Equatable {
@@ -22,12 +23,12 @@ public struct KikiOnboardingRow: Identifiable, Equatable {
 }
 
 private func kikiOnboardingStableUUID(for value: String) -> UUID {
-    var high: UInt64 = 0xcbf29ce484222325
-    var low: UInt64 = 0x84222325cbf29ce4
+    var high: UInt64 = 0xcbf29ce484222325 // token-exempt: FNV hash seed for stable row identity
+    var low: UInt64 = 0x84222325cbf29ce4 // token-exempt: paired FNV hash seed for stable row identity
 
     for byte in value.utf8 {
-        high = (high ^ UInt64(byte)) &* 0x100000001b3
-        low = (low ^ UInt64(byte)) &* 0x9e3779b185ebca87
+        high = (high ^ UInt64(byte)) &* 0x100000001b3 // token-exempt: FNV hash multiplier for stable row identity
+        low = (low ^ UInt64(byte)) &* 0x9e3779b185ebca87 // token-exempt: paired hash multiplier for stable row identity
     }
 
     return UUID(uuid: (
@@ -55,13 +56,13 @@ struct KikiOnboardingRowView: View {
     let tint: Color
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: KikiDesignTokens.Spacing.l) {
             Image(systemName: row.systemImage)
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(tint)
                 .frame(width: 24, height: 24)
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: KikiDesignTokens.Spacing.xs) {
                 Text(row.title)
                     .font(.headline)
 

@@ -17,6 +17,15 @@ public enum KikiScreenEdgeOverlayMotion: Equatable {
 public struct KikiScreenEdgeOverlayStyle {
     public static let defaultBreathingDuration: TimeInterval = 3.2
     public static let defaultGlowIntensity = 0.85
+    static let toastHorizontalPadding: CGFloat = 13
+    static let toastVerticalPadding: CGFloat = 10
+    /// Edge-glow blend: the effect's own tuning, not chrome opacity levels.
+    static let glowEdgeCore = 0.52
+    static let glowEdgeEnd = 0.50
+    static let glowCompanion = 0.18
+    static let glowCornerCore = 0.46
+    static let glowCornerCompanion = 0.15
+    static let glowShadow = 0.54
 
     public private(set) var edgeLineWidth: CGFloat
     public private(set) var glowDepth: CGFloat
@@ -55,8 +64,8 @@ public struct KikiScreenEdgeOverlayStyle {
         cornerShadowRadius: CGFloat = 16,
         toastWidth: CGFloat = 340,
         toastTopPadding: CGFloat = 60,
-        toastCornerRadius: CGFloat = 18,
-        toastIconCornerRadius: CGFloat = 9,
+        toastCornerRadius: CGFloat = KikiDesignTokens.CornerRadius.iconLarge,
+        toastIconCornerRadius: CGFloat = KikiDesignTokens.CornerRadius.card,
         fadeInDuration: TimeInterval = 0.2,
         fadeOutDuration: TimeInterval = 0.42,
         toastFadeOutDuration: TimeInterval = 0.35,
@@ -136,8 +145,8 @@ public struct KikiScreenEdgeOverlayStyle {
         cornerShadowRadius: 16,
         toastWidth: 340,
         toastTopPadding: 60,
-        toastCornerRadius: 18,
-        toastIconCornerRadius: 9,
+        toastCornerRadius: KikiDesignTokens.CornerRadius.iconLarge,
+        toastIconCornerRadius: KikiDesignTokens.CornerRadius.card,
         fadeInDuration: 0.2,
         fadeOutDuration: 0.42,
         toastFadeOutDuration: 0.35,
@@ -624,7 +633,7 @@ private struct KikiScreenEdgeOverlayView: View {
                             lineJoin: .round
                         )
                     )
-                    .padding(2)
+                    .padding(KikiDesignTokens.Spacing.xxs)
 
                 KikiCornerAccentLayer(
                     color: presentation.tint,
@@ -693,17 +702,17 @@ private struct KikiEdgeFeedbackToast: View {
     var body: some View {
         let toastShape = RoundedRectangle(cornerRadius: style.toastCornerRadius, style: .continuous)
 
-        HStack(spacing: 12) {
+        HStack(spacing: KikiDesignTokens.Spacing.l) {
             ZStack {
                 RoundedRectangle(cornerRadius: style.toastIconCornerRadius, style: .continuous)
-                    .fill(tint.opacity(0.14))
+                    .fill(tint.opacity(KikiDesignTokens.Opacity.strongFill))
                 Image(systemName: systemImage)
                     .font(.headline)
                     .foregroundStyle(tint)
             }
             .frame(width: 30, height: 30)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: KikiDesignTokens.Spacing.xxs) {
                 Text(title)
                     .font(.headline)
                     .foregroundStyle(.primary)
@@ -720,20 +729,20 @@ private struct KikiEdgeFeedbackToast: View {
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 13)
-        .padding(.vertical, 10)
+        .padding(.horizontal, KikiScreenEdgeOverlayStyle.toastHorizontalPadding)
+        .padding(.vertical, KikiScreenEdgeOverlayStyle.toastVerticalPadding)
         .frame(width: style.toastWidth)
         .kikiMaterialSurface(
             in: toastShape,
             material: .thinMaterial,
             tint: Color(nsColor: .controlBackgroundColor),
-            tintOpacity: 0.12
+            tintOpacity: KikiDesignTokens.Opacity.badgeFill
         )
         .overlay {
             toastShape
-                .strokeBorder(.primary.opacity(0.08), lineWidth: 0.8)
+                .strokeBorder(.primary.opacity(KikiDesignTokens.Opacity.mediumFill), lineWidth: 0.8)
         }
-        .shadow(color: .black.opacity(0.14), radius: 16, x: 0, y: 8)
+        .shadow(color: .black.opacity(KikiDesignTokens.Opacity.strongFill), radius: 16, x: 0, y: 8)
     }
 }
 
@@ -781,8 +790,8 @@ private struct KikiScreenEdgeGlowLayer: View {
         case .top:
             LinearGradient(
                 colors: [
-                    color.opacity(opacity * 0.52),
-                    companionColor.opacity(opacity * 0.18),
+                    color.opacity(opacity * KikiScreenEdgeOverlayStyle.glowEdgeCore),
+                    companionColor.opacity(opacity * KikiScreenEdgeOverlayStyle.glowCompanion),
                     .clear
                 ],
                 startPoint: .top,
@@ -793,8 +802,8 @@ private struct KikiScreenEdgeGlowLayer: View {
             LinearGradient(
                 colors: [
                     .clear,
-                    companionColor.opacity(opacity * 0.18),
-                    color.opacity(opacity * 0.50)
+                    companionColor.opacity(opacity * KikiScreenEdgeOverlayStyle.glowCompanion),
+                    color.opacity(opacity * KikiScreenEdgeOverlayStyle.glowEdgeEnd)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -803,8 +812,8 @@ private struct KikiScreenEdgeGlowLayer: View {
         case .leading:
             LinearGradient(
                 colors: [
-                    color.opacity(opacity * 0.46),
-                    companionColor.opacity(opacity * 0.15),
+                    color.opacity(opacity * KikiScreenEdgeOverlayStyle.glowCornerCore),
+                    companionColor.opacity(opacity * KikiScreenEdgeOverlayStyle.glowCornerCompanion),
                     .clear
                 ],
                 startPoint: .leading,
@@ -815,8 +824,8 @@ private struct KikiScreenEdgeGlowLayer: View {
             LinearGradient(
                 colors: [
                     .clear,
-                    companionColor.opacity(opacity * 0.15),
-                    color.opacity(opacity * 0.46)
+                    companionColor.opacity(opacity * KikiScreenEdgeOverlayStyle.glowCornerCompanion),
+                    color.opacity(opacity * KikiScreenEdgeOverlayStyle.glowCornerCore)
                 ],
                 startPoint: .leading,
                 endPoint: .trailing
@@ -864,6 +873,11 @@ private struct KikiCornerAccentLayer: View {
                 .fill(color.opacity(opacity))
                 .frame(width: style.cornerThickness, height: length)
         }
-        .shadow(color: color.opacity(opacity * 0.54), radius: style.cornerShadowRadius, x: 0, y: 0)
+        .shadow(
+            color: color.opacity(opacity * KikiScreenEdgeOverlayStyle.glowShadow),
+            radius: style.cornerShadowRadius,
+            x: 0,
+            y: 0
+        )
     }
 }

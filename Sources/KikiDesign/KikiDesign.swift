@@ -2,14 +2,14 @@ import AppKit
 import SwiftUI
 
 public enum KikiSurfaceDefaults {
-    public static let cornerRadius: CGFloat = 12
-    public static let tintOpacity: Double = 0.06
+    public static let cornerRadius: CGFloat = KikiDesignTokens.CornerRadius.panel
+    public static let tintOpacity: Double = KikiDesignTokens.Opacity.subtleFill
 }
 
 public enum KikiDesignColor {
     /// The default Kiki purple used for Pro and access-positive status UI.
     /// Apps remain free to pass their own product tint explicitly.
-    public static let proAccent = Color(red: 0.58, green: 0.20, blue: 0.62)
+    public static let proAccent = Color(red: 0.58, green: 0.20, blue: 0.62) // token-exempt: canonical Kiki Pro brand color
     public static var systemAccent: Color {
         Color(nsColor: .controlAccentColor)
     }

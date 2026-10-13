@@ -29,7 +29,7 @@ public struct KikiPaywallStatusHeader<Accessory: View>: View {
     }
 
     public var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: KikiDesignTokens.Spacing.xl) {
             KikiPaywallIconBadge(
                 systemName: systemName,
                 iconColor: iconColor,
@@ -37,8 +37,8 @@ public struct KikiPaywallStatusHeader<Accessory: View>: View {
                 size: iconSize
             )
 
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: KikiDesignTokens.Spacing.s) {
+                HStack(spacing: KikiDesignTokens.Spacing.m) {
                     Text(title)
                         .font(.title3.weight(.bold))
 

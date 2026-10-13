@@ -26,7 +26,7 @@ public struct KikiOnboardingRowsContent: View {
     }
 
     public var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: KikiDesignTokens.Spacing.l) {
             ForEach(rows) { row in
                 KikiOnboardingRowView(row: row, tint: tint)
             }
@@ -119,17 +119,22 @@ public struct KikiOnboardingScaffold<Content: View>: View {
                     currentIndex: stepIndex,
                     tint: tint
                 )
-                .padding(.bottom, 14)
+                .padding(.bottom, KikiDesignTokens.Spacing.xl)
             }
 
             actionArea
-                .padding(.horizontal, 28)
-                .padding(.bottom, 24)
+                .padding(.horizontal, KikiOnboardingDefaults.scaffoldHorizontalInset)
+                .padding(.bottom, KikiDesignTokens.Spacing.xxxl)
         }
         .frame(width: size.width, height: size.height)
         .background {
             ZStack {
-                KikiMaterialSurface(in: Rectangle(), material: .regularMaterial, tint: tint, tintOpacity: 0.02)
+                KikiMaterialSurface(
+                    in: Rectangle(),
+                    material: .regularMaterial,
+                    tint: tint,
+                    tintOpacity: KikiOnboardingDefaults.backgroundTintOpacity
+                )
                 if background == .tintWash {
                     RadialGradient(
                         colors: [tint.opacity(KikiDesignTokens.Opacity.mediumFill), .clear],
@@ -155,26 +160,26 @@ public struct KikiOnboardingScaffold<Content: View>: View {
             ScrollView {
                 contentColumn
                     .frame(maxWidth: .infinity, alignment: .top)
-                    .padding(.horizontal, 28)
-                    .padding(.top, 28)
-                    .padding(.bottom, 14)
+                    .padding(.horizontal, KikiOnboardingDefaults.scaffoldHorizontalInset)
+                    .padding(.top, KikiOnboardingDefaults.scaffoldTopInset)
+                    .padding(.bottom, KikiOnboardingDefaults.scaffoldContentBottomInset)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .centered:
             contentColumn
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                .padding(.horizontal, 28)
-                .padding(.top, 28)
-                .padding(.bottom, 14)
+                .padding(.horizontal, KikiOnboardingDefaults.scaffoldHorizontalInset)
+                .padding(.top, KikiOnboardingDefaults.scaffoldTopInset)
+                .padding(.bottom, KikiOnboardingDefaults.scaffoldContentBottomInset)
         }
     }
 
     private var contentColumn: some View {
-        VStack(spacing: 18) {
-            VStack(spacing: 12) {
+        VStack(spacing: KikiDesignTokens.Spacing.xxl) {
+            VStack(spacing: KikiDesignTokens.Spacing.l) {
                 hero
 
-                VStack(spacing: 6) {
+                VStack(spacing: KikiDesignTokens.Spacing.s) {
                     Text(title)
                         .font(.title.bold())
                         .multilineTextAlignment(.center)
@@ -203,7 +208,7 @@ public struct KikiOnboardingScaffold<Content: View>: View {
     }
 
     private var navigationBar: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: KikiDesignTokens.Spacing.l) {
             if let skipAction {
                 Button(skipAction.title, action: skipAction.action)
                     .buttonStyle(.plain)
@@ -237,7 +242,7 @@ public struct KikiOnboardingScaffold<Content: View>: View {
     }
 
     private var stackedActions: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: KikiDesignTokens.Spacing.l) {
             if let primaryAction {
                 Button {
                     primaryAction.action()
@@ -273,7 +278,7 @@ public struct KikiOnboardingScaffold<Content: View>: View {
                 .interpolation(.high)
                 .frame(width: 88, height: 88)
                 .clipShape(RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.heroIcon, style: .continuous))
-                .shadow(color: .black.opacity(0.12), radius: 12, y: 6)
+                .shadow(color: .black.opacity(KikiDesignTokens.Opacity.badgeFill), radius: 12, y: 6)
         } else {
             Image(systemName: iconSystemName)
                 .font(.largeTitle.weight(.semibold))

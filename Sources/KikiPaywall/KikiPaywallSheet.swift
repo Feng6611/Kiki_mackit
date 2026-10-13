@@ -1,3 +1,4 @@
+import KikiDesign
 import SwiftUI
 
 public struct KikiPaywallSheet<Footer: View>: View {
@@ -88,13 +89,13 @@ public struct KikiPaywallSheet<Footer: View>: View {
                 icon: header.icon
             )
         } content: {
-            VStack(spacing: 14) {
+            VStack(spacing: KikiDesignTokens.Spacing.xl) {
                 if stats.isEmpty == false {
                     KikiPaywallStatsCard(stats: stats)
                 }
 
                 if features.isEmpty == false {
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: KikiDesignTokens.Spacing.m) {
                         ForEach(features, id: \.self) { feature in
                             KikiPaywallFeatureRow(
                                 icon: "checkmark.circle.fill",
@@ -105,7 +106,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
                 }
 
                 if plans.isEmpty == false {
-                    HStack(spacing: 10) {
+                    HStack(spacing: KikiDesignTokens.Spacing.l) {
                         ForEach(plans) { plan in
                             KikiPaywallPlanCard(
                                 plan: plan,
@@ -121,7 +122,7 @@ public struct KikiPaywallSheet<Footer: View>: View {
                 }
             }
         } actions: {
-            VStack(spacing: 8) {
+            VStack(spacing: KikiDesignTokens.Spacing.m) {
                 Button {
                     primary.action()
                 } label: {
@@ -153,9 +154,9 @@ public struct KikiPaywallSheet<Footer: View>: View {
                 }
             }
         } footer: {
-            VStack(spacing: 8) {
+            VStack(spacing: KikiDesignTokens.Spacing.m) {
                 if footerLinkActions.isEmpty == false {
-                    HStack(spacing: 10) {
+                    HStack(spacing: KikiDesignTokens.Spacing.m) {
                         ForEach(Array(footerLinkActions.enumerated()), id: \.element.id) { index, action in
                             if index > 0 {
                                 KikiPaywallDotSeparator()

@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import KikiDesign
 import SwiftUI
 
 public enum KikiPaywallAccessState: Equatable, Sendable {
@@ -211,7 +212,7 @@ struct KikiPaywallPresentationFooter: View {
     let presentation: KikiPaywallPresentation
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: KikiDesignTokens.Spacing.m) {
             if let message = presentation.message {
                 KikiPaywallMessage(message.text, tone: message.tone)
             }
@@ -225,7 +226,7 @@ struct KikiPaywallPresentationFooter: View {
             }
 
             if presentation.footerLinks.isEmpty == false {
-                HStack(spacing: 10) {
+                HStack(spacing: KikiDesignTokens.Spacing.m) {
                     ForEach(Array(presentation.footerLinks.enumerated()), id: \.element.id) { index, link in
                         if index > 0 {
                             KikiPaywallDotSeparator()
