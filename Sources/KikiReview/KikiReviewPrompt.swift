@@ -66,7 +66,7 @@ public struct KikiReviewPromptView: View {
             showsCloseButton: true,
             onClose: onClose
         ) {
-            VStack(spacing: 14) {
+            VStack(spacing: KikiDesignTokens.Spacing.xl) {
                 Image(nsImage: icon)
                     .resizable()
                     .frame(width: 64, height: 64)
@@ -74,7 +74,7 @@ public struct KikiReviewPromptView: View {
                         cornerRadius: KikiDesignTokens.CornerRadius.iconLarge,
                         style: .continuous
                     ))
-                    .shadow(color: .black.opacity(0.10), radius: 8, y: 4)
+                    .shadow(color: .black.opacity(KikiDesignTokens.Opacity.mediumFill), radius: 8, y: 4)
 
                 Text(configuration.title)
                     .font(.title2.bold())
@@ -87,17 +87,17 @@ public struct KikiReviewPromptView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, 30)
-            .padding(.top, 24)
+            .padding(.horizontal, KikiReviewPromptDefaults.contentHorizontalInset)
+            .padding(.top, KikiDesignTokens.Spacing.xxxl)
         } footer: {
             ViewThatFits(in: .horizontal) {
-                HStack(spacing: 10) { actionButtons }
+                HStack(spacing: KikiDesignTokens.Spacing.m) { actionButtons }
                     .fixedSize(horizontal: true, vertical: false)
-                VStack(alignment: .trailing, spacing: 10) { actionButtons }
+                VStack(alignment: .trailing, spacing: KikiDesignTokens.Spacing.m) { actionButtons }
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.horizontal, 20)
-            .padding(.bottom, 16)
+            .padding(.horizontal, KikiDesignTokens.Spacing.xxl)
+            .padding(.bottom, KikiDesignTokens.Spacing.xl)
         }
         .accessibilityElement(children: .contain)
         .background(GeometryReader { proxy in
@@ -131,6 +131,8 @@ public enum KikiReviewPromptDefaults {
     public static let width: CGFloat = 420
     public static let height: CGFloat = 310
     public static let maximumHeight: CGFloat = 560
+
+    static let contentHorizontalInset: CGFloat = 30
 }
 
 @MainActor

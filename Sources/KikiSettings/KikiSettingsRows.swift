@@ -107,8 +107,8 @@ public struct KikiSettingsStatusRow: View {
         if showsBadge ?? tone.usesBadge {
             statusLabel
                 .fontWeight(.medium)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
+                .padding(.horizontal, KikiDesignTokens.Spacing.m)
+                .padding(.vertical, KikiDesignTokens.Spacing.xxs)
                 .background(
                     Capsule().fill(resolvedForeground.opacity(KikiDesignTokens.Opacity.badgeFill))
                 )
@@ -118,7 +118,7 @@ public struct KikiSettingsStatusRow: View {
     }
 
     private var statusLabel: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: KikiDesignTokens.Spacing.xs) {
             if let valueSystemImage {
                 Image(systemName: valueSystemImage)
                     .accessibilityHidden(true)

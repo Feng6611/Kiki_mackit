@@ -35,14 +35,14 @@ public struct KikiOnboardingPermissionRow: View {
                 instruction: instruction
             )
         } label: {
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .top, spacing: KikiDesignTokens.Spacing.l) {
                 Image(systemName: panel.systemImage)
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(tint)
                     .frame(width: 24, height: 24)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: KikiDesignTokens.Spacing.xs) {
+                    HStack(spacing: KikiDesignTokens.Spacing.m) {
                         Text(panel.title)
                             .font(.headline)
 
@@ -59,13 +59,13 @@ public struct KikiOnboardingPermissionRow: View {
                             .font(.caption)
                             .foregroundStyle(.tertiary)
                             .fixedSize(horizontal: false, vertical: true)
-                            .padding(.top, 2)
+                            .padding(.top, KikiDesignTokens.Spacing.xxs)
                     }
                 }
 
                 Spacer(minLength: 0)
             }
-            .padding(14)
+            .padding(KikiDesignTokens.Spacing.xl)
             .background {
                 RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.panel, style: .continuous)
                     .fill(Color(nsColor: .controlBackgroundColor))
@@ -88,8 +88,8 @@ public struct KikiOnboardingPermissionRow: View {
             Text(authorizedLabel)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color(nsColor: .systemGreen))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
+                .padding(.horizontal, KikiDesignTokens.Spacing.m)
+                .padding(.vertical, KikiDesignTokens.Spacing.xxs)
                 .background(
                     Capsule()
                         .fill(Color(nsColor: .systemGreen).opacity(KikiDesignTokens.Opacity.badgeFill))
@@ -98,8 +98,8 @@ public struct KikiOnboardingPermissionRow: View {
             Text(unauthorizedLabel)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
+                .padding(.horizontal, KikiDesignTokens.Spacing.m)
+                .padding(.vertical, KikiDesignTokens.Spacing.xxs)
                 .background(
                     Capsule()
                         .fill(Color(nsColor: .quaternaryLabelColor))

@@ -4,6 +4,8 @@
 
 ### Added
 
+- `script/check_design_tokens.sh` checks Kiki source chrome for raw spacing,
+  radius, opacity, font-size and color values.
 - `KikiDesignTokens.Spacing`: one 2/4-point spacing scale (`xxs` 2 … `xxxl` 24)
   for padding and stack spacing in custom chrome, so hosts stop writing
   per-view numbers.
@@ -23,6 +25,11 @@
 
 ### Changed
 
+- Kiki's own chrome now uses the shared design tokens. Onboarding cards use
+  16-point insets, its content and action gaps align to 20/16/12 points, and
+  compact status badges use 2-point vertical padding. Paywall and review groups
+  align to 8/12/16-point spacing; weak tint and shadow fills use shared opacity
+  levels, and muted labels use semantic tertiary colors.
 - `KikiPaywallSheet` without plan cards (an entitled access summary) uses a
   300-point minimum instead of the purchase minimum, removing the empty band
   above its action.

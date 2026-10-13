@@ -100,7 +100,7 @@ public struct KikiSheetShell<Content: View, Footer: View>: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
-                .padding(20)
+                .padding(KikiDesignTokens.Spacing.xxl)
                 .keyboardShortcut(.cancelAction)
                 .accessibilityLabel(Text("Close", bundle: .main))
             }

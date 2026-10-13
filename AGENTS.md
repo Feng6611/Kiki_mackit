@@ -27,6 +27,7 @@ transport belong to the separate KikiCommerceKit package.
 
 ## Verification
 
+Run `script/check_design_tokens.sh` to catch raw design values in Kiki sources.
 Run swift test and swift build -c release. For public API changes, compile the
 Starter and affected downstream matrix according to ../BUILD_SYSTEM.md.
 Use Examples/ComponentGallery for long copy, resizing, loading, disabled,

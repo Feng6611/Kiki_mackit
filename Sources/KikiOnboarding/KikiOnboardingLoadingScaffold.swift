@@ -24,7 +24,7 @@ public struct KikiOnboardingLoadingScaffold: View {
 
     public var body: some View {
         ScrollView {
-            VStack(spacing: 12) {
+            VStack(spacing: KikiDesignTokens.Spacing.l) {
                 ProgressView()
                     .controlSize(.large)
 
@@ -40,14 +40,19 @@ public struct KikiOnboardingLoadingScaffold: View {
                 }
             }
             .frame(maxWidth: .infinity, minHeight: size.height)
-            .padding(.horizontal, 28)
+            .padding(.horizontal, KikiOnboardingDefaults.scaffoldHorizontalInset)
         }
         .frame(width: size.width, height: size.height)
         .background {
             ZStack {
-                KikiMaterialSurface(in: Rectangle(), material: .regularMaterial, tint: tint, tintOpacity: 0.02)
+                KikiMaterialSurface(
+                    in: Rectangle(),
+                    material: .regularMaterial,
+                    tint: tint,
+                    tintOpacity: KikiDesignTokens.Opacity.subtleFill
+                )
                 RadialGradient(
-                    colors: [tint.opacity(0.08), .clear],
+                    colors: [tint.opacity(KikiDesignTokens.Opacity.mediumFill), .clear],
                     center: .top,
                     startRadius: 0,
                     endRadius: 280

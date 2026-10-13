@@ -9,6 +9,7 @@ public enum KikiPaywallDefaults {
     public static let windowWidth: CGFloat = 520
     public static let windowHeight: CGFloat = 620
     public static let sheetPadding: CGFloat = 28
+    static let shellBottomInset: CGFloat = 14
 
     /// Floor for a sheet that measures itself. Below this a sheet with only a
     /// header and one button stops reading as a sheet.

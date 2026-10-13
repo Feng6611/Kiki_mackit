@@ -9,6 +9,10 @@ public enum KikiOnboardingDefaults {
     /// not an overridable default. Rows beyond this cap are dropped (with a
     /// debug assertion); pass at most this many.
     public static let maxRowsPerStep = 3
+
+    static let scaffoldHorizontalInset: CGFloat = 28
+    static let scaffoldTopInset: CGFloat = 28
+    static let scaffoldContentBottomInset: CGFloat = 14
 }
 
 public enum KikiOnboardingCloseDisposition: Equatable, Sendable {

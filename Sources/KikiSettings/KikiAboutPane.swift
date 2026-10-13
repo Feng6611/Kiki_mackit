@@ -25,8 +25,8 @@ public struct KikiAppIdentityView: View {
             Image(nsImage: icon)
                 .resizable()
                 .frame(width: iconSize, height: iconSize)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .shadow(color: .black.opacity(0.10), radius: 8, y: 4)
+                .clipShape(RoundedRectangle(cornerRadius: KikiDesignTokens.CornerRadius.iconLarge, style: .continuous))
+                .shadow(color: .black.opacity(KikiDesignTokens.Opacity.mediumFill), radius: 8, y: 4)
 
             Text(appName)
                 .font(.title2.weight(.semibold))

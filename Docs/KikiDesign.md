@@ -56,3 +56,11 @@ Use `proAccent` for Kiki's default positive access treatment. Use
 `systemAccent` when the UI should respect the user's macOS accent color.
 The Pro token is an opt-in visual default, not access policy: apps still own
 what Pro means and may pass an explicit tint.
+
+## Token check
+
+Run `script/check_design_tokens.sh` from the package root. It scans Swift files
+under `Sources` for raw padding and stack spacing, corner radii, opacity values,
+explicit system font sizes, and RGB or hex colors. Pass file paths to check a
+specific set of files. A deliberate raw value must include a same-line reason,
+for example `// token-exempt: canonical Kiki brand color`.
