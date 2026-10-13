@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.11.0 - 2026-10-13
 
 ### Added
 
@@ -46,6 +46,14 @@
 - `KikiPaywallSheet` without plan cards (an entitled access summary) uses a
   300-point minimum instead of the purchase minimum, removing the empty band
   above its action.
+
+### Migration from 0.10.1
+
+`KikiPaywallAccessState` gains `.free`, the intended pre-1.0 minor break:
+exhaustive switches over it need the new case. Kiki's own chrome moved onto
+its tokens, so onboarding cards, paywall and review spacing shift by 1–4
+points (listed under Changed); no public signature changed. Hosts that
+hand-built an About › Status row can switch to `KikiAccessStatusRow`.
 
 ## 0.10.1 - 2026-10-04
 
