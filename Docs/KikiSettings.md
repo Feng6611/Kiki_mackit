@@ -63,6 +63,40 @@ Repeated calls replace that slot; they do not append to earlier calls.
 KikiAboutPane also supports additionalSections. Hosts retain control of
 which sections exist.
 
+## Launch at Login
+
+`LaunchAtLogin.isEnabled` and `LaunchAtLogin.Toggle` are unchanged: `isEnabled`
+means the item is actually enabled.
+
+The pitfall: `SMAppService.mainApp.register()` can succeed and leave the item
+in `.requiresApproval`. macOS holds it until the person allows it in System
+Settings › Login Items and shows no prompt, so `isEnabled` reads false and a
+plain toggle snaps back with no explanation. Use the approval-aware API instead.
+
+- `LaunchAtLogin.status` → `LaunchAtLoginStatus` (`enabled`, `requiresApproval`,
+  `notRegistered`, `notFound`, `unknown`).
+- `LaunchAtLogin.setEnabled(_:)` → `LaunchAtLoginOutcome` (`enabled`,
+  `requiresApproval`, `disabled`, `failed(message:)`). It classifies from the
+  status read back after the call; a thrown error while enabling is `failed`.
+  Enabling an already-enabled item does nothing, and there is no
+  unregister-then-register, which would switch a working item off if the second
+  call failed.
+- `LaunchAtLogin.openSystemSettingsLoginItems()` opens Login Items.
+- `KikiLaunchAtLoginModel` (`@MainActor ObservableObject`) publishes `status`,
+  offers `set(_:)`, `refresh()` and `isOn`, and refreshes when the app becomes
+  active again. `isOn` is true for `.enabled` and `.requiresApproval`: the
+  request is made and pending, so the switch stays on and the row explains it.
+  It takes a `LaunchAtLoginService` (status, register, unregister) so tests use
+  a fake; the default is `SMAppService.mainApp`.
+- `KikiSettingsLaunchAtLoginRow(title:systemImage:approvalNote:openLoginItemsTitle:model:)`
+  is a `KikiSettingsToggleRow` that, while `.requiresApproval`, adds the note as
+  helper text and a borderless button to Login Items. A failed request only
+  reverts the switch; read the outcome from `model.set(_:)` to react.
+
+Hosts provide, already localized: the row title, `approvalNote` (for example
+"Allow it in System Settings › Login Items to finish."), and
+`openLoginItemsTitle`. Keep the model in a `@StateObject`.
+
 ## Localization
 
 All explicit text parameters are already-localized caller values.

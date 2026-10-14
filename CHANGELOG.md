@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Approval-aware Launch at Login: `LaunchAtLoginStatus`, `LaunchAtLoginOutcome`,
+  `LaunchAtLogin.status`, `LaunchAtLogin.setEnabled(_:)`,
+  `LaunchAtLogin.openSystemSettingsLoginItems()`, the injectable
+  `LaunchAtLoginService` protocol, `KikiLaunchAtLoginModel` and
+  `KikiSettingsLaunchAtLoginRow`. `register()` can succeed and leave the item
+  in `.requiresApproval`; the new API reports that instead of snapping the
+  switch back off. `LaunchAtLogin.isEnabled`, `LaunchAtLogin.Toggle` and
+  `wasLaunchedAtLogin` are source-compatible and `isEnabled` still means
+  "actually enabled". Its setter no longer unregisters before registering.
+
 ## 0.11.0 - 2026-10-13
 
 ### Added

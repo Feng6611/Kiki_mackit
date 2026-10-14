@@ -9,26 +9,44 @@ public enum LaunchAtLogin {
 
 	/**
 	Toggle “launch at login” for your app or check whether it's enabled.
+
+	`true` means the login item is actually enabled. An item that macOS holds in
+	`.requiresApproval` reads as `false`; use ``status`` and ``setEnabled(_:)``
+	when the app needs to tell the two apart.
 	*/
 	public static var isEnabled: Bool {
-		get { SMAppService.mainApp.status == .enabled }
-		set {
-			observable.objectWillChange.send()
+		get { status == .enabled }
+		set { setEnabled(newValue) }
+	}
 
-			do {
-				if newValue {
-					if SMAppService.mainApp.status == .enabled {
-						try? SMAppService.mainApp.unregister()
-					}
+	/// The login item's real state, including “registered but waiting for the
+	/// user in System Settings › Login Items”.
+	public static var status: LaunchAtLoginStatus {
+		SystemLaunchAtLoginService().status
+	}
 
-					try SMAppService.mainApp.register()
-				} else {
-					try SMAppService.mainApp.unregister()
-				}
-			} catch {
-				logger.error("Failed to \(newValue ? "enable" : "disable") launch at login: \(error.localizedDescription)")
-			}
+	/**
+	Registers or unregisters the app as a login item and reports what happened.
+
+	The outcome is classified from the status read back after the call, and a
+	thrown error is never reported as success. `.requiresApproval` means the
+	request was accepted but macOS keeps the item off until the user allows it;
+	macOS shows no prompt for that, so the app should explain it and offer
+	``openSystemSettingsLoginItems()``.
+	*/
+	@discardableResult
+	public static func setEnabled(_ enabled: Bool) -> LaunchAtLoginOutcome {
+		observable.objectWillChange.send()
+		let outcome = LaunchAtLoginOutcome.apply(enabled, to: SystemLaunchAtLoginService())
+		if case .failed(let message) = outcome {
+			logger.error("Failed to \(enabled ? "enable" : "disable") launch at login: \(message)")
 		}
+		return outcome
+	}
+
+	/// Opens System Settings at Login Items, where a pending item is approved.
+	public static func openSystemSettingsLoginItems() {
+		SMAppService.openSystemSettingsLoginItems()
 	}
 
 	/**
