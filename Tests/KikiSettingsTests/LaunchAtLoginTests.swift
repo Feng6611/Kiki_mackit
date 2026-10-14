@@ -14,6 +14,8 @@ private final class FakeLoginService: LaunchAtLoginService {
 	var statusAfterRegister: LaunchAtLoginStatus = .enabled
 	var statusAfterUnregister: LaunchAtLoginStatus = .notRegistered
 	var registerError: Error?
+	/// Status the item reaches when `register()` throws anyway.
+	var statusWhenRegisterThrows: LaunchAtLoginStatus?
 	var unregisterError: Error?
 	private(set) var calls: [String] = []
 
@@ -21,7 +23,10 @@ private final class FakeLoginService: LaunchAtLoginService {
 
 	func register() throws {
 		calls.append("register")
-		if let registerError { throw registerError }
+		if let registerError {
+			if let statusWhenRegisterThrows { status = statusWhenRegisterThrows }
+			throw registerError
+		}
 		status = statusAfterRegister
 	}
 
@@ -67,8 +72,9 @@ struct LaunchAtLoginTests {
 	func registerThrowsButEnabled() {
 		let service = FakeLoginService(status: .requiresApproval)
 		service.registerError = FakeError()
-		service.statusAfterRegister = .enabled
+		service.statusWhenRegisterThrows = .enabled
 		#expect(LaunchAtLoginOutcome.apply(true, to: service) == .failed(message: "boom"))
+		#expect(service.status == .enabled)
 	}
 
 	@Test("Register without effect reports failure")
